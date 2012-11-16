@@ -2,8 +2,6 @@ package restful
 
 import ()
 
-
-
 type RouteBuilder struct {
 	CurrentPath string
 	Produces    string
@@ -34,10 +32,12 @@ func (self *RouteBuilder) Path(otherPath string) *RouteBuilder {
 	return self
 }
 func (self *RouteBuilder) Build() Route {
-	return Route{
+	route := Route{
 		Method:   self.httpMethod,
 		Path:     self.CurrentPath,
 		Produces: self.Produces,
 		Consumes: self.Consumes,
 		Function: self.function}
+	route.postBuild()
+	return route
 }

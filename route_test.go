@@ -1,17 +1,33 @@
 package restful
 
 import (
-    "testing"
+	"testing"
 )
 
 func TestMatchesPath(t *testing.T) {
-	r := Route{Path: "/from/{source}/to/{destination}"}
-	matches, params := r.MatchesPath("/from/AMS/to/NY")
-	if (!matches) {
-		t.Error("should have matched")
-		return
+	doMatchesPath("/", 2, "/", true, t)
+	
+	params := doMatchesPath("/from/{source}/to/{destination}", 5, "/from/AMS/to/NY", true, t)
+	if params["source"] != "AMS" {
+		t.Errorf("parameter mismatch AMS")
 	}
-	if (params["source"] != "AMS") {
-		t.Errorf("parameter mismatch %v",params)	
+
+	params = doMatchesPath("{}/from/{source}/", 4, "/from/SOS/", true, t)
+	if params["source"] != "SOS" {
+		t.Errorf("parameter mismatch SOS")
+	}	
+}
+
+func doMatchesPath(routePath string, size int, urlPath string, shouldMatch bool, t *testing.T) map[string]string {
+	r := Route{Path: routePath}
+	r.postBuild()
+	if len(r.pathParts) != size {
+		t.Fatalf("len not %v %v, but %v", size, r.pathParts, len(r.pathParts))
 	}
+	matches, params := r.MatchesPath(urlPath)
+	if matches != shouldMatch {
+		t.Errorf("disagree about matches: %v", routePath)
+		return params
+	}
+	return params
 }

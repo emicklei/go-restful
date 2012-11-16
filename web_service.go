@@ -12,7 +12,7 @@ type Dispatcher interface {
 
 type WebService struct {
 	Root     string
-	methods  []Route
+	routes   []Route
 	Produces string
 	Consumes string
 }
@@ -22,15 +22,15 @@ func (self *WebService) Path(root string) *WebService {
 	return self
 }
 func (self *WebService) Route(builder *RouteBuilder) *WebService {
-	self.methods = append(self.methods, builder.Build())
+	self.routes = append(self.routes, builder.Build())
 	return self
 }
-func (self WebService) Dispatch(request *http.Request) bool {
-	//	for _, each := range self.methods {
-	//		if each.canHandle(request) {
-	//			return true
-	//		}
-	//	}
+func (self WebService) dispatch(httpWriter *http.ResponseWriter, httpRequest *http.Request) bool {
+	for _, each := range self.routes {
+		if each.dispatch(httpWriter,httpRequest) {
+			return true
+		}
+	}
 	return false
 }
 

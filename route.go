@@ -2,6 +2,7 @@ package restful
 
 import (
 	"strings"
+	"net/http"
 )
 
 // Signature of function that can be bound to a Route
@@ -14,26 +15,44 @@ type Route struct {
 	Consumes string // TODO make this a slice
 	Path     string
 	Function RouteFunction
-	
+
 	pathParts []string
 }
 
+func (self *Route) postBuild() {
+	self.pathParts = strings.Split(self.Path, "/")
+}
+// If the Route matches the request then handle it and return true ; false otherwise
+func (self *Route) dispatch(httpWriter *http.ResponseWriter, httpRequest *http.Request) bool {
+	if (self.Method != httpRequest.Method) {
+		return false
+	}
+	matches, params := self.MatchesPath(httpRequest.URL.Path)
+	if (!matches) {
+		return false
+	}
+	// TODO match accept
+	restRequest := Request{httpRequest,params}
+	restResponse := Response{httpWriter}	
+	self.Function(restRequest,restResponse)
+	return true
+}
+
 func (self Route) MatchesPath(urlPath string) (bool, map[string]string) {
-	self.pathParts = strings.Split(self.Path,"/")
-	urlParts := strings.Split(urlPath,"/")
+	urlParts := strings.Split(urlPath, "/")
 	if len(self.pathParts) != len(urlParts) {
 		return false, nil
 	}
 	pathParameters := map[string]string{}
-	for i,key := range self.pathParts {
+	for i, key := range self.pathParts {
 		value := urlParts[i]
-		if strings.HasPrefix(key,"{") { // path-parameter
-			pathParameters[strings.Trim(key,"{}")]=value
+		if strings.HasPrefix(key, "{") { // path-parameter
+			pathParameters[strings.Trim(key, "{}")] = value
 		} else { // fixed
-			if (key != value) {
+			if key != value {
 				return false, nil
-			}	
-		}		
-	} 
+			}
+		}
+	}
 	return true, pathParameters
 }
