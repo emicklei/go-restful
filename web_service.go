@@ -4,6 +4,12 @@ import (
 	"net/http"
 )
 
+type Dispatcher interface {
+	// Dispath the request to a matching Route and call its Function.
+	// Return whether the request was handled.
+	Dispatch(request *http.Request) bool
+}
+
 type WebService struct {
 	Root     string
 	methods  []Route

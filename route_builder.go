@@ -2,7 +2,7 @@ package restful
 
 import ()
 
-type RouteFunction func(*Request, *Response)
+
 
 type RouteBuilder struct {
 	CurrentPath string
