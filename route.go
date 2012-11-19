@@ -6,7 +6,7 @@ import (
 )
 
 // Signature of function that can be bound to a Route
-type RouteFunction func(*http.Request, *http.ResponseWriter)
+type RouteFunction func(*Request, http.ResponseWriter)
 
 // Route binds a HTTP Method,Path,Consumes combination to a RouteFunction
 type Route struct {
@@ -32,10 +32,10 @@ func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Re
 		return false
 	}
 	// TODO match accept
-	writerWrapper := responseWriter{httpWriter}
+	//writerWrapper := responseWriter{httpWriter}
 	restRequest := Request{httpRequest,params}
-	restResponse := Response{writerWrapper}	
-	self.Function(restRequest,restResponse)
+	restResponse := Response{httpWriter}	
+	self.Function(&restRequest,restResponse)
 	return true
 }
 

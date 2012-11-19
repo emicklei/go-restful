@@ -5,8 +5,8 @@ import (
 )
 
 type Response struct {
-	//Writer http.ResponseWriter
-	responseWriter
+	http.ResponseWriter
+	//responseWriter
 }
 
 func (self Response) StatusOK() Response {
@@ -25,22 +25,22 @@ func (self Response) Entity(entity interface{}) Response {
 }
 
 // From https://github.com/nharbour/web.go/blob/master/web.go
-type responseWriter interface {
-    Header() http.Header
-    WriteHeader(status int)
-    Write(data []byte) (n int, err error)
-    Close()
-}
-type responseWriter struct {
-    http.ResponseWriter
-}
-func (c *responseWriter) Close() {
-    rwc, buf, _ := c.ResponseWriter.(http.Hijacker).Hijack()
-    if buf != nil {
-        buf.Flush()
-    }
-
-    if rwc != nil {
-        rwc.Close()
-    }
-}
+//type responseWriter interface {
+//    Header() http.Header
+//    WriteHeader(status int)
+//    Write(data []byte) (n int, err error)
+//    Close()
+//}
+//type responseWriter struct {
+//    http.ResponseWriter
+//}
+//func (c *responseWriter) Close() {
+//    rwc, buf, _ := c.ResponseWriter.(http.Hijacker).Hijack()
+//    if buf != nil {
+//        buf.Flush()
+//    }
+//
+//    if rwc != nil {
+//        rwc.Close()
+//    }
+//}
