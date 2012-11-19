@@ -15,7 +15,7 @@ func (self WebServiceContainer) Add(service WebService) {
 	self.services = append(self.services, service)
 }
 
-func (self WebServiceContainer) ServeHTTP(httpWriter *http.ResponseWriter, httpRequest *http.Request) {
+func (self WebServiceContainer) ServeHTTP(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 	for _,each := range self.services {
 		if each.dispatch(httpWriter,httpRequest) {
 			break

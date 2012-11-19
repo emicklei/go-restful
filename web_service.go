@@ -25,7 +25,7 @@ func (self *WebService) Route(builder *RouteBuilder) *WebService {
 	self.routes = append(self.routes, builder.Build())
 	return self
 }
-func (self WebService) dispatch(httpWriter *http.ResponseWriter, httpRequest *http.Request) bool {
+func (self WebService) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) bool {
 	for _, each := range self.routes {
 		if each.dispatch(httpWriter,httpRequest) {
 			return true
