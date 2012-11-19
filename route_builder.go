@@ -2,8 +2,11 @@ package restful
 
 import ()
 
+// RouteBuilder is a helper to construct Routes
+// httpMethod and function are required 
+// Produces,Consumes and currentPath are optional
 type RouteBuilder struct {
-	CurrentPath string
+	currentPath string
 	Produces    string
 	Consumes    string
 
@@ -28,13 +31,13 @@ func (self *RouteBuilder) Accept(accept string) *RouteBuilder {
 	return self
 }
 func (self *RouteBuilder) Path(otherPath string) *RouteBuilder {
-	self.CurrentPath = otherPath
+	self.currentPath = otherPath
 	return self
 }
 func (self *RouteBuilder) Build() Route {
 	route := Route{
 		Method:   self.httpMethod,
-		Path:     self.CurrentPath,
+		Path:     self.currentPath,
 		Produces: self.Produces,
 		Consumes: self.Consumes,
 		Function: self.function}

@@ -5,7 +5,7 @@ import (
 )
 
 type Request struct {
-	Request *http.Request
+	Request        *http.Request
 	pathParameters map[string]string
 }
 

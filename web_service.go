@@ -5,9 +5,7 @@ import (
 )
 
 type Dispatcher interface {
-	// Dispath the request to a matching Route and call its Function.
-	// Return whether the request was handled.
-	Dispatch(request *http.Request) bool
+	Dispatch(http.ResponseWriter,*http.Request) bool
 }
 
 type WebService struct {
@@ -25,9 +23,9 @@ func (self *WebService) Route(builder *RouteBuilder) *WebService {
 	self.routes = append(self.routes, builder.Build())
 	return self
 }
-func (self WebService) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) bool {
+func (self WebService) Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) bool {
 	for _, each := range self.routes {
-		if each.dispatch(httpWriter,httpRequest) {
+		if each.dispatch(httpWriter, httpRequest) {
 			return true
 		}
 	}

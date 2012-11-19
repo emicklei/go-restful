@@ -6,7 +6,7 @@ import (
 
 func TestMatchesPath(t *testing.T) {
 	doMatchesPath("/", 2, "/", true, t)
-	
+
 	params := doMatchesPath("/from/{source}/to/{destination}", 5, "/from/AMS/to/NY", true, t)
 	if params["source"] != "AMS" {
 		t.Errorf("parameter mismatch AMS")
@@ -15,7 +15,7 @@ func TestMatchesPath(t *testing.T) {
 	params = doMatchesPath("{}/from/{source}/", 4, "/from/SOS/", true, t)
 	if params["source"] != "SOS" {
 		t.Errorf("parameter mismatch SOS")
-	}	
+	}
 }
 
 func doMatchesPath(routePath string, size int, urlPath string, shouldMatch bool, t *testing.T) map[string]string {
