@@ -3,6 +3,7 @@ package restful
 import (
 	"net/http"
 	"strings"
+	"log"
 )
 
 // Signature of function that can be bound to a Route
@@ -25,6 +26,7 @@ func (self *Route) postBuild() {
 
 // If the Route matches the request then handle it and return true ; false otherwise
 func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) bool {
+	log.Printf("Route %#v",self)
 	if self.Method != httpRequest.Method {
 		return false
 	}

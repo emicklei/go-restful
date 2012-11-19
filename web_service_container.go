@@ -2,6 +2,7 @@ package restful
 
 import (
 	"net/http"
+	"log"
 )
 
 type Dispatcher interface {
@@ -14,11 +15,12 @@ type WebServiceContainer struct {
 	services []Dispatcher
 }
 
-func (self WebServiceContainer) Add(service Dispatcher) {
+func (self *WebServiceContainer) Add(service Dispatcher) {
 	self.services = append(self.services, service)
 }
 
 func (self WebServiceContainer) Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
+	log.Printf("WebserviceContainer %#v",self)
 	for _, each := range self.services {
 		if each.Dispatch(httpWriter, httpRequest) {
 			break

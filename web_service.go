@@ -2,6 +2,7 @@ package restful
 
 import (
 	"net/http"
+	"log"
 )
 type WebService struct {
 	Root     string
@@ -19,6 +20,7 @@ func (self *WebService) Route(builder *RouteBuilder) *WebService {
 	return self
 }
 func (self WebService) Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) bool {
+	log.Printf("Webservice %#v",self)
 	for _, each := range self.routes {
 		if each.dispatch(httpWriter, httpRequest) {
 			return true
