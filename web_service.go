@@ -3,11 +3,6 @@ package restful
 import (
 	"net/http"
 )
-
-type Dispatcher interface {
-	Dispatch(http.ResponseWriter,*http.Request) bool
-}
-
 type WebService struct {
 	Root     string
 	routes   []Route

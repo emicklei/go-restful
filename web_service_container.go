@@ -4,9 +4,12 @@ import (
 	"net/http"
 )
 
-// WebServiceContainer encapsulates WebService objects
-// for Handling an incoming Http Request by Dispatching it to
-// the first WebService,Route combination that matches.
+type Dispatcher interface {
+	Dispatch(http.ResponseWriter,*http.Request) bool
+}
+
+// WebServiceContainer hold a collection of Dispatcher implementations
+// Dispatching is the process of delegating a Http request to a Route function 
 type WebServiceContainer struct {
 	services []Dispatcher
 }

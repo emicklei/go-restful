@@ -1,7 +1,7 @@
 go-restful
 ==========
 
-library to build REST based Web Services using Google Go
+package for building REST-style Web Services using Google Go
 
 
 REST asks developers to use HTTP methods explicitly and in a way that's consistent with the protocol definition. This basic REST design principle establishes a one-to-one mapping between create, read, update, and delete (CRUD) operations and HTTP methods. According to this mapping:

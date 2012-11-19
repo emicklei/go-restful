@@ -1,5 +1,5 @@
 /*
-go-restful, a library for creating REST-style WebServices  (Work-in-Progress)
+go-restful, a petit package for creating REST-style WebServices without magic. (Work-in-Progress)
 
 Design discussed on http://ernestmicklei.com/2012/11/11/go-restful-api-design/
 
