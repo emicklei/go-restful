@@ -9,21 +9,21 @@ type Dispatcher interface {
 	Dispatch(http.ResponseWriter,*http.Request) bool
 }
 
-// WebServiceContainer hold a collection of Dispatcher implementations
-// Dispatching is the process of delegating a Http request to a Route function 
-type WebServiceContainer struct {
-	services []Dispatcher
+var webServices = []Dispatcher{} 
+
+func Add(service Dispatcher) {
+	webServices = append(webServices, service)
 }
 
-func (self *WebServiceContainer) Add(service Dispatcher) {
-	self.services = append(self.services, service)
-}
-
-func (self WebServiceContainer) Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
-	log.Printf("WebserviceContainer %#v",self)
-	for _, each := range self.services {
+func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
+	for _, each := range webServices {
 		if each.Dispatch(httpWriter, httpRequest) {
 			break
 		}
 	}
+}
+
+func init() {
+	log.Printf("Initializing go-restful\n")
+	http.HandleFunc("/", Dispatch)
 }
