@@ -5,9 +5,14 @@ import (
 )
 
 func TestMatchesPath(t *testing.T) {
+	params := doMatchesPath("/from/{source}", 3, "/from/here", true, t)
+	if params["source"] != "here" {
+		t.Errorf("parameter mismatch here")
+	}
+	
 	doMatchesPath("/", 2, "/", true, t)
 
-	params := doMatchesPath("/from/{source}/to/{destination}", 5, "/from/AMS/to/NY", true, t)
+	params = doMatchesPath("/from/{source}/to/{destination}", 5, "/from/AMS/to/NY", true, t)
 	if params["source"] != "AMS" {
 		t.Errorf("parameter mismatch AMS")
 	}

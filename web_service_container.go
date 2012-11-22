@@ -12,6 +12,7 @@ type Dispatcher interface {
 var webServices = []Dispatcher{} 
 
 func Add(service Dispatcher) {
+	log.Printf("Adding service: %#v\n", service)
 	webServices = append(webServices, service)
 }
 
