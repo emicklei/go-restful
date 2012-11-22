@@ -1,15 +1,15 @@
 package restful
 
 import (
-	"net/http"
 	"log"
+	"net/http"
 )
 
 type Dispatcher interface {
-	Dispatch(http.ResponseWriter,*http.Request) bool
+	Dispatch(http.ResponseWriter, *http.Request) bool
 }
 
-var webServices = []Dispatcher{} 
+var webServices = []Dispatcher{}
 
 func Add(service Dispatcher) {
 	log.Printf("Adding service: %#v\n", service)

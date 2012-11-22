@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 )
+
 type WebService struct {
 	Root     string
 	routes   []Route
@@ -21,7 +22,7 @@ func (self *WebService) Route(builder *RouteBuilder) *WebService {
 }
 func (self WebService) Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) bool {
 	// cheap test before iterating the routes
-	if (strings.HasPrefix(self.Root,httpRequest.URL.Path)) {
+	if strings.HasPrefix(self.Root, httpRequest.URL.Path) {
 		return false
 	}
 	for _, each := range self.routes {
@@ -53,14 +54,17 @@ func (self *WebService) Accept(accept string) *WebService {
 func (self *WebService) GET(subPath string) *RouteBuilder {
 	return new(RouteBuilder).RootPath(self.Root).Method("GET").Path(subPath)
 }
+
 // Shortcut for .Method("POST").Path(subPath)
 func (self *WebService) POST(subPath string) *RouteBuilder {
 	return new(RouteBuilder).RootPath(self.Root).Method("POST").Path(subPath)
 }
+
 // Shortcut for .Method("PUT").Path(subPath)
 func (self *WebService) PUT(subPath string) *RouteBuilder {
 	return new(RouteBuilder).RootPath(self.Root).Method("PUT").Path(subPath)
 }
+
 // Shortcut for .Method("DELETE").Path(subPath)
 func (self *WebService) DELETE(subPath string) *RouteBuilder {
 	return new(RouteBuilder).RootPath(self.Root).Method("DELETE").Path(subPath)

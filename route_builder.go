@@ -12,6 +12,7 @@ type RouteBuilder struct {
 	httpMethod string
 	function   RouteFunction
 }
+
 func (self *RouteBuilder) To(function RouteFunction) *RouteBuilder {
 	self.function = function
 	return self

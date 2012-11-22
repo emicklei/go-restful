@@ -9,7 +9,7 @@ func TestMatchesPath(t *testing.T) {
 	if params["source"] != "here" {
 		t.Errorf("parameter mismatch here")
 	}
-	
+
 	doMatchesPath("/", 2, "/", true, t)
 
 	params = doMatchesPath("/from/{source}/to/{destination}", 5, "/from/AMS/to/NY", true, t)

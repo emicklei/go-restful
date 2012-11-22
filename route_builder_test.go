@@ -1,21 +1,21 @@
 package restful
 
 import (
-    "testing"
+	"testing"
 )
 
 func TestRouteBuilder(t *testing.T) {
-    json := "application/json"
+	json := "application/json"
 	b := new(RouteBuilder)
 	b.Path("/routes").Method("HEAD").Accept(json).ContentType(json)
 	r := b.Build()
-	if (r.Path != "/routes") {
+	if r.Path != "/routes" {
 		t.Error("path invalid")
 	}
-	if (r.Produces != json) {
+	if r.Produces != json {
 		t.Error("produces invalid")
 	}
-	if (r.Consumes != json) {
+	if r.Consumes != json {
 		t.Error("consumes invalid")
 	}
 }

@@ -10,7 +10,7 @@ Example WebService:
 	import (
 	    "github.com/emicklei/go-restful"
 	)
-	
+
 	type LandscapeService struct {
 		restful.WebService
 	}

@@ -1,9 +1,9 @@
 package restful
 
 import (
+	"log"
 	"net/http"
 	"strings"
-	"log"
 )
 
 // Signature of function that can be bound to a Route
@@ -26,7 +26,7 @@ func (self *Route) postBuild() {
 
 // If the Route matches the request then handle it and return true ; false otherwise
 func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) bool {
-	log.Printf("Matching url: %v",httpRequest.URL.Path)
+	log.Printf("Matching url: %v", httpRequest.URL.Path)
 	if self.Method != httpRequest.Method {
 		return false
 	}
@@ -60,17 +60,18 @@ func (self Route) MatchesPath(urlPath string) (bool, map[string]string) {
 	}
 	return true, pathParameters
 }
+
 // If no specific Route path then set to rootPath
 // If no specific Produces then set to rootProduces
 // If no specific Consumes then set to rootConsumes
-func (self Route) copyDefaults(rootPath, rootProduces , rootConsumes string) {
-	if (self.Path == "") {
+func (self Route) copyDefaults(rootPath, rootProduces, rootConsumes string) {
+	if self.Path == "" {
 		self.Path = rootPath
 	}
-	if (self.Produces == "") {
+	if self.Produces == "" {
 		self.Produces = rootProduces
 	}
-	if (self.Consumes == "") {
+	if self.Consumes == "" {
 		self.Consumes = rootConsumes
 	}
 }
