@@ -33,7 +33,7 @@ func (self Response) AddHeader(header string, value string) Response {
 
 // Marshal the value using the representation denoted by the Accept Header (XML or JSON)
 // If no Accept header is specified then return MIME_XML content
-func (self Response) Entity(value interface{}) Response {
+func (self Response) WriteEntity(value interface{}) Response {
 	if strings.Index(self.accept, MIME_JSON) != -1 {
 		self.WriteAsJson(value)
 		return self
