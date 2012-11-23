@@ -16,14 +16,19 @@ Example WebService:
 	}
 	func New() *LandscapeService {
 		ws := new(LandscapeService)
-		ws.Path("/applications").Accept("application/xml").ContentType("application/xml")		
-		ws.Route(ws.Method("GET").Path("/{id}").To(GetApplication))
+		ws.Path("/applications").Accept("application/xml").ContentType("application/xml")
+				
+		ws.Route(ws.GET("/{id}").To(GetApplication))
+		ws.Route(ws.POST("/").To(SaveApplication))
 		return ws
 	}
-	func GetApplication(request *Request, writer http.ResponseWriter) {
+	func GetApplication(request *Request, response *Response) {
 		id := request.PathParameter("id")
 		...
 	}
+	func SaveApplication(request *Request, response *Response) {
+		...
+	}	
 
 Example main:
 
