@@ -14,7 +14,7 @@ var webServices = []Dispatcher{}
 
 // Register a new Dispatcher
 func Add(service Dispatcher) {
-	log.Printf("Adding service: %#v\n", service)
+	log.Printf("restful: adding service: %#v\n", service)
 	webServices = append(webServices, service)
 }
 
@@ -33,6 +33,6 @@ func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 
 // Hook my Dispatch function as the standard Http handler
 func init() {
-	log.Printf("Initializing go-restful\n")
+	log.Printf("restful: initializing\n")
 	http.HandleFunc("/", Dispatch)
 }

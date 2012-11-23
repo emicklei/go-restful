@@ -17,7 +17,7 @@ Example WebService:
 	func New() *LandscapeService {
 		ws := new(LandscapeService)
 		ws.Path("/applications").Accept("application/xml").ContentType("application/xml")
-				
+
 		ws.Route(ws.GET("/{id}").To(GetApplication))
 		ws.Route(ws.POST("/").To(SaveApplication))
 		return ws

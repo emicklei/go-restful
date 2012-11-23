@@ -11,16 +11,22 @@ type WebService struct {
 	Produces string
 	Consumes string
 }
-
+// Specify the root URL path of the WebService.
+// All Routes will be relative to this path.
 func (self *WebService) Path(root string) *WebService {
 	self.RootPath = root
 	return self
 }
+// Create a new Route using the RouteBuilder and add to the ordered list of Routes.
 func (self *WebService) Route(builder *RouteBuilder) *WebService {
 	builder.copyDefaults(self.Produces, self.Consumes)
 	self.routes = append(self.routes, builder.Build())
 	return self
 }
+
+// Dispatch the incoming Http Request to a matching Route.
+// The first matching Route will process the request and write any response.
+// Return the Http Status as the result.
 func (self WebService) Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) int {
 	// cheap test before iterating the routes
 	if !strings.HasPrefix(httpRequest.URL.Path, self.RootPath) {
@@ -36,16 +42,20 @@ func (self WebService) Dispatch(httpWriter http.ResponseWriter, httpRequest *htt
 	return lastStatus
 }
 
+// Create a new RouteBuilder and initialize its http method
 func (self *WebService) Method(httpMethod string) *RouteBuilder {
 	return new(RouteBuilder).RootPath(self.RootPath).Method(httpMethod)
 }
 
-func (self *WebService) ContentType(contentType string) *WebService {
-	self.Produces = contentType
+// Specify that this WebService can produce one or more MIME types.
+func (self *WebService) ContentType(contentTypes ...string) *WebService {
+	self.Produces = strings.Join(contentTypes, ",")
 	return self
 }
-func (self *WebService) Accept(accept string) *WebService {
-	self.Consumes = accept
+
+// Specify that this WebService can consume one or more MIME types.
+func (self *WebService) Accept(accepts ...string) *WebService {
+	self.Consumes = strings.Join(accepts, ",")
 	return self
 }
 

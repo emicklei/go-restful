@@ -6,11 +6,10 @@ import (
 	"strings"
 )
 
-// Signature of function that can be bound to a Route
-//type RouteFunction func(*Request, http.ResponseWriter)
+// Signature of function that can be bound to a Route.
 type RouteFunction func(*Request, *Response)
 
-// Route binds a HTTP Method,Path,Consumes combination to a RouteFunction
+// Route binds a HTTP Method,Path,Consumes combination to a RouteFunction.
 type Route struct {
 	Method   string
 	Produces string // TODO make this a slice
@@ -25,7 +24,8 @@ func (self *Route) postBuild() {
 	self.pathParts = strings.Split(self.Path, "/")
 }
 
-// If the Route matches the request then handle it and return http.StatusOK ; return other appropriate http status values otherwise
+// If the Route matches the request then handle it and return http.StatusOK.
+// Return other appropriate http status values otherwise.
 func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) int {
 	log.Printf("restful: does %v matches Path: %v", httpRequest.URL.Path, self.Path)
 	// the order of matching types are relevant
@@ -36,20 +36,22 @@ func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Re
 	if self.Method != httpRequest.Method {
 		return http.StatusMethodNotAllowed
 	}
-	if !self.matchesAccept(httpRequest.Header.Get("Accept")) {
+	accept := httpRequest.Header.Get("Accept")
+	if !self.matchesAccept(accept) {
 		return http.StatusUnsupportedMediaType
 	}
-	self.Function(&Request{httpRequest, params}, &Response{httpWriter})
+	self.Function(&Request{httpRequest, params}, &Response{httpWriter, accept})
 	return http.StatusOK
 }
 
-func (self Route) matchesAccept(mime string) bool {
-	log.Printf("restful: does %v matches Accept: %v", mime, self.Consumes)
+// Return whether the mimeType matches what this Route can consume.
+func (self Route) matchesAccept(mimeType string) bool {
+	log.Printf("restful: does %v matches Accept: %v", mimeType, self.Consumes)
 	// cheap test first
 	if len(self.Consumes) == 0 || strings.HasPrefix(self.Consumes, "*/*") {
 		return true
 	}
-	parts := strings.Split(mime, ",")
+	parts := strings.Split(mimeType, ",")
 	for _, each := range parts {
 		if strings.HasPrefix(each, self.Consumes) {
 			return true
@@ -58,8 +60,8 @@ func (self Route) matchesAccept(mime string) bool {
 	return false
 }
 
-// Check if the URL path matches the parameterized path of the Route
-// If it does then return a map(s->s) with the values for each path parameter
+// Check if the URL path matches the parameterized path of the Route.
+// If it does then return a map(s->s) with the values for each path parameter.
 func (self Route) matchesPath(urlPath string) (bool, map[string]string) {
 	urlParts := strings.Split(urlPath, "/")
 	if len(self.pathParts) != len(urlParts) {
