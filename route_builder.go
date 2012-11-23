@@ -37,6 +37,19 @@ func (self *RouteBuilder) RootPath(path string) *RouteBuilder {
 	self.rootPath = path
 	return self
 }
+
+// If no specific Route path then set to rootPath
+// If no specific Produces then set to rootProduces
+// If no specific Consumes then set to rootConsumes
+func (self *RouteBuilder) copyDefaults(rootProduces, rootConsumes string) {
+	if self.Produces == "" {
+		self.Produces = rootProduces
+	}
+	if self.Consumes == "" {
+		self.Consumes = rootConsumes
+	}
+}
+
 func (self *RouteBuilder) Build() Route {
 	route := Route{
 		Method:   self.httpMethod,
