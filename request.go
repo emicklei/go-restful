@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -30,7 +29,6 @@ func (self *Request) ReadEntity(entityReference interface{}) error {
 	defer self.Request.Body.Close()
 	buffer, err := ioutil.ReadAll(self.Request.Body)
 	if err == nil && MIME_XML == contentType {
-		log.Printf("unmarschalling:%#v", entityReference)
 		err = xml.Unmarshal(buffer, entityReference)
 	} else {
 		if err == nil && MIME_JSON == contentType {
