@@ -25,11 +25,21 @@ func TestMatchesAcceptConsumeStar(t *testing.T) {
 }
 
 func TestMatchesAcceptXml(t *testing.T) {
-	r := Route{Consumes: "application/xml"}
+	r := Route{Produces: "application/xml"}
 	if r.matchesAccept("application/json") {
 		t.Errorf("accept should not match json")
 	}
 	if !r.matchesAccept("application/xml") {
+		t.Errorf("accept should match xml")
+	}
+}
+
+func TestMatchesContentTypeXml(t *testing.T) {
+	r := Route{Consumes: "application/xml"}
+	if r.matchesContentType("application/json") {
+		t.Errorf("accept should not match json")
+	}
+	if !r.matchesContentType("application/xml") {
 		t.Errorf("accept should match xml")
 	}
 }

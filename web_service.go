@@ -11,12 +11,14 @@ type WebService struct {
 	Produces string
 	Consumes string
 }
+
 // Specify the root URL path of the WebService.
 // All Routes will be relative to this path.
 func (self *WebService) Path(root string) *WebService {
 	self.RootPath = root
 	return self
 }
+
 // Create a new Route using the RouteBuilder and add to the ordered list of Routes.
 func (self *WebService) Route(builder *RouteBuilder) *WebService {
 	builder.copyDefaults(self.Produces, self.Consumes)
@@ -82,3 +84,5 @@ func (self *WebService) PUT(subPath string) *RouteBuilder {
 func (self *WebService) DELETE(subPath string) *RouteBuilder {
 	return new(RouteBuilder).RootPath(self.RootPath).Method("DELETE").Path(subPath)
 }
+
+// func (self *WebService) String() string {}

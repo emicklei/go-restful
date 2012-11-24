@@ -1,7 +1,6 @@
 package restful
 
 import (
-	"log"
 	"net/http"
 	"strings"
 )
@@ -12,8 +11,8 @@ type RouteFunction func(*Request, *Response)
 // Route binds a HTTP Method,Path,Consumes combination to a RouteFunction.
 type Route struct {
 	Method   string
-	Produces string // TODO make this a slice
-	Consumes string // TODO make this a slice
+	Produces string
+	Consumes string
 	Path     string
 	Function RouteFunction
 
@@ -27,7 +26,6 @@ func (self *Route) postBuild() {
 // If the Route matches the request then handle it and return http.StatusOK.
 // Return other appropriate http status values otherwise.
 func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) int {
-	log.Printf("restful: does %v matches Path: %v", httpRequest.URL.Path, self.Path)
 	// the order of matching types are relevant
 	matches, params := self.matchesPath(httpRequest.URL.Path)
 	if !matches {
@@ -36,24 +34,42 @@ func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Re
 	if self.Method != httpRequest.Method {
 		return http.StatusMethodNotAllowed
 	}
-	accept := httpRequest.Header.Get("Accept")
+	accept := httpRequest.Header.Get(HEADER_Accept)
 	if !self.matchesAccept(accept) {
+		return http.StatusUnsupportedMediaType
+	}
+	contentType := httpRequest.Header.Get(HEADER_ContentType)
+	if !self.matchesContentType(contentType) {
 		return http.StatusUnsupportedMediaType
 	}
 	self.Function(&Request{httpRequest, params}, &Response{httpWriter, accept})
 	return http.StatusOK
 }
 
-// Return whether the mimeType matches what this Route can consume.
+// Return whether the mimeType matches what this Route can produce.
 func (self Route) matchesAccept(mimeType string) bool {
-	log.Printf("restful: does %v matches Accept: %v", mimeType, self.Consumes)
+	// cheap test first
+	if len(self.Produces) == 0 || strings.HasPrefix(self.Produces, "*/*") {
+		return true
+	}
+	parts := strings.Split(mimeType, ",")
+	for _, each := range parts {
+		if strings.Index(self.Produces, each) != -1 {
+			return true
+		}
+	}
+	return false
+}
+
+// Return whether the mimeType matches what this Route can consume.
+func (self Route) matchesContentType(mimeType string) bool {
 	// cheap test first
 	if len(self.Consumes) == 0 || strings.HasPrefix(self.Consumes, "*/*") {
 		return true
 	}
 	parts := strings.Split(mimeType, ",")
 	for _, each := range parts {
-		if strings.HasPrefix(each, self.Consumes) {
+		if strings.Index(self.Consumes, each) != -1 {
 			return true
 		}
 	}

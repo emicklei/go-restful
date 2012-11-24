@@ -7,11 +7,6 @@ import (
 	"strings"
 )
 
-const (
-	MIME_XML  = "application/xml"
-	MIME_JSON = "application/json"
-)
-
 // Response is a wrapper on the actual http ResponseWriter
 // It provides several convenience methods to prepare and write response content.
 type Response struct {
@@ -49,7 +44,7 @@ func (self Response) WriteAsXml(value interface{}) Response {
 	if err != nil {
 		self.InternalServerError()
 	} else {
-		self.Header().Set("Content-Type", MIME_XML)
+		self.Header().Set(HEADER_ContentType, MIME_XML)
 		self.Write([]byte(xml.Header))
 		self.Write(output)
 	}
@@ -62,7 +57,7 @@ func (self Response) WriteAsJson(value interface{}) Response {
 	if err != nil {
 		self.InternalServerError()
 	} else {
-		self.Header().Set("Content-Type", MIME_JSON)
+		self.Header().Set(HEADER_ContentType, MIME_JSON)
 		self.Write(output)
 	}
 	return self
