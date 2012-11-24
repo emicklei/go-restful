@@ -14,7 +14,6 @@ var webServices = []Dispatcher{}
 
 // Register a new Dispatcher
 func Add(service Dispatcher) {
-	log.Printf("restful: adding service: %#v\n", service)
 	webServices = append(webServices, service)
 }
 
