@@ -1,8 +1,6 @@
 package restful
 
 import (
-	"encoding/xml"
-	"github.com/emicklei/go-restful/wadl"
 	"net/http"
 	"strings"
 )
@@ -63,6 +61,11 @@ func (self *WebService) Consumes(accepts ...string) *WebService {
 	return self
 }
 
+// TODO make routes public?
+func (self *WebService) Routes() []Route {
+	return self.routes
+}
+
 /*
 	Convenience methods
 */
@@ -85,17 +88,4 @@ func (self *WebService) PUT(subPath string) *RouteBuilder {
 // Shortcut for .Method("DELETE").Path(subPath)
 func (self *WebService) DELETE(subPath string) *RouteBuilder {
 	return new(RouteBuilder).RootPath(self.rootPath).Method("DELETE").Path(subPath)
-}
-
-// Return the api in XML
-func (self *WebService) String() string {
-	app := wadl.Application{}
-	for _, each := range self.routes {
-		response := wadl.Response{Representation: wadl.Representation{MediaType: each.Produces}}
-		method := wadl.Method{Name: each.Method, Response: response}
-		resource := wadl.Resource{Path: each.Path, Method: method}
-		app.AddResource(resource)
-	}
-	bytes, _ := xml.MarshalIndent(app, "", " ")
-	return string(bytes)
 }

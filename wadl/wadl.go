@@ -1,7 +1,11 @@
+// Copyright 2012 Ernest Micklei. All rights reserved.
+// Use of this source code is governed by a license 
+// that can be found in the LICENSE file.
+
+// Package wadl implements the structure for representing a REST-style Webservice API in WADL
+// https://wikis.oracle.com/display/Jersey/WADL
 package wadl
-/*
-https://wikis.oracle.com/display/Jersey/WADL
-*/
+
 import (
 	"encoding/xml"
 )
@@ -9,10 +13,15 @@ import (
 type Application struct {
 	XMLName   xml.Name `xml:"application"`
 	Doc       string   `xml:"doc"`
+	Resources Resources
+}
+type Resources struct {
+	XMLName   xml.Name `xml:"resources"`
+	Base      string   `xml:"base,attr"`
 	Resources []Resource
 }
 
-func (self *Application) AddResource(resource Resource) {
+func (self *Resources) AddResource(resource Resource) {
 	self.Resources = append(self.Resources, resource)
 }
 
@@ -25,13 +34,17 @@ type Resource struct {
 type Method struct {
 	XMLName  xml.Name `xml:"method"`
 	Name     string   `xml:"name,attr"`
-//	Id       string   `xml:"id,attr"`
+	Id       string   `xml:"id,attr"`
 	Response Response
 }
 
 type Response struct {
 	XMLName        xml.Name `xml:"response"`
-	Representation Representation
+	Representation []Representation
+}
+
+func (self *Response) AddRepresentation(repres Representation) {
+	self.Representation = append(self.Representation, repres)
 }
 
 type Representation struct {
