@@ -3,7 +3,7 @@ go-restful, a lean package for creating REST-style WebServices without magic.
 
 Design discussed on http://ernestmicklei.com/2012/11/11/go-restful-api-design/
 
- 
+
 Example WebService:
 
 	package landscapeservice

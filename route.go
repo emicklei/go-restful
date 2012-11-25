@@ -31,30 +31,35 @@ func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Re
 	if !matches {
 		return http.StatusNotFound
 	}
-	if self.Method != httpRequest.Method {
+	method := httpRequest.Method
+	if self.Method != method {
 		return http.StatusMethodNotAllowed
 	}
 	accept := httpRequest.Header.Get(HEADER_Accept)
 	if !self.matchesAccept(accept) {
 		return http.StatusUnsupportedMediaType
 	}
-	contentType := httpRequest.Header.Get(HEADER_ContentType)
-	if !self.matchesContentType(contentType) {
-		return http.StatusUnsupportedMediaType
+	// check for POST and PUT only
+	if (method == "POST") || (method == "PUT") {
+		contentType := httpRequest.Header.Get(HEADER_ContentType)
+		if !self.matchesContentType(contentType) {
+			return http.StatusUnsupportedMediaType
+		}
 	}
 	self.Function(&Request{httpRequest, params}, &Response{httpWriter, accept})
 	return http.StatusOK
 }
 
 // Return whether the mimeType matches what this Route can produce.
-func (self Route) matchesAccept(mimeType string) bool {
+func (self Route) matchesAccept(mimeTypesWithQuality string) bool {
 	// cheap test first
 	if len(self.Produces) == 0 || strings.HasPrefix(self.Produces, "*/*") {
 		return true
 	}
-	parts := strings.Split(mimeType, ",")
+	parts := strings.Split(mimeTypesWithQuality, ",")
 	for _, each := range parts {
-		if strings.Index(self.Produces, each) != -1 {
+		withoutQuality := strings.Split(each, ";")[0]
+		if strings.Index(self.Produces, withoutQuality) != -1 {
 			return true
 		}
 	}
