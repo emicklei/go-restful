@@ -1,8 +1,9 @@
 /*
-go-restful, a petit package for creating REST-style WebServices without magic. (Work-in-Progress)
+go-restful, a lean package for creating REST-style WebServices without magic.
 
 Design discussed on http://ernestmicklei.com/2012/11/11/go-restful-api-design/
 
+ 
 Example WebService:
 
 	package landscapeservice
@@ -37,5 +38,8 @@ Example main:
 		log.Fatal(http.ListenAndServe(":8080", nil))	
 	}
 
+An example with explanation: http://ernestmicklei.com/2012/11/24/go-restful-first-working-example/
+
+(c) 2012, http://ernestmicklei.com. MIT License
 */
 package restful
