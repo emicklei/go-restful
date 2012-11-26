@@ -63,6 +63,13 @@ func (self Response) WriteAsJson(value interface{}) Response {
 	return self
 }
 
+// Convenience method for an error status with the actual error
+func (self Response) WriteError(status int, err error) Response {
+	self.WriteHeader(status)
+	self.WriteEntity(err)
+	return self
+}
+
 // Flush and close the underlying ResponseWriter
 // From https://github.com/nharbour/web.go/blob/master/web.go
 //func (self Response) Close() {
