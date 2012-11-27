@@ -9,29 +9,34 @@ import (
 )
 
 type Dispatcher interface {
-	Dispatch(http.ResponseWriter, *http.Request) int
+	Dispatch(http.ResponseWriter, *http.Request)
 	Routes() []Route
+	RootPath() string
 }
 
 // Collection of registered Dispatchers that can handle Http requests
-var webServices = []Dispatcher{}
+var webServices = map[string]Dispatcher{}
 
 // Register a new Dispatcher
 func Add(service Dispatcher) {
-	webServices = append(webServices, service)
+	routedService, present := webServices[service.RootPath()]
+	if present {
+		log.Panicf("restful: conflict with registered service :%v", routedService)
+	}
+	webServices[service.RootPath()] = service
 }
 
-// Dispatch the incoming Http Request to the first registered Dispatcher that handled it
+// Dispatch the incoming Http Request to a matching Dispatcher.
+// A Dispatcher is matched when the request URL path starts with the Dispatcher's root path.
 func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
-	lastStatus := http.StatusNotFound
-	for _, each := range webServices {
-		lastStatus = each.Dispatch(httpWriter, httpRequest)
-		if http.StatusOK == lastStatus {
-			// response has been written
+	requestPath := httpRequest.URL.Path
+	for rootPath, each := range webServices {
+		if requestPath == rootPath || strings.HasPrefix(requestPath, rootPath+"/") {
+			each.Dispatch(httpWriter, httpRequest)
 			return
 		}
 	}
-	httpWriter.WriteHeader(lastStatus)
+	httpWriter.WriteHeader(http.StatusNotFound)
 }
 
 // Hook my Dispatch function as the standard Http handler

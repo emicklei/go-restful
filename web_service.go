@@ -28,20 +28,23 @@ func (self *WebService) Route(builder *RouteBuilder) *WebService {
 
 // Dispatch the incoming Http Request to a matching Route.
 // The first matching Route will process the request and write any response.
-// Return the Http Status as the result.
-func (self WebService) Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) int {
-	// cheap test before iterating the routes
-	if !strings.HasPrefix(httpRequest.URL.Path, self.rootPath) {
-		return http.StatusNotFound
-	}
-	var lastStatus int
+// If no matching route is found then report resource not found.
+func (self WebService) Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
+	// first pass will detect route that actually called its function
 	for _, each := range self.routes {
-		lastStatus = each.dispatch(httpWriter, httpRequest)
-		if http.StatusOK == lastStatus {
-			return lastStatus
+		if each.dispatch(httpWriter, httpRequest) == RouteFunctionCalled {
+			return
 		}
 	}
-	return lastStatus
+	// second pass needed to get correct status
+	for _, each := range self.routes {
+		if httpStatus := each.dispatch(httpWriter, httpRequest); httpStatus != http.StatusNotFound {
+			httpWriter.WriteHeader(httpStatus)
+			return
+		}
+	}
+	// now we know there is no matching path
+	httpWriter.WriteHeader(http.StatusNotFound)
 }
 
 // Create a new RouteBuilder and initialize its http method
@@ -62,8 +65,11 @@ func (self *WebService) Consumes(accepts ...string) *WebService {
 }
 
 // TODO make routes public?
-func (self *WebService) Routes() []Route {
+func (self WebService) Routes() []Route {
 	return self.routes
+}
+func (self WebService) RootPath() string {
+	return self.rootPath
 }
 
 /*

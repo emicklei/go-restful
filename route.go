@@ -1,9 +1,15 @@
+// Copyright 2012 Ernest Micklei. All rights reserved.
+// Use of this source code is governed by a license 
+// that can be found in the LICENSE file.
+
 package restful
 
 import (
 	"net/http"
 	"strings"
 )
+
+const RouteFunctionCalled = 0
 
 // Signature of function that can be bound to a Route.
 type RouteFunction func(*Request, *Response)
@@ -47,7 +53,7 @@ func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Re
 		}
 	}
 	self.Function(&Request{httpRequest, params}, &Response{httpWriter, accept})
-	return http.StatusOK
+	return 0
 }
 
 // Return whether the mimeType matches what this Route can produce.
