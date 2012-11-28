@@ -21,18 +21,21 @@ Example WebService:
 		return ws
 	}
 	func GetApplication(request *Request, response *Response) {
-		id := request.PathParameter("id")
-		env := request.QueryParameter("environment")
+		// id := request.PathParameter("id")
+		// env := request.QueryParameter("environment")
 	}
-	func SaveApplication(request *Request, response *Response) {	    
-	    // response.WriteEntity(anApp) , use Accept header to detect XML/JSON
-		// response.WriterError(http.StatusInternalServerError,err
+	func SaveApplication(request *Request, response *Response) {
+		// response.AddHeader("X-Something","other")
+		// response.WriteEntity(anApp) , use Accept header to detect XML/JSON
+		// response.WriterError(http.StatusInternalServerError,err)
 	}	
 
 Example main:
 
 	func main() {
 		restful.Add(landscapeservice.New())
+		// Show me the WADL spec
+		log.Print(restful.Wadl("http://localhost:8080"))
 		log.Fatal(http.ListenAndServe(":8080", nil))	
 	}
 
