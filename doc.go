@@ -22,10 +22,11 @@ Example WebService:
 	}
 	func GetApplication(request *Request, response *Response) {
 		id := request.PathParameter("id")
-		...
+		env := request.QueryParameter("environment")
 	}
-	func SaveApplication(request *Request, response *Response) {
-		...
+	func SaveApplication(request *Request, response *Response) {	    
+	    // response.WriteEntity(anApp) , use Accept header to detect XML/JSON
+		// response.WriterError(http.StatusInternalServerError,err
 	}	
 
 Example main:
@@ -36,8 +37,11 @@ Example main:
 	}
 
 [project]: https://github.com/emicklei/go-restful
+
 [example]: http://ernestmicklei.com/2012/11/24/go-restful-first-working-example/
+
 [design]:  http://ernestmicklei.com/2012/11/11/go-restful-api-design/
+
 [1st use]: https://github.com/emicklei/landskape
 
 (c) 2012, http://ernestmicklei.com. MIT License
