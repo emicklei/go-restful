@@ -7,7 +7,6 @@ import (
 	"github.com/emicklei/go-restful/wadl"
 	"log"
 	"net/http"
-	"strings"
 )
 
 type Dispatcher interface {
@@ -29,7 +28,8 @@ func Add(service Dispatcher) {
 // Matching algoritm is conform http://jsr311.java.net/nonav/releases/1.1/spec/spec.html
 
 func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
-	match, err := detectDispatcher(httpRequest.URL.Path, webServices)
+	match, finalMatch, err := detectDispatcher(httpRequest.URL.Path, webServices)
+	log.Printf("final match:&v", finalMatch)
 	if err == nil {
 		match.Dispatch(httpWriter, httpRequest)
 	} else {
@@ -49,7 +49,7 @@ func Wadl(base string) string {
 	for _, eachWebService := range webServices {
 		for _, eachRoute := range eachWebService.Routes() {
 			response := wadl.Response{}
-			for _, mimeType := range strings.Split(eachRoute.Produces, ",") {
+			for _, mimeType := range eachRoute.Produces {
 				response.AddRepresentation(wadl.Representation{MediaType: mimeType})
 			}
 			method := wadl.Method{Name: eachRoute.Method, Response: response}

@@ -2,17 +2,16 @@ package restful
 
 import (
 	"net/http"
-	"strings"
 )
 
 type WebService struct {
 	rootPath string
 	routes   []Route
-	produces string
-	consumes string
+	produces []string
+	consumes []string
 }
 
-// Specify the root URL path of the WebService.
+// Specify the root URL template path of the WebService.
 // All Routes will be relative to this path.
 func (self *WebService) Path(root string) *WebService {
 	self.rootPath = root
@@ -54,17 +53,16 @@ func (self *WebService) Method(httpMethod string) *RouteBuilder {
 
 // Specify that this WebService can produce one or more MIME types.
 func (self *WebService) Produces(contentTypes ...string) *WebService {
-	self.produces = strings.Join(contentTypes, ",")
+	self.produces = contentTypes
 	return self
 }
 
 // Specify that this WebService can consume one or more MIME types.
 func (self *WebService) Consumes(accepts ...string) *WebService {
-	self.consumes = strings.Join(accepts, ",")
+	self.consumes = accepts
 	return self
 }
 
-// TODO make routes public?
 func (self WebService) Routes() []Route {
 	return self.routes
 }

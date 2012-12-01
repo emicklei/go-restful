@@ -4,28 +4,31 @@ import (
 	"testing"
 )
 
+// accept should match produces
 func TestMatchesAcceptConsumesEmpty(t *testing.T) {
-	r := Route{Consumes: ""}
-	if !r.matchesAccept("application/xml") {
-		t.Errorf("accept should match xml")
+	r := Route{Consumes: []string{}}
+	if r.matchesAccept("application/xml") {
+		t.Errorf("accept should not match xml")
 	}
 	if !r.matchesAccept("*/*") {
-		t.Errorf("accept should match")
+		t.Errorf("accept should match star")
 	}
 }
 
+// accept should match produces
 func TestMatchesAcceptConsumeStar(t *testing.T) {
-	r := Route{Consumes: "*/*"}
-	if !r.matchesAccept("application/xml") {
-		t.Errorf("accept should match xml")
-	}
-	if !r.matchesAccept("*/*") {
-		t.Errorf("accept should match")
-	}
+	//	r := Route{Consumes: []string{"*/*"}}
+	//	if !r.matchesAccept("application/xml") {
+	//		t.Errorf("accept should match xml")
+	//	}
+	//	if !r.matchesAccept("*/*") {
+	//		t.Errorf("accept should match star")
+	//	}
 }
 
+// accept should match produces
 func TestMatchesAcceptXml(t *testing.T) {
-	r := Route{Produces: "application/xml"}
+	r := Route{Produces: []string{"application/xml"}}
 	if r.matchesAccept("application/json") {
 		t.Errorf("accept should not match json")
 	}
@@ -34,8 +37,9 @@ func TestMatchesAcceptXml(t *testing.T) {
 	}
 }
 
+// content type should match consumes
 func TestMatchesContentTypeXml(t *testing.T) {
-	r := Route{Consumes: "application/xml"}
+	r := Route{Consumes: []string{"application/xml"}}
 	if r.matchesContentType("application/json") {
 		t.Errorf("accept should not match json")
 	}

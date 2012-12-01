@@ -4,6 +4,39 @@ import (
 	"testing"
 )
 
+func TestSelectRoutesSlash(t *testing.T) {
+	ws1 := WebService{rootPath: "/"}
+	ws1.Route(ws1.GET(""))
+	ws1.Route(ws1.GET("/"))
+	ws1.Route(ws1.GET("/u"))
+	ws1.Route(ws1.POST("/u"))
+	ws1.Route(ws1.POST("/u/v"))
+	ws1.Route(ws1.POST("/u/{w}"))
+	ws1.Route(ws1.POST("/u/{w}/z"))
+	routes, err := selectRoutes(ws1, "/u")
+	if err != nil {
+		t.Fatalf("error in selectRoutes:%v", err)
+	}
+	if len(routes) != 2 {
+		t.Fatalf("expected:2, actual:%v", len(routes))
+	}
+}
+func TestSelectRoutesU(t *testing.T) {
+	ws1 := WebService{rootPath: "/u"}
+	ws1.Route(ws1.GET(""))
+	ws1.Route(ws1.GET("/"))
+	ws1.Route(ws1.GET("/v"))
+	ws1.Route(ws1.POST("/{w}"))
+	ws1.Route(ws1.POST("/{w}/z"))
+	routes, err := selectRoutes(ws1, "/v")
+	if err != nil {
+		t.Fatalf("error in selectRoutes:%v", err)
+	}
+	if len(routes) != 1 {
+		t.Fatalf("expected:1, actual:%v", len(routes))
+	}
+}
+
 var tempregexs = []struct {
 	template, regex        string
 	literalCount, varCount int
@@ -18,15 +51,15 @@ func TestTemplateToRegularExpression(t *testing.T) {
 	for i, fixture := range tempregexs {
 		actual, lCount, vCount := templateToRegularExpression(fixture.template)
 		if actual != fixture.regex {
-			t.Logf("regex mismatch, expected:%v , actual:%v, line:%v\n", fixture.regex, actual, i+39)
+			t.Logf("regex mismatch, expected:%v , actual:%v, line:%v\n", fixture.regex, actual, i+11) // 11 = where the data starts
 			ok = false
 		}
 		if lCount != fixture.literalCount {
-			t.Logf("literal count mismatch, expected:%v , actual:%v, line:%v\n", fixture.literalCount, lCount, i+39)
+			t.Logf("literal count mismatch, expected:%v , actual:%v, line:%v\n", fixture.literalCount, lCount, i+11)
 			ok = false
 		}
 		if vCount != fixture.varCount {
-			t.Logf("variable count mismatch, expected:%v , actual:%v, line:%v\n", fixture.varCount, vCount, i+39)
+			t.Logf("variable count mismatch, expected:%v , actual:%v, line:%v\n", fixture.varCount, vCount, i+11)
 			ok = false
 		}
 	}
@@ -36,15 +69,16 @@ func TestTemplateToRegularExpression(t *testing.T) {
 }
 
 var paths = []struct {
-	// url with path is handled by service with root
-	path, root string
+	// url with path is handled by service with root and last capturing group has value final
+	path, root, final string
 }{
-	{"/", "/"},
-	{"/p/x", "/p/{q}"},
-	{"/q/x", "/q"},
-	{"/p/x/", "/p/{q}"},
-	{"/p/x/y", "/p/{q}"},
-	{"/q/x/y", "/q"},
+	{"/", "/", "/"},
+	{"/p", "/p", ""},
+	{"/p/x", "/p/{q}", ""},
+	{"/q/x", "/q", "/x"},
+	{"/p/x/", "/p/{q}", "/"},
+	{"/p/x/y", "/p/{q}", "/y"},
+	{"/q/x/y", "/q", "/x/y"},
 }
 
 func TestDetectDispatcher(t *testing.T) {
@@ -57,14 +91,18 @@ func TestDetectDispatcher(t *testing.T) {
 	var dispatchers = []Dispatcher{ws1, ws2, ws3, ws4, ws5, ws6}
 
 	ok := true
-	for _, fixture := range paths {
-		who, err := detectDispatcher(fixture.path, dispatchers)
+	for i, fixture := range paths {
+		who, final, err := detectDispatcher(fixture.path, dispatchers)
 		if err != nil {
 			t.Logf("error in detection:%v", err)
 			ok = false
 		}
 		if who.RootPath() != fixture.root {
-			t.Logf("Unexpected dispatcher, expected:%v, actual:%v", fixture.root, who.RootPath())
+			t.Logf("[line:%v] Unexpected dispatcher, expected:%v, actual:%v", i, fixture.root, who.RootPath())
+			ok = false
+		}
+		if final != fixture.final {
+			t.Logf("[line:%v] Unexpected final, expected:%v, actual:%v", i, fixture.final, final)
 			ok = false
 		}
 	}

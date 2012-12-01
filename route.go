@@ -17,12 +17,13 @@ type RouteFunction func(*Request, *Response)
 // Route binds a HTTP Method,Path,Consumes combination to a RouteFunction.
 type Route struct {
 	Method   string
-	Produces string
-	Consumes string
+	Produces []string
+	Consumes []string
 	Path     string
 	Function RouteFunction
 
-	pathParts []string
+	relativePath string
+	pathParts    []string
 }
 
 func (self *Route) postBuild() {
@@ -58,30 +59,29 @@ func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Re
 
 // Return whether the mimeType matches what this Route can produce.
 func (self Route) matchesAccept(mimeTypesWithQuality string) bool {
-	// cheap test first
-	if len(self.Produces) == 0 || strings.HasPrefix(self.Produces, "*/*") {
-		return true
-	}
 	parts := strings.Split(mimeTypesWithQuality, ",")
 	for _, each := range parts {
 		withoutQuality := strings.Split(each, ";")[0]
-		if strings.Index(self.Produces, withoutQuality) != -1 {
+		if withoutQuality == "*/*" {
 			return true
+		}
+		for _, other := range self.Produces {
+			if other == withoutQuality {
+				return true
+			}
 		}
 	}
 	return false
 }
 
 // Return whether the mimeType matches what this Route can consume.
-func (self Route) matchesContentType(mimeType string) bool {
-	// cheap test first
-	if len(self.Consumes) == 0 || strings.HasPrefix(self.Consumes, "*/*") {
-		return true
-	}
-	parts := strings.Split(mimeType, ",")
+func (self Route) matchesContentType(mimeTypes string) bool {
+	parts := strings.Split(mimeTypes, ",")
 	for _, each := range parts {
-		if strings.Index(self.Consumes, each) != -1 {
-			return true
+		for _, other := range self.Consumes {
+			if other == "*/*" || other == each {
+				return true
+			}
 		}
 	}
 	return false

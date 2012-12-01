@@ -12,10 +12,10 @@ func TestRouteBuilder(t *testing.T) {
 	if r.Path != "/routes" {
 		t.Error("path invalid")
 	}
-	if r.Produces != json {
+	if r.Produces[0] != json {
 		t.Error("produces invalid")
 	}
-	if r.Consumes != json {
+	if r.Consumes[0] != json {
 		t.Error("consumes invalid")
 	}
 }

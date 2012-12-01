@@ -6,8 +6,8 @@ package restful
 type RouteBuilder struct {
 	rootPath    string
 	currentPath string
-	Produces    string
-	Consumes    string
+	Produces    []string
+	Consumes    []string
 
 	httpMethod string
 	function   RouteFunction
@@ -21,12 +21,12 @@ func (self *RouteBuilder) Method(method string) *RouteBuilder {
 	self.httpMethod = method
 	return self
 }
-func (self *RouteBuilder) ContentType(contentType string) *RouteBuilder {
-	self.Produces = contentType
+func (self *RouteBuilder) ContentType(contentTypes ...string) *RouteBuilder {
+	self.Produces = contentTypes
 	return self
 }
-func (self *RouteBuilder) Accept(accept string) *RouteBuilder {
-	self.Consumes = accept
+func (self *RouteBuilder) Accept(accepts ...string) *RouteBuilder {
+	self.Consumes = accepts
 	return self
 }
 func (self *RouteBuilder) Path(subPath string) *RouteBuilder {
@@ -41,22 +41,23 @@ func (self *RouteBuilder) RootPath(path string) *RouteBuilder {
 // If no specific Route path then set to rootPath
 // If no specific Produces then set to rootProduces
 // If no specific Consumes then set to rootConsumes
-func (self *RouteBuilder) copyDefaults(rootProduces, rootConsumes string) {
-	if self.Produces == "" {
+func (self *RouteBuilder) copyDefaults(rootProduces, rootConsumes []string) {
+	if len(self.Produces) == 0 {
 		self.Produces = rootProduces
 	}
-	if self.Consumes == "" {
+	if len(self.Consumes) == 0 {
 		self.Consumes = rootConsumes
 	}
 }
 
 func (self *RouteBuilder) Build() Route {
 	route := Route{
-		Method:   self.httpMethod,
-		Path:     self.rootPath + self.currentPath,
-		Produces: self.Produces,
-		Consumes: self.Consumes,
-		Function: self.function}
+		Method:       self.httpMethod,
+		Path:         self.rootPath + self.currentPath,
+		Produces:     self.Produces,
+		Consumes:     self.Consumes,
+		Function:     self.function,
+		relativePath: self.currentPath}
 	route.postBuild()
 	return route
 }
