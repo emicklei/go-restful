@@ -18,30 +18,23 @@ type Dispatcher interface {
 }
 
 // Collection of registered Dispatchers that can handle Http requests
-var webServices = map[string]Dispatcher{}
+var webServices = []Dispatcher{}
 
 // Register a new Dispatcher
 func Add(service Dispatcher) {
-	routedService, present := webServices[service.RootPath()]
-	if present {
-		log.Panicf("restful: conflict with registered service :%v", routedService)
-	}
-	webServices[service.RootPath()] = service
+	webServices = append(webServices, service)
 }
 
 // Dispatch the incoming Http Request to a matching Dispatcher.
-// A Dispatcher is matched when the request URL path starts with the Dispatcher's root path.
-// http://jsr311.java.net/nonav/releases/1.1/spec/spec.html
+// Matching algoritm is conform http://jsr311.java.net/nonav/releases/1.1/spec/spec.html
 
 func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
-	requestPath := httpRequest.URL.Path
-	for rootPath, each := range webServices {
-		if requestPath == rootPath || strings.HasPrefix(requestPath, rootPath+"/") {
-			each.Dispatch(httpWriter, httpRequest)
-			return
-		}
+	match, err := detectDispatcher(httpRequest.URL.Path, webServices)
+	if err == nil {
+		match.Dispatch(httpWriter, httpRequest)
+	} else {
+		httpWriter.WriteHeader(http.StatusNotFound)
 	}
-	httpWriter.WriteHeader(http.StatusNotFound)
 }
 
 // Hook my Dispatch function as the standard Http handler
