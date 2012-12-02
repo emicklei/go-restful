@@ -36,11 +36,22 @@ type Method struct {
 	Name     string   `xml:"name,attr"`
 	Id       string   `xml:"id,attr"`
 	Response Response
+	Request  Request
+	Doc      string `xml:"doc"`
+}
+
+type Request struct {
+	XMLName        xml.Name `xml:"request"`
+	Representation []Representation
 }
 
 type Response struct {
 	XMLName        xml.Name `xml:"response"`
 	Representation []Representation
+}
+
+func (self *Request) AddRepresentation(repres Representation) {
+	self.Representation = append(self.Representation, repres)
 }
 
 func (self *Response) AddRepresentation(repres Representation) {

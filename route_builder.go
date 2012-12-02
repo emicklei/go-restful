@@ -11,6 +11,7 @@ type RouteBuilder struct {
 
 	httpMethod string
 	function   RouteFunction
+	doc        string
 }
 
 func (self *RouteBuilder) To(function RouteFunction) *RouteBuilder {
@@ -37,6 +38,10 @@ func (self *RouteBuilder) RootPath(path string) *RouteBuilder {
 	self.rootPath = path
 	return self
 }
+func (self *RouteBuilder) Doc(documentation string) *RouteBuilder {
+	self.doc = documentation
+	return self
+}
 
 // If no specific Route path then set to rootPath
 // If no specific Produces then set to rootProduces
@@ -57,7 +62,8 @@ func (self *RouteBuilder) Build() Route {
 		Produces:     self.Produces,
 		Consumes:     self.Consumes,
 		Function:     self.function,
-		relativePath: self.currentPath}
+		relativePath: self.currentPath,
+		Doc:          self.doc}
 	route.postBuild()
 	return route
 }

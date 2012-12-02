@@ -14,6 +14,7 @@ type RouteFunction func(*Request, *Response)
 
 // Route binds a HTTP Method,Path,Consumes combination to a RouteFunction.
 type Route struct {
+	Doc      string
 	Method   string
 	Produces []string
 	Consumes []string

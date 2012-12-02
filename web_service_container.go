@@ -53,7 +53,11 @@ func Wadl(base string) string {
 			for _, mimeType := range eachRoute.Produces {
 				response.AddRepresentation(wadl.Representation{MediaType: mimeType})
 			}
-			method := wadl.Method{Name: eachRoute.Method, Response: response}
+			request := wadl.Request{}
+			for _, mimeType := range eachRoute.Consumes {
+				request.AddRepresentation(wadl.Representation{MediaType: mimeType})
+			}
+			method := wadl.Method{Name: eachRoute.Method, Response: response, Request: request, Doc: eachRoute.Doc}
 			resource := wadl.Resource{Path: eachRoute.Path, Method: method}
 			resources.AddResource(resource)
 		}
