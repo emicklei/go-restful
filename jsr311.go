@@ -7,15 +7,62 @@ import (
 	"bytes"
 	"errors"
 	"log"
+	"net/http"
 	"regexp"
 	"sort"
 	"strings"
 )
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
-func selectRoutes(dispatcher Dispatcher, final string) ([]Route, error) {
+func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *http.Request) Route {
+	// http method
+	methodOk := []Route{}
+	for _, each := range routes {
+		if httpRequest.Method == each.Method {
+			methodOk = append(methodOk, each)
+		}
+	}
+	if len(methodOk) == 0 {
+		httpWriter.WriteHeader(http.StatusMethodNotAllowed)
+		return Route{}
+	}
+	inputMediaOk := methodOk
+	// content-type
+	contentType := httpRequest.Header.Get(HEADER_ContentType)
+	if httpRequest.ContentLength > 0 {
+		inputMediaOk = []Route{}
+		for _, each := range methodOk {
+			if each.matchesContentType(contentType) {
+				inputMediaOk = append(inputMediaOk, each)
+			}
+		}
+		if len(inputMediaOk) == 0 {
+			httpWriter.WriteHeader(http.StatusUnsupportedMediaType)
+			return Route{}
+		}
+	}
+	// accept
+	outputMediaOk := []Route{}
+	accept := httpRequest.Header.Get(HEADER_Accept)
+	for _, each := range inputMediaOk {
+		if each.matchesAccept(accept) {
+			outputMediaOk = append(outputMediaOk, each)
+		}
+	}
+	if len(outputMediaOk) == 0 {
+		httpWriter.WriteHeader(http.StatusNotAcceptable)
+		return Route{}
+	}
+	return bestMatchByMedia(outputMediaOk, contentType, accept)
+}
+func bestMatchByMedia(routes []Route, contentType string, accept string) Route {
+	return routes[0]
+}
+
+// http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
+func selectRoutes(dispatcher Dispatcher, final string) []Route {
 	if final == "" || final == "/" {
-		return dispatcher.Routes(), nil
+		return dispatcher.Routes()
 	}
 	filtered := sortableRouteCandidates{}
 	for _, each := range dispatcher.Routes() {
@@ -35,7 +82,7 @@ func selectRoutes(dispatcher Dispatcher, final string) ([]Route, error) {
 		}
 	}
 	if len(filtered.candidates) == 0 {
-		return []Route{}, errors.New("not found")
+		return []Route{}
 	}
 	sort.Sort(filtered)
 	rmatch := filtered.candidates[0].regexpression
@@ -46,7 +93,7 @@ func selectRoutes(dispatcher Dispatcher, final string) ([]Route, error) {
 			matchingRoutes = append(matchingRoutes, each.route)
 		}
 	}
-	return matchingRoutes, nil
+	return matchingRoutes
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
@@ -94,7 +141,10 @@ func templateToRegularExpression(template string) (expression string, literalCou
 	return strings.TrimRight(buffer.String(), "/") + "(/.*)?", literalCount, varCount
 }
 
-// TODO refactor candidate structure
+type functionCandidate struct {
+	route Route
+}
+
 type routeCandidate struct {
 	route           Route
 	regexpression   string

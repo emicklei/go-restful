@@ -1,8 +1,6 @@
 package restful
 
-import (
-	"net/http"
-)
+import ()
 
 type WebService struct {
 	rootPath string
@@ -23,27 +21,6 @@ func (self *WebService) Route(builder *RouteBuilder) *WebService {
 	builder.copyDefaults(self.produces, self.consumes)
 	self.routes = append(self.routes, builder.Build())
 	return self
-}
-
-// Dispatch the incoming Http Request to a matching Route.
-// The first matching Route will process the request and write any response.
-// If no matching route is found then report resource not found.
-func (self WebService) Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
-	// first pass will detect route that actually called its function
-	for _, each := range self.routes {
-		if each.dispatch(httpWriter, httpRequest) == RouteFunctionCalled {
-			return
-		}
-	}
-	// second pass needed to get correct status
-	for _, each := range self.routes {
-		if httpStatus := each.dispatch(httpWriter, httpRequest); httpStatus != http.StatusNotFound {
-			httpWriter.WriteHeader(httpStatus)
-			return
-		}
-	}
-	// now we know there is no matching path
-	httpWriter.WriteHeader(http.StatusNotFound)
 }
 
 // Create a new RouteBuilder and initialize its http method

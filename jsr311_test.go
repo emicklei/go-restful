@@ -13,10 +13,7 @@ func TestSelectRoutesSlash(t *testing.T) {
 	ws1.Route(ws1.POST("/u/v"))
 	ws1.Route(ws1.POST("/u/{w}"))
 	ws1.Route(ws1.POST("/u/{w}/z"))
-	routes, err := selectRoutes(ws1, "/u")
-	if err != nil {
-		t.Fatalf("error in selectRoutes:%v", err)
-	}
+	routes := selectRoutes(ws1, "/u")
 	if len(routes) != 2 {
 		t.Fatalf("expected:2, actual:%v", len(routes))
 	}
@@ -28,10 +25,7 @@ func TestSelectRoutesU(t *testing.T) {
 	ws1.Route(ws1.GET("/v"))
 	ws1.Route(ws1.POST("/{w}"))
 	ws1.Route(ws1.POST("/{w}/z"))
-	routes, err := selectRoutes(ws1, "/v")
-	if err != nil {
-		t.Fatalf("error in selectRoutes:%v", err)
-	}
+	routes := selectRoutes(ws1, "/v")
 	if len(routes) != 1 {
 		t.Fatalf("expected:1, actual:%v", len(routes))
 	}

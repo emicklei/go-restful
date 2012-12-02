@@ -10,7 +10,6 @@ import (
 )
 
 type Dispatcher interface {
-	Dispatch(http.ResponseWriter, *http.Request)
 	Routes() []Route
 	RootPath() string
 	//	rootRegEx
@@ -28,13 +27,13 @@ func Add(service Dispatcher) {
 // Matching algoritm is conform http://jsr311.java.net/nonav/releases/1.1/spec/spec.html
 
 func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
-	match, finalMatch, err := detectDispatcher(httpRequest.URL.Path, webServices)
-	log.Printf("final match:&v", finalMatch)
-	if err == nil {
-		match.Dispatch(httpWriter, httpRequest)
-	} else {
+	dispatcher, finalMatch, err := detectDispatcher(httpRequest.URL.Path, webServices)
+	if err != nil {
 		httpWriter.WriteHeader(http.StatusNotFound)
 	}
+	routes := selectRoutes(dispatcher, finalMatch)
+	route := detectRoute(routes, httpWriter, httpRequest)
+	route.dispatch(httpWriter, httpRequest)
 }
 
 // Hook my Dispatch function as the standard Http handler
