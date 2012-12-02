@@ -44,7 +44,6 @@ func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *ht
 	// accept
 	outputMediaOk := []Route{}
 	accept := httpRequest.Header.Get(HEADER_Accept)
-	print("accept:" + accept)
 	for _, each := range inputMediaOk {
 		if each.matchesAccept(accept) {
 			outputMediaOk = append(outputMediaOk, each)
@@ -56,7 +55,10 @@ func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *ht
 	}
 	return bestMatchByMedia(outputMediaOk, contentType, accept), true
 }
+
+// http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
 func bestMatchByMedia(routes []Route, contentType string, accept string) Route {
+	// TODO
 	return routes[0]
 }
 
