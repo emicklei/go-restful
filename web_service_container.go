@@ -32,8 +32,10 @@ func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 		httpWriter.WriteHeader(http.StatusNotFound)
 	}
 	routes := selectRoutes(dispatcher, finalMatch)
-	route := detectRoute(routes, httpWriter, httpRequest)
-	route.dispatch(httpWriter, httpRequest)
+	route, detected := detectRoute(routes, httpWriter, httpRequest)
+	if detected {
+		route.dispatch(httpWriter, httpRequest)
+	}
 }
 
 // Hook my Dispatch function as the standard Http handler

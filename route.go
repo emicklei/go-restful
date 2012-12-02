@@ -9,8 +9,6 @@ import (
 	"strings"
 )
 
-const RouteFunctionCalled = 0
-
 // Signature of function that can be bound to a Route.
 type RouteFunction func(*Request, *Response)
 

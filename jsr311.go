@@ -14,7 +14,7 @@ import (
 )
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
-func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *http.Request) Route {
+func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *http.Request) (Route, bool) {
 	// http method
 	methodOk := []Route{}
 	for _, each := range routes {
@@ -24,7 +24,7 @@ func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *ht
 	}
 	if len(methodOk) == 0 {
 		httpWriter.WriteHeader(http.StatusMethodNotAllowed)
-		return Route{}
+		return Route{}, false
 	}
 	inputMediaOk := methodOk
 	// content-type
@@ -38,12 +38,13 @@ func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *ht
 		}
 		if len(inputMediaOk) == 0 {
 			httpWriter.WriteHeader(http.StatusUnsupportedMediaType)
-			return Route{}
+			return Route{}, false
 		}
 	}
 	// accept
 	outputMediaOk := []Route{}
 	accept := httpRequest.Header.Get(HEADER_Accept)
+	print("accept:" + accept)
 	for _, each := range inputMediaOk {
 		if each.matchesAccept(accept) {
 			outputMediaOk = append(outputMediaOk, each)
@@ -51,9 +52,9 @@ func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *ht
 	}
 	if len(outputMediaOk) == 0 {
 		httpWriter.WriteHeader(http.StatusNotAcceptable)
-		return Route{}
+		return Route{}, false
 	}
-	return bestMatchByMedia(outputMediaOk, contentType, accept)
+	return bestMatchByMedia(outputMediaOk, contentType, accept), true
 }
 func bestMatchByMedia(routes []Route, contentType string, accept string) Route {
 	return routes[0]
