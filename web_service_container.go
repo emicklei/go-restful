@@ -30,6 +30,7 @@ func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 	dispatcher, finalMatch, err := detectDispatcher(httpRequest.URL.Path, webServices)
 	if err != nil {
 		httpWriter.WriteHeader(http.StatusNotFound)
+		return
 	}
 	routes := selectRoutes(dispatcher, finalMatch)
 	route, detected := detectRoute(routes, httpWriter, httpRequest)
