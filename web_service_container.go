@@ -1,7 +1,5 @@
 package restful
 
-// http://jsr311.java.net/nonav/releases/1.1/spec/spec.html
-
 import (
 	"encoding/xml"
 	"github.com/emicklei/go-restful/wadl"
@@ -24,8 +22,7 @@ func Add(service Dispatcher) {
 }
 
 // Dispatch the incoming Http Request to a matching Dispatcher.
-// Matching algoritm is conform http://jsr311.java.net/nonav/releases/1.1/spec/spec.html
-
+// Matching algorithm is conform http://jsr311.java.net/nonav/releases/1.1/spec/spec.html, see jsr311.go
 func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 	dispatcher, finalMatch, err := detectDispatcher(httpRequest.URL.Path, webServices)
 	if err != nil {

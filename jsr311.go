@@ -101,7 +101,7 @@ func selectRoutes(dispatcher Dispatcher, final string) []Route {
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
 func detectDispatcher(requestPath string, dispatchers []Dispatcher) (Dispatcher, string, error) {
-	filtered := sortableCandidates{}
+	filtered := sortableDispatcherCandidates{}
 	for _, each := range dispatchers {
 		expression, literalCount, varCount := templateToRegularExpression(each.RootPath())
 		compiled, err := regexp.Compile(expression)
@@ -144,9 +144,7 @@ func templateToRegularExpression(template string) (expression string, literalCou
 	return strings.TrimRight(buffer.String(), "/") + "(/.*)?", literalCount, varCount
 }
 
-type functionCandidate struct {
-	route Route
-}
+// Types and functions to support the sorting of Routes
 
 type routeCandidate struct {
 	route           Route
@@ -186,6 +184,8 @@ func (self sortableRouteCandidates) Less(j, i int) bool { // Do reverse so the i
 	return ci.nonDefaultCount < cj.nonDefaultCount
 }
 
+// Types and functions to support the sorting of Dispatchers
+
 type dispatcherCandidate struct {
 	dispatcher      Dispatcher
 	finalMatch      string
@@ -193,17 +193,17 @@ type dispatcherCandidate struct {
 	literalCount    int
 	nonDefaultCount int
 }
-type sortableCandidates struct {
+type sortableDispatcherCandidates struct {
 	candidates []dispatcherCandidate
 }
 
-func (self sortableCandidates) Len() int {
+func (self sortableDispatcherCandidates) Len() int {
 	return len(self.candidates)
 }
-func (self sortableCandidates) Swap(i, j int) {
+func (self sortableDispatcherCandidates) Swap(i, j int) {
 	self.candidates[i], self.candidates[j] = self.candidates[j], self.candidates[i]
 }
-func (self sortableCandidates) Less(j, i int) bool { // Do reverse so the i and j are in this order
+func (self sortableDispatcherCandidates) Less(j, i int) bool { // Do reverse so the i and j are in this order
 	ci := self.candidates[i]
 	cj := self.candidates[j]
 	// primary key
