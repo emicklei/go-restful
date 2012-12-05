@@ -1,6 +1,6 @@
 go fmt ...swagger && \
-go test ...swagger && \
+go test -test.v ...swagger && \
 go install ...swagger && \
 go fmt ...restful && \
-go test ...restful && \
+go test -test.v ...restful && \
 go install ...restful

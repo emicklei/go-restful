@@ -73,6 +73,8 @@ var paths = []struct {
 	{"/p/x/", "/p/{q}", "/"},
 	{"/p/x/y", "/p/{q}", "/y"},
 	{"/q/x/y", "/q", "/x/y"},
+	{"/z/q", "/{p}/q", ""},
+	{"/a/b/c/q", "/", "/a/b/c/q"},
 }
 
 func TestDetectDispatcher(t *testing.T) {
@@ -82,7 +84,8 @@ func TestDetectDispatcher(t *testing.T) {
 	ws4 := WebService{rootPath: "/p/q"}
 	ws5 := WebService{rootPath: "/p/{q}"}
 	ws6 := WebService{rootPath: "/p/{q}/"}
-	var dispatchers = []Dispatcher{ws1, ws2, ws3, ws4, ws5, ws6}
+	ws7 := WebService{rootPath: "/{p}/q"}
+	var dispatchers = []Dispatcher{ws1, ws2, ws3, ws4, ws5, ws6, ws7}
 
 	ok := true
 	for i, fixture := range paths {
@@ -92,11 +95,11 @@ func TestDetectDispatcher(t *testing.T) {
 			ok = false
 		}
 		if who.RootPath() != fixture.root {
-			t.Logf("[line:%v] Unexpected dispatcher, expected:%v, actual:%v", i, fixture.root, who.RootPath())
+			t.Logf("[line:%v] Unexpected dispatcher, expected:%v, actual:%v", i+69, fixture.root, who.RootPath())
 			ok = false
 		}
 		if final != fixture.final {
-			t.Logf("[line:%v] Unexpected final, expected:%v, actual:%v", i, fixture.final, final)
+			t.Logf("[line:%v] Unexpected final, expected:%v, actual:%v", i+69, fixture.final, final)
 			ok = false
 		}
 	}
