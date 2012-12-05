@@ -9,9 +9,9 @@ type RouteBuilder struct {
 	Produces    []string
 	Consumes    []string
 
-	httpMethod string
-	function   RouteFunction
-	doc        string
+	httpMethod              string
+	function                RouteFunction
+	doc                     string
 	readSample, writeSample interface{}
 }
 
@@ -19,6 +19,7 @@ func (self *RouteBuilder) To(function RouteFunction) *RouteBuilder {
 	self.function = function
 	return self
 }
+
 // Alias for To(f) (one of the two will disappear)
 func (self *RouteBuilder) Calls(function RouteFunction) *RouteBuilder {
 	self.function = function
@@ -58,7 +59,6 @@ func (self *RouteBuilder) Writes(sample interface{}) *RouteBuilder {
 	self.writeSample = sample
 	return self
 }
-
 
 // If no specific Route path then set to rootPath
 // If no specific Produces then set to rootProduces

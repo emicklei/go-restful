@@ -1,10 +1,10 @@
+// Copyright (c) 2012 Ernest Micklei. All rights reserved.
+
 package restful
 
 import (
-	"encoding/xml"
-	"github.com/emicklei/go-restful/wadl"
-	"log"
 	"net/http"
+	"strings"
 )
 
 type Dispatcher interface {
@@ -15,10 +15,26 @@ type Dispatcher interface {
 
 // Collection of registered Dispatchers that can handle Http requests
 var webServices = []Dispatcher{}
+var isRegisteredOnRoot = false
 
-// Register a new Dispatcher
+// Register a new Dispatcher add it to the http listeners.
+// Check its root path to see if 
 func Add(service Dispatcher) {
 	webServices = append(webServices, service)
+	path := service.RootPath()
+	if varIndex := strings.Index(path, "{"); varIndex != -1 {
+		// Use the fixed part of the service rootpath
+		path = service.RootPath()[:varIndex]
+	}
+	if path == "/" {
+		// Have to listen to / , but hook only once		
+		if !isRegisteredOnRoot {
+			http.HandleFunc("/", Dispatch)
+			isRegisteredOnRoot = true
+		}
+	} else {
+		http.HandleFunc(path, Dispatch)
+	}
 }
 
 // Dispatch the incoming Http Request to a matching Dispatcher.
@@ -34,33 +50,4 @@ func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 	if detected {
 		route.dispatch(httpWriter, httpRequest)
 	}
-}
-
-// Hook my Dispatch function as the standard Http handler
-func init() {
-	log.Printf("restful: register the Dispatch function to the Default Http handlers.\n")
-	http.HandleFunc("/", Dispatch)
-}
-
-// Return the api in XML
-func Wadl(base string) string {
-	resources := wadl.Resources{Base: base}
-	for _, eachWebService := range webServices {
-		for _, eachRoute := range eachWebService.Routes() {
-			response := wadl.Response{}
-			for _, mimeType := range eachRoute.Produces {
-				response.AddRepresentation(wadl.Representation{MediaType: mimeType})
-			}
-			request := wadl.Request{}
-			for _, mimeType := range eachRoute.Consumes {
-				request.AddRepresentation(wadl.Representation{MediaType: mimeType})
-			}
-			method := wadl.Method{Name: eachRoute.Method, Response: response, Request: request, Doc: eachRoute.Doc}
-			resource := wadl.Resource{Path: eachRoute.Path, Method: method}
-			resources.AddResource(resource)
-		}
-	}
-	app := wadl.Application{Resources: resources}
-	bytes, _ := xml.MarshalIndent(app, "", " ")
-	return string(bytes)
 }
