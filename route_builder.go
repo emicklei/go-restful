@@ -4,11 +4,10 @@ package restful
 // httpMethod and function are required fields 
 // Produces,Consumes, rootPath and currentPath fields are optional
 type RouteBuilder struct {
-	rootPath    string
-	currentPath string
-	Produces    []string
-	Consumes    []string
-
+	rootPath                string
+	currentPath             string
+	produces                []string
+	consumes                []string
 	httpMethod              string
 	function                RouteFunction
 	doc                     string
@@ -20,29 +19,20 @@ func (self *RouteBuilder) To(function RouteFunction) *RouteBuilder {
 	return self
 }
 
-// Alias for To(f) (one of the two will disappear)
-func (self *RouteBuilder) Calls(function RouteFunction) *RouteBuilder {
-	self.function = function
-	return self
-}
 func (self *RouteBuilder) Method(method string) *RouteBuilder {
 	self.httpMethod = method
 	return self
 }
-func (self *RouteBuilder) ContentType(contentTypes ...string) *RouteBuilder {
-	self.Produces = contentTypes
+func (self *RouteBuilder) Produces(mimeTypes ...string) *RouteBuilder {
+	self.produces = mimeTypes
 	return self
 }
-func (self *RouteBuilder) Accept(accepts ...string) *RouteBuilder {
-	self.Consumes = accepts
+func (self *RouteBuilder) Consumes(mimeTypes ...string) *RouteBuilder {
+	self.consumes = mimeTypes
 	return self
 }
 func (self *RouteBuilder) Path(subPath string) *RouteBuilder {
 	self.currentPath = subPath
-	return self
-}
-func (self *RouteBuilder) RootPath(path string) *RouteBuilder {
-	self.rootPath = path
 	return self
 }
 func (self *RouteBuilder) Doc(documentation string) *RouteBuilder {
@@ -60,15 +50,28 @@ func (self *RouteBuilder) Writes(sample interface{}) *RouteBuilder {
 	return self
 }
 
+func (self *RouteBuilder) QueryParam(name, comment string) *RouteBuilder {
+	return self
+}
+
+func (self *RouteBuilder) PathParam(name, comment string) *RouteBuilder {
+	return self
+}
+
+func (self *RouteBuilder) servicePath(path string) *RouteBuilder {
+	self.rootPath = path
+	return self
+}
+
 // If no specific Route path then set to rootPath
 // If no specific Produces then set to rootProduces
 // If no specific Consumes then set to rootConsumes
 func (self *RouteBuilder) copyDefaults(rootProduces, rootConsumes []string) {
-	if len(self.Produces) == 0 {
-		self.Produces = rootProduces
+	if len(self.produces) == 0 {
+		self.produces = rootProduces
 	}
-	if len(self.Consumes) == 0 {
-		self.Consumes = rootConsumes
+	if len(self.consumes) == 0 {
+		self.consumes = rootConsumes
 	}
 }
 
@@ -76,8 +79,8 @@ func (self *RouteBuilder) Build() Route {
 	route := Route{
 		Method:       self.httpMethod,
 		Path:         self.rootPath + self.currentPath,
-		Produces:     self.Produces,
-		Consumes:     self.Consumes,
+		Produces:     self.produces,
+		Consumes:     self.consumes,
 		Function:     self.function,
 		relativePath: self.currentPath,
 		Doc:          self.doc}

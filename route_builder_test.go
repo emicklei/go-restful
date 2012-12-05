@@ -7,7 +7,7 @@ import (
 func TestRouteBuilder(t *testing.T) {
 	json := "application/json"
 	b := new(RouteBuilder)
-	b.Path("/routes").Method("HEAD").Accept(json).ContentType(json)
+	b.Path("/routes").Method("HEAD").Consumes(json).Produces(json)
 	r := b.Build()
 	if r.Path != "/routes" {
 		t.Error("path invalid")

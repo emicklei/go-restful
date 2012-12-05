@@ -25,7 +25,7 @@ func (self *WebService) Route(builder *RouteBuilder) *WebService {
 
 // Create a new RouteBuilder and initialize its http method
 func (self *WebService) Method(httpMethod string) *RouteBuilder {
-	return new(RouteBuilder).RootPath(self.rootPath).Method(httpMethod)
+	return new(RouteBuilder).servicePath(self.rootPath).Method(httpMethod)
 }
 
 // Specify that this WebService can produce one or more MIME types.
@@ -53,20 +53,20 @@ func (self WebService) RootPath() string {
 
 // Shortcut for .Method("GET").Path(subPath)
 func (self *WebService) GET(subPath string) *RouteBuilder {
-	return new(RouteBuilder).RootPath(self.rootPath).Method("GET").Path(subPath)
+	return new(RouteBuilder).servicePath(self.rootPath).Method("GET").Path(subPath)
 }
 
 // Shortcut for .Method("POST").Path(subPath)
 func (self *WebService) POST(subPath string) *RouteBuilder {
-	return new(RouteBuilder).RootPath(self.rootPath).Method("POST").Path(subPath)
+	return new(RouteBuilder).servicePath(self.rootPath).Method("POST").Path(subPath)
 }
 
 // Shortcut for .Method("PUT").Path(subPath)
 func (self *WebService) PUT(subPath string) *RouteBuilder {
-	return new(RouteBuilder).RootPath(self.rootPath).Method("PUT").Path(subPath)
+	return new(RouteBuilder).servicePath(self.rootPath).Method("PUT").Path(subPath)
 }
 
 // Shortcut for .Method("DELETE").Path(subPath)
 func (self *WebService) DELETE(subPath string) *RouteBuilder {
-	return new(RouteBuilder).RootPath(self.rootPath).Method("DELETE").Path(subPath)
+	return new(RouteBuilder).servicePath(self.rootPath).Method("DELETE").Path(subPath)
 }
