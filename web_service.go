@@ -16,6 +16,12 @@ func (self *WebService) Path(root string) *WebService {
 	return self
 }
 
+// Document the Path Parameter used in my Root
+func (self *WebService) PathParam(name, documentation string) *WebService {
+	// TODO
+	return self
+}
+
 // Create a new Route using the RouteBuilder and add to the ordered list of Routes.
 func (self *WebService) Route(builder *RouteBuilder) *WebService {
 	builder.copyDefaults(self.produces, self.consumes)
