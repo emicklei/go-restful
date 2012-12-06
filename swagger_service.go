@@ -9,30 +9,30 @@ type swaggerService struct {
 	basePath string
 }
 
-var apiService = new(swaggerService)
+var webServicesBasePath string
+var swaggerServiceApiPath string
 
 // Return the WebService that provides the API documentation of all services
-// using the Swagger documentation specifcation. (https://github.com/wordnik/swagger-core/wiki)
-// The JSON documentation is available on /api/api-docs.json
-func SwaggerService() *swaggerService {
-	return apiService
-}
+// conform the Swagger documentation specifcation. (https://github.com/wordnik/swagger-core/wiki).
+// The services are defined relative to @basePath, e.g. http://myservice:8989 .
+// The JSON documentation is available on @apiPath, e.g. /api-docs.json
+func NewSwaggerService(basePath, apiPath string) *WebService {
+	webServicesBasePath = basePath
+	swaggerServiceApiPath = apiPath
 
-// Set the Http base path of all restful WebServices (http://some.domain)
-func SwaggerBasePath(basePath string) {
-	apiService.basePath = basePath
-}
-
-func init() {
-	apiService.Path("/api").Produces(MIME_JSON)
-	apiService.Route(apiService.GET("/api-docs.json").To(getListing))
-	apiService.Route(apiService.GET("/api-docs.json/{rootPath}").To(getDeclarations))
+	ws := new(WebService)
+	ws.Path(apiPath)
+	ws.Produces(MIME_JSON)
+	ws.Route(ws.GET("/").To(getListing))
+	ws.Route(ws.GET("/{rootPath}").To(getDeclarations))
+	return ws
 }
 
 func getListing(req *Request, resp *Response) {
-	listing := swagger.ResourceListing{SwaggerVersion: "1.1", BasePath: apiService.basePath}
+	listing := swagger.ResourceListing{SwaggerVersion: "1.1", BasePath: webServicesBasePath}
 	for _, each := range webServices {
-		if each != apiService {
+		// skip the api service itself
+		if each.RootPath() != swaggerServiceApiPath {
 			api := swagger.Api{Path: each.RootPath()} // url encode , Description: each.Doc}
 			listing.Apis = append(listing.Apis, api)
 		}

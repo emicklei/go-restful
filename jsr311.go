@@ -118,15 +118,14 @@ func detectDispatcher(requestPath string, dispatchers []Dispatcher) (Dispatcher,
 	if len(filtered.candidates) == 0 {
 		return nil, "", errors.New("not found")
 	}
-	log.Printf("----- before sort:%v", filtered.candidates)
 	sort.Sort(filtered)
-	log.Printf("----- after sort:%v", filtered.candidates)
 	return filtered.candidates[0].dispatcher, filtered.candidates[0].finalMatch, nil
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-370003.7.3
 func templateToRegularExpression(template string) (expression string, literalCount int, varCount int) {
 	var buffer bytes.Buffer
+	buffer.WriteString("^")
 	tokens := strings.Split(template, "/")
 	for _, each := range tokens {
 		if each == "" {
@@ -143,7 +142,7 @@ func templateToRegularExpression(template string) (expression string, literalCou
 			buffer.WriteString(regexp.QuoteMeta(encoded))
 		}
 	}
-	return strings.TrimRight(buffer.String(), "/") + "(/.*)?", literalCount, varCount
+	return strings.TrimRight(buffer.String(), "/") + "(/.*)?$", literalCount, varCount
 }
 
 // Types and functions to support the sorting of Routes

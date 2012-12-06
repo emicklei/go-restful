@@ -25,8 +25,9 @@ type Route struct {
 	pathParts    []string
 }
 
+// Initialize for Route
 func (self *Route) postBuild() {
-	self.pathParts = strings.Split(self.Path, "/")
+	self.pathParts = tokenizePath(self.Path)
 }
 
 // Extract any path parameters from the the request URL path and call the function
@@ -36,7 +37,7 @@ func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Re
 	self.Function(&Request{httpRequest, params}, &Response{httpWriter, accept})
 }
 
-// Return whether the mimeType matches what this Route can produce.
+// Return whether the mimeType matches to what this Route can produce.
 func (self Route) matchesAccept(mimeTypesWithQuality string) bool {
 	parts := strings.Split(mimeTypesWithQuality, ",")
 	for _, each := range parts {
@@ -53,7 +54,7 @@ func (self Route) matchesAccept(mimeTypesWithQuality string) bool {
 	return false
 }
 
-// Return whether the mimeType matches what this Route can consume.
+// Return whether the mimeType matches to what this Route can consume.
 func (self Route) matchesContentType(mimeTypes string) bool {
 	parts := strings.Split(mimeTypes, ",")
 	for _, each := range parts {
@@ -66,9 +67,9 @@ func (self Route) matchesContentType(mimeTypes string) bool {
 	return false
 }
 
-// Extract the parameters from the urlPath
+// Extract the parameters from the request url path
 func (self Route) extractParameters(urlPath string) map[string]string {
-	urlParts := strings.Split(urlPath, "/")
+	urlParts := tokenizePath(urlPath)
 	pathParameters := map[string]string{}
 	for i, key := range self.pathParts {
 		value := urlParts[i]
@@ -77,4 +78,12 @@ func (self Route) extractParameters(urlPath string) map[string]string {
 		}
 	}
 	return pathParameters
+}
+
+// Tokenize an URL path using the slash separator ; the result does not have empty tokens
+func tokenizePath(path string) []string {
+	if "/" == path {
+		return []string{}
+	}
+	return strings.Split(strings.Trim(path, "/"), "/")
 }

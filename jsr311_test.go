@@ -35,10 +35,10 @@ var tempregexs = []struct {
 	template, regex        string
 	literalCount, varCount int
 }{
-	{"", "(/.*)?", 0, 0},
-	{"/a/{b}/c/", "/a/([^/]+?)/c(/.*)?", 2, 1},
-	{"/{a}/{b}/{c-d-e}/", "/([^/]+?)/([^/]+?)/([^/]+?)(/.*)?", 0, 3},
-	{"/{p}/q", "/([^/]+?)/q(/.*)?", 1, 1},
+	{"", "^(/.*)?$", 0, 0},
+	{"/a/{b}/c/", "^/a/([^/]+?)/c(/.*)?$", 2, 1},
+	{"/{a}/{b}/{c-d-e}/", "^/([^/]+?)/([^/]+?)/([^/]+?)(/.*)?$", 0, 3},
+	{"/{p}/q", "^/([^/]+?)/q(/.*)?$", 1, 1},
 }
 
 func TestTemplateToRegularExpression(t *testing.T) {
@@ -46,15 +46,15 @@ func TestTemplateToRegularExpression(t *testing.T) {
 	for i, fixture := range tempregexs {
 		actual, lCount, vCount := templateToRegularExpression(fixture.template)
 		if actual != fixture.regex {
-			t.Logf("regex mismatch, expected:%v , actual:%v, line:%v\n", fixture.regex, actual, i+11) // 11 = where the data starts
+			t.Logf("regex mismatch, expected:%v , actual:%v, line:%v\n", fixture.regex, actual, i) // 11 = where the data starts
 			ok = false
 		}
 		if lCount != fixture.literalCount {
-			t.Logf("literal count mismatch, expected:%v , actual:%v, line:%v\n", fixture.literalCount, lCount, i+11)
+			t.Logf("literal count mismatch, expected:%v , actual:%v, line:%v\n", fixture.literalCount, lCount, i)
 			ok = false
 		}
 		if vCount != fixture.varCount {
-			t.Logf("variable count mismatch, expected:%v , actual:%v, line:%v\n", fixture.varCount, vCount, i+11)
+			t.Logf("variable count mismatch, expected:%v , actual:%v, line:%v\n", fixture.varCount, vCount, i)
 			ok = false
 		}
 	}
@@ -67,14 +67,14 @@ var paths = []struct {
 	// url with path is handled by service with root and last capturing group has value final
 	path, root, final string
 }{
-	//	{"/", "/", "/"},
-	//	{"/p", "/p", ""},
-	//	{"/p/x", "/p/{q}", ""},
-	//	{"/q/x", "/q", "/x"},
-	//	{"/p/x/", "/p/{q}", "/"},
-	//	{"/p/x/y", "/p/{q}", "/y"},
-	//	{"/q/x/y", "/q", "/x/y"},
-	//	{"/z/q", "/{p}/q", ""},
+	{"/", "/", "/"},
+	{"/p", "/p", ""},
+	{"/p/x", "/p/{q}", ""},
+	{"/q/x", "/q", "/x"},
+	{"/p/x/", "/p/{q}", "/"},
+	{"/p/x/y", "/p/{q}", "/y"},
+	{"/q/x/y", "/q", "/x/y"},
+	{"/z/q", "/{p}/q", ""},
 	{"/a/b/c/q", "/", "/a/b/c/q"},
 }
 

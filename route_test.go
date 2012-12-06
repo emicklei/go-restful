@@ -34,25 +34,44 @@ func TestMatchesContentTypeXml(t *testing.T) {
 	}
 }
 
-func TestMatchesPath(t *testing.T) {
-	params := doExtractParams("/from/{source}", 3, "/from/here", t)
+func TestMatchesPath_OneParam(t *testing.T) {
+	params := doExtractParams("/from/{source}", 2, "/from/here", t)
 	if params["source"] != "here" {
 		t.Errorf("parameter mismatch here")
 	}
+}
 
-	params = doExtractParams("/", 2, "/", t)
+func TestMatchesPath_Slash(t *testing.T) {
+	params := doExtractParams("/", 0, "/", t)
 	if len(params) != 0 {
 		t.Errorf("expected empty parameters")
 	}
+}
 
-	params = doExtractParams("/from/{source}/to/{destination}", 5, "/from/AMS/to/NY", t)
+func TestMatchesPath_SlashNonVar(t *testing.T) {
+	params := doExtractParams("/any", 1, "/any", t)
+	if len(params) != 0 {
+		t.Errorf("expected empty parameters")
+	}
+}
+
+func TestMatchesPath_TwoVars(t *testing.T) {
+	params := doExtractParams("/from/{source}/to/{destination}", 4, "/from/AMS/to/NY", t)
 	if params["source"] != "AMS" {
 		t.Errorf("parameter mismatch AMS")
 	}
+}
 
-	params = doExtractParams("{}/from/{source}/", 4, "/from/SOS/", t)
+func TestMatchesPath_VarOnFront(t *testing.T) {
+	params := doExtractParams("{what}/from/{source}/", 3, "who/from/SOS/", t)
 	if params["source"] != "SOS" {
 		t.Errorf("parameter mismatch SOS")
+	}
+}
+
+func TestTokenizePath(t *testing.T) {
+	if len(tokenizePath("/")) != 0 {
+		t.Errorf("not empty path tokens")
 	}
 }
 

@@ -50,4 +50,5 @@ func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 	if detected {
 		route.dispatch(httpWriter, httpRequest)
 	}
+	// not detected also means that a response has been written
 }
