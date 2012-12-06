@@ -69,16 +69,3 @@ func (self Response) WriteError(status int, err error) Response {
 	self.WriteEntity(err)
 	return self
 }
-
-// Flush and close the underlying ResponseWriter
-// From https://github.com/nharbour/web.go/blob/master/web.go
-//func (self Response) Close() {
-//    rwc, buf, _ := self.(http.Hijacker).Hijack()
-//    if buf != nil {
-//        buf.Flush()
-//    }
-//
-//    if rwc != nil {
-//        rwc.Close()
-//    }
-//}

@@ -1,12 +1,12 @@
 package restful
 
-import ()
-
+// WebService holds a collection of Route values that bind a Http Method + URL Path to a function.
 type WebService struct {
-	rootPath string
-	routes   []Route
-	produces []string
-	consumes []string
+	rootPath          string
+	routes            []Route
+	produces          []string
+	consumes          []string
+	pathParametersDoc map[string]string
 }
 
 // Specify the root URL template path of the WebService.
@@ -18,7 +18,7 @@ func (self *WebService) Path(root string) *WebService {
 
 // Document the Path Parameter used in my Root
 func (self *WebService) PathParam(name, documentation string) *WebService {
-	// TODO
+	self.pathParametersDoc[name] = documentation
 	return self
 }
 
@@ -46,9 +46,12 @@ func (self *WebService) Consumes(accepts ...string) *WebService {
 	return self
 }
 
+// Return the Routes associated with this WebService
 func (self WebService) Routes() []Route {
 	return self.routes
 }
+
+// Return the RootPath associated with this WebService. Default "/"
 func (self WebService) RootPath() string {
 	return self.rootPath
 }
