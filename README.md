@@ -9,6 +9,52 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 - To retrieve a resource, use GET.
 - To change the state of a resource or to update it, use PUT.
 - To remove or delete a resource, use DELETE.
+    
+##Example WebService:
+
+	package landscapeservice
+
+	import (
+	    "github.com/emicklei/go-restful"
+	)
+
+	type LandscapeService struct {
+		restful.WebService
+	}
+	func New() *LandscapeService {
+		ws := new(LandscapeService)
+	   	ws.Path("/applications").
+			Consumes(restful.MIME_XML, restful.MIME_JSON).
+			Produces(restful.MIME_XML, restful.MIME_JSON)
+
+		ws.Route(ws.GET("/{id}").
+			Doc("Get the Application node by its id").
+			To(getApplication).
+			Writes(Application{}))  // for api doc
+		ws.Route(ws.POST("/").
+			Doc("Create or update the Application node").
+			To(saveApplication).
+			Reads(Application{}))  // for api doc
+		return ws
+	}
+	func getApplication(request *Request, response *Response) {
+		// id := request.PathParameter("id")
+		// env := request.QueryParameter("environment")
+	}
+	func saveApplication(request *Request, response *Response) {
+		// response.AddHeader("X-Something","other")
+		// restful.NewError(http.StatusConflict, "Application already exists:"+id)
+		// response.WriteEntity(anApp) , uses Accept header to detect XML/JSON
+		// response.WriterError(http.StatusInternalServerError,err)
+	}	
+
+##Example main:
+
+	func main() {
+		restful.Add(landscapeservice.New())	
+		log.Fatal(http.ListenAndServe(":8080", nil))	
+	}
+
 
 ### Resources
 
