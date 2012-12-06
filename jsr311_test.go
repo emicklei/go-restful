@@ -38,7 +38,7 @@ var tempregexs = []struct {
 	{"", "(/.*)?", 0, 0},
 	{"/a/{b}/c/", "/a/([^/]+?)/c(/.*)?", 2, 1},
 	{"/{a}/{b}/{c-d-e}/", "/([^/]+?)/([^/]+?)/([^/]+?)(/.*)?", 0, 3},
-	{"/{p}/q", "/([^/]+?)/q(/.*)?", 1, 1},	
+	{"/{p}/q", "/([^/]+?)/q(/.*)?", 1, 1},
 }
 
 func TestTemplateToRegularExpression(t *testing.T) {
@@ -67,14 +67,14 @@ var paths = []struct {
 	// url with path is handled by service with root and last capturing group has value final
 	path, root, final string
 }{
-//	{"/", "/", "/"},
-//	{"/p", "/p", ""},
-//	{"/p/x", "/p/{q}", ""},
-//	{"/q/x", "/q", "/x"},
-//	{"/p/x/", "/p/{q}", "/"},
-//	{"/p/x/y", "/p/{q}", "/y"},
-//	{"/q/x/y", "/q", "/x/y"},
-//	{"/z/q", "/{p}/q", ""},
+	//	{"/", "/", "/"},
+	//	{"/p", "/p", ""},
+	//	{"/p/x", "/p/{q}", ""},
+	//	{"/q/x", "/q", "/x"},
+	//	{"/p/x/", "/p/{q}", "/"},
+	//	{"/p/x/y", "/p/{q}", "/y"},
+	//	{"/q/x/y", "/q", "/x/y"},
+	//	{"/z/q", "/{p}/q", ""},
 	{"/a/b/c/q", "/", "/a/b/c/q"},
 }
 

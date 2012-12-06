@@ -18,17 +18,15 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 	    "github.com/emicklei/go-restful"
 	)
 
-	type LandscapeService struct {
-		restful.WebService
-	}
-	func New() *LandscapeService {
-		ws := new(LandscapeService)
+	func New() *restful.WebService {
+		ws := new(restful.WebService)
 	   	ws.Path("/applications").
 			Consumes(restful.MIME_XML, restful.MIME_JSON).
 			Produces(restful.MIME_XML, restful.MIME_JSON)
 
 		ws.Route(ws.GET("/{id}").
 			Doc("Get the Application node by its id").
+			PathParam("id" , the unique string identifier for an application node").
 			To(getApplication).
 			Writes(Application{}))  // for api doc
 		ws.Route(ws.POST("/").

@@ -9,17 +9,15 @@ Example WebService:
 	    "github.com/emicklei/go-restful"
 	)
 
-	type LandscapeService struct {
-		restful.WebService
-	}
-	func New() *LandscapeService {
-		ws := new(LandscapeService)
+	func New() *restful.WebService {
+		ws := new(restful.WebService)
 	   	ws.Path("/applications").
 			Consumes(restful.MIME_XML, restful.MIME_JSON).
 			Produces(restful.MIME_XML, restful.MIME_JSON)
 
 		ws.Route(ws.GET("/{id}").
 			Doc("Get the Application node by its id").
+			PathParam("id" , the unique string identifier for an application node").
 			To(getApplication).
 			Writes(Application{}))
 		ws.Route(ws.POST("/").
@@ -34,7 +32,6 @@ Example WebService:
 	}
 	func saveApplication(request *Request, response *Response) {
 		// response.AddHeader("X-Something","other")
-		// restful.NewError(http.StatusConflict, "Application already exists:"+id)
 		// response.WriteEntity(anApp) , uses Accept header to detect XML/JSON
 		// response.WriterError(http.StatusInternalServerError,err)
 	}	
