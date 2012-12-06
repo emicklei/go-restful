@@ -22,9 +22,13 @@ var isRegisteredOnRoot = false
 func Add(service Dispatcher) {
 	webServices = append(webServices, service)
 	path := service.RootPath()
-	if varIndex := strings.Index(path, "{"); varIndex != -1 {
-		// Use the fixed part of the service rootpath
-		path = service.RootPath()[:varIndex]
+	if len(service.RootPath()) == 0 {
+		path = "/"
+	} else {
+		if varIndex := strings.Index(path, "{"); varIndex != -1 {
+			// Use the fixed part of the service rootpath
+			path = service.RootPath()[:varIndex]
+		}
 	}
 	if path == "/" {
 		// Have to listen to / , but hook only once		

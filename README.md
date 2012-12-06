@@ -10,7 +10,27 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 - To change the state of a resource or to update it, use PUT.
 - To remove or delete a resource, use DELETE.
     
-##Example WebService:
+##Example: Hello world
+	package main 
+	
+	import (
+		"github.com/emicklei/go-restful"
+		"net/http"
+	)
+	
+	func main() {
+		ws := new(restful.WebService)
+		ws.Route(ws.GET("/hello").To(hello))
+		restful.Add(ws)
+		http.ListenAndServe(":8080", nil)
+	}
+	
+	func hello(req *restful.Request, resp *restful.Response) {
+		resp.Write([]byte("world"))
+	}    
+    
+    
+##Example: LandscapeService:
 
 	package landscapeservice
 
@@ -29,6 +49,7 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 			PathParam("id" , the unique string identifier for an application node").
 			To(getApplication).
 			Writes(Application{}))  // for api doc
+			
 		ws.Route(ws.POST("/").
 			Doc("Create or update the Application node").
 			To(saveApplication).
@@ -36,23 +57,16 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 		return ws
 	}
 	func getApplication(request *Request, response *Response) {
-		// id := request.PathParameter("id")
-		// env := request.QueryParameter("environment")
+		id := request.PathParameter("id")
+		env := request.QueryParameter("environment")
+		...
 	}
 	func saveApplication(request *Request, response *Response) {
 		// response.AddHeader("X-Something","other")
-		// restful.NewError(http.StatusConflict, "Application already exists:"+id)
+		// request.ReadEntity(anApp), uses Content-Type header to detect XML/JSON
 		// response.WriteEntity(anApp) , uses Accept header to detect XML/JSON
-		// response.WriterError(http.StatusInternalServerError,err)
-	}	
-
-##Example main:
-
-	func main() {
-		restful.Add(landscapeservice.New())	
-		log.Fatal(http.ListenAndServe(":8080", nil))	
+		// response.WriterError(http.StatusInternalServerError,err) , set the response status and write an err
 	}
-
 
 ### Resources
 
