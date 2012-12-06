@@ -118,7 +118,9 @@ func detectDispatcher(requestPath string, dispatchers []Dispatcher) (Dispatcher,
 	if len(filtered.candidates) == 0 {
 		return nil, "", errors.New("not found")
 	}
+	log.Printf("----- before sort:%v",filtered.candidates)
 	sort.Sort(filtered)
+	log.Printf("----- after sort:%v",filtered.candidates)
 	return filtered.candidates[0].dispatcher, filtered.candidates[0].finalMatch, nil
 }
 

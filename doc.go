@@ -14,28 +14,35 @@ Example WebService:
 	}
 	func New() *LandscapeService {
 		ws := new(LandscapeService)
-		ws.Path("/applications").Accept("application/xml").ContentType("application/xml")
+	   	ws.Path("/applications").
+			Consumes(restful.MIME_XML, restful.MIME_JSON).
+			Produces(restful.MIME_XML, restful.MIME_JSON)
 
-		ws.Route(ws.GET("/{id}").To(GetApplication))
-		ws.Route(ws.POST("/").To(SaveApplication))
+		ws.Route(ws.GET("/{id}").
+			Doc("Get the Application node by its id").
+			To(getApplication).
+			Writes(Application{}))
+		ws.Route(ws.POST("/").
+			Doc("Create or update the Application node").
+			To(saveApplication).
+			Reads(Application{}))
 		return ws
 	}
-	func GetApplication(request *Request, response *Response) {
+	func getApplication(request *Request, response *Response) {
 		// id := request.PathParameter("id")
 		// env := request.QueryParameter("environment")
 	}
-	func SaveApplication(request *Request, response *Response) {
+	func saveApplication(request *Request, response *Response) {
 		// response.AddHeader("X-Something","other")
-		// response.WriteEntity(anApp) , use Accept header to detect XML/JSON
+		// restful.NewError(http.StatusConflict, "Application already exists:"+id)
+		// response.WriteEntity(anApp) , uses Accept header to detect XML/JSON
 		// response.WriterError(http.StatusInternalServerError,err)
 	}	
 
 Example main:
 
 	func main() {
-		restful.Add(landscapeservice.New())
-		// Show me the WADL spec
-		log.Print(restful.Wadl("http://localhost:8080"))
+		restful.Add(landscapeservice.New())	
 		log.Fatal(http.ListenAndServe(":8080", nil))	
 	}
 
