@@ -42,6 +42,25 @@ func getListing(req *Request, resp *Response) {
 
 func getDeclarations(req *Request, resp *Response) {
 	rootPath := req.PathParameter("rootPath")
-	decl := swagger.ApiDeclaration{SwaggerVersion: "1.1", BasePath: rootPath}
+	decl := swagger.ApiDeclaration{SwaggerVersion: "1.1", BasePath: webServicesBasePath, ResourcePath: rootPath}
+	for _, each := range webServices {
+		// find the webservice
+		if each.RootPath() == rootPath {
+			// aggregate by path
+			pathToRoutes := map[string][]Route{}
+			for _, other := range each.Routes() {
+				routes := pathToRoutes[other.Path]
+				routes = append(routes, other)
+			}
+			for path, routes := range pathToRoutes {
+				api := swagger.Api{Path: path}
+				for _, route := range routes {
+					operation := swagger.Operation{HttpMethod: route.Method, Summary: route.Doc}
+					api.Operations = append(api.Operations, operation)
+				}
+				decl.Apis = append(decl.Apis, api)
+			}
+		}
+	}
 	resp.WriteAsJson(decl)
 }

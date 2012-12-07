@@ -6,6 +6,7 @@ package restful
 import (
 	"bytes"
 	"errors"
+	//	"github.com/emicklei/hopwatch"
 	"log"
 	"net/http"
 	"regexp"
@@ -62,9 +63,9 @@ func bestMatchByMedia(routes []Route, contentType string, accept string) Route {
 	return routes[0]
 }
 
-// http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
-func selectRoutes(dispatcher Dispatcher, final string) []Route {
-	if final == "" || final == "/" {
+// http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2  (step 2)
+func selectRoutes(dispatcher Dispatcher, pathRemainder string) []Route {
+	if pathRemainder == "" || pathRemainder == "/" {
 		return dispatcher.Routes()
 	}
 	filtered := sortableRouteCandidates{}
@@ -74,10 +75,10 @@ func selectRoutes(dispatcher Dispatcher, final string) []Route {
 		if err != nil {
 			log.Printf("Invalid template %v because: %v. Ignore route\n", each.Path, err)
 		} else {
-			matches := compiled.FindStringSubmatch(final)
+			matches := compiled.FindStringSubmatch(pathRemainder)
 			if matches != nil {
-				final := matches[len(matches)-1]
-				if final == "" || final == "/" {
+				lastMatch := matches[len(matches)-1]
+				if lastMatch == "" || lastMatch == "/" { // do not include if value is neither empty nor ‘/’.
 					filtered.candidates = append(filtered.candidates,
 						routeCandidate{each, expression, len(matches), literalCount, varCount})
 				}
@@ -119,6 +120,7 @@ func detectDispatcher(requestPath string, dispatchers []Dispatcher) (Dispatcher,
 		return nil, "", errors.New("not found")
 	}
 	sort.Sort(filtered)
+	//hopwatch.Break("detectDispatcher", "filtered", filtered)
 	return filtered.candidates[0].dispatcher, filtered.candidates[0].finalMatch, nil
 }
 

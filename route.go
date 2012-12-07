@@ -5,6 +5,7 @@
 package restful
 
 import (
+	"log"
 	"net/http"
 	"strings"
 )
@@ -71,6 +72,9 @@ func (self Route) matchesContentType(mimeTypes string) bool {
 func (self Route) extractParameters(urlPath string) map[string]string {
 	urlParts := tokenizePath(urlPath)
 	pathParameters := map[string]string{}
+	if len(self.pathParts) != len(urlParts) {
+		log.Panicf("mismatch parts url:%#v route:%#v", urlParts, self.pathParts)
+	}
 	for i, key := range self.pathParts {
 		value := urlParts[i]
 		if strings.HasPrefix(key, "{") { // path-parameter

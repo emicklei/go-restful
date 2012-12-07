@@ -18,6 +18,9 @@ func (self *WebService) Path(root string) *WebService {
 
 // Document the Path Parameter used in my Root
 func (self *WebService) PathParam(name, documentation string) *WebService {
+	if self.pathParametersDoc == nil {
+		self.pathParametersDoc = map[string]string{}
+	}
 	self.pathParametersDoc[name] = documentation
 	return self
 }

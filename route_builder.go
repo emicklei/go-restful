@@ -1,5 +1,9 @@
 package restful
 
+import (
+	"strings"
+)
+
 // RouteBuilder is a helper to construct Routes.
 type RouteBuilder struct {
 	rootPath    string
@@ -10,7 +14,7 @@ type RouteBuilder struct {
 	function    RouteFunction // required
 	// documentation
 	doc                     string
-	readSample, writeSample interface{}
+	readSample, writeSample string
 	queryParametersDoc      map[string]string
 	pathParametersDoc       map[string]string
 }
@@ -53,24 +57,30 @@ func (self *RouteBuilder) Doc(documentation string) *RouteBuilder {
 
 // Tell what resource type will be read from the request payload. Optional.
 func (self *RouteBuilder) Reads(sample interface{}) *RouteBuilder {
-	self.readSample = sample
+	//self.readSample = sample
 	return self
 }
 
 // Tell what resource type will be written as the response payload. Optional.
 func (self *RouteBuilder) Writes(sample interface{}) *RouteBuilder {
-	self.writeSample = sample
+	//self.writeSample = sample
 	return self
 }
 
 // Tell what the query param means. Optional.
 func (self *RouteBuilder) QueryParam(name, comment string) *RouteBuilder {
+	if self.queryParametersDoc == nil {
+		self.queryParametersDoc = map[string]string{}
+	}
 	self.queryParametersDoc[name] = comment
 	return self
 }
 
 // Tell what the path param means. Optional.
 func (self *RouteBuilder) PathParam(name, comment string) *RouteBuilder {
+	if self.pathParametersDoc == nil {
+		self.pathParametersDoc = map[string]string{}
+	}
 	self.pathParametersDoc[name] = comment
 	return self
 }
@@ -96,7 +106,7 @@ func (self *RouteBuilder) copyDefaults(rootProduces, rootConsumes []string) {
 func (self *RouteBuilder) Build() Route {
 	route := Route{
 		Method:       self.httpMethod,
-		Path:         self.rootPath + self.currentPath,
+		Path:         concatPath(self.rootPath, self.currentPath),
 		Produces:     self.produces,
 		Consumes:     self.consumes,
 		Function:     self.function,
@@ -104,4 +114,8 @@ func (self *RouteBuilder) Build() Route {
 		Doc:          self.doc}
 	route.postBuild()
 	return route
+}
+
+func concatPath(path1, path2 string) string {
+	return strings.TrimRight(path1, "/") + "/" + strings.TrimLeft(path2, "/")
 }

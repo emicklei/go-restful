@@ -10,25 +10,9 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 - To change the state of a resource or to update it, use PUT.
 - To remove or delete a resource, use DELETE.
     
-##Example: Hello world
-	package main 
-	
-	import (
-		"github.com/emicklei/go-restful"
-		"net/http"
-	)
-	
-	func main() {
-		ws := new(restful.WebService)
-		ws.Route(ws.GET("/hello").To(hello))
-		restful.Add(ws)
-		http.ListenAndServe(":8080", nil)
-	}
-	
-	func hello(req *restful.Request, resp *restful.Response) {
-		resp.Write([]byte("world"))
-	}    
+###Example: [Hello world, plain and simple](https://github.com/emicklei/go-restful/tree/master/examples/restful-hello-world.go)
     
+###Example: [Hello world, as a GreetingsService](https://github.com/emicklei/go-restful/tree/master/examples/restful-greetings.go)    
     
 ##Example: LandscapeService:
 
