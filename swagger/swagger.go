@@ -1,4 +1,4 @@
-// package swagger implements the structures of the Swagger (https://github.com/wordnik/swagger-core/wiki) specification
+// Package swagger implements the structures of the Swagger (https://github.com/wordnik/swagger-core/wiki) specification
 package swagger
 
 type ResourceListing struct {

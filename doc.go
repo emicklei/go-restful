@@ -1,5 +1,5 @@
 /*
-go-restful, a lean package for creating REST-style WebServices without magic.
+Package go-restful, a lean package for creating REST-style WebServices without magic.
 
 Example WebService:
 
