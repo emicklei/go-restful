@@ -15,8 +15,7 @@ type RouteBuilder struct {
 	// documentation
 	doc                     string
 	readSample, writeSample string
-	queryParametersDoc      map[string]string
-	pathParametersDoc       map[string]string
+	parameters              []Parameter
 }
 
 // If this route is matched with the incoming Http Request then call this function with the *Request,*Response pair. Required.
@@ -61,27 +60,14 @@ func (self *RouteBuilder) Reads(sample interface{}) *RouteBuilder {
 	return self
 }
 
-// Tell what resource type will be written as the response payload. Optional.
+// Writes tells what resource type will be written as the response payload. Optional.
 func (self *RouteBuilder) Writes(sample interface{}) *RouteBuilder {
 	//self.writeSample = sample
 	return self
 }
 
-// Tell what the query param means. Optional.
-func (self *RouteBuilder) QueryParam(name, comment string) *RouteBuilder {
-	if self.queryParametersDoc == nil {
-		self.queryParametersDoc = map[string]string{}
-	}
-	self.queryParametersDoc[name] = comment
-	return self
-}
-
-// Tell what the path param means. Optional.
-func (self *RouteBuilder) PathParam(name, comment string) *RouteBuilder {
-	if self.pathParametersDoc == nil {
-		self.pathParametersDoc = map[string]string{}
-	}
-	self.pathParametersDoc[name] = comment
+// Parameter allows you to document the parameters of the Route.
+func (self *RouteBuilder) ParameterDoc(builder *ParameterBuilder) *RouteBuilder {
 	return self
 }
 

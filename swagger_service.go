@@ -2,6 +2,7 @@ package restful
 
 import (
 	"github.com/emicklei/go-restful/swagger"
+//	"fmt"
 )
 
 type swaggerService struct {
@@ -12,12 +13,12 @@ type swaggerService struct {
 var webServicesBasePath string
 var swaggerServiceApiPath string
 
-// Return the WebService that provides the API documentation of all services
+// NewSwaggerService returns the WebService that provides the API documentation of all services
 // conform the Swagger documentation specifcation. (https://github.com/wordnik/swagger-core/wiki).
 // The services are defined relative to @basePath, e.g. http://myservice:8989 .
 // The JSON documentation is available on @apiPath, e.g. /api-docs.json
-func NewSwaggerService(basePath, apiPath string) *WebService {
-	webServicesBasePath = basePath
+func NewSwaggerService(wsPath, apiPath string) *WebService {
+	webServicesBasePath = wsPath
 	swaggerServiceApiPath = apiPath
 
 	ws := new(WebService)
@@ -29,11 +30,12 @@ func NewSwaggerService(basePath, apiPath string) *WebService {
 }
 
 func getListing(req *Request, resp *Response) {
+	resp.AddHeader("Access-Control-Allow-Origin", "*")
 	listing := swagger.ResourceListing{SwaggerVersion: "1.1", BasePath: webServicesBasePath}
 	for _, each := range webServices {
 		// skip the api service itself
 		if each.RootPath() != swaggerServiceApiPath {
-			api := swagger.Api{Path: each.RootPath()} // url encode , Description: each.Doc}
+			api := swagger.Api{Path: swaggerServiceApiPath + each.RootPath()} // url encode , Description: each.Doc}
 			listing.Apis = append(listing.Apis, api)
 		}
 	}
@@ -41,7 +43,8 @@ func getListing(req *Request, resp *Response) {
 }
 
 func getDeclarations(req *Request, resp *Response) {
-	rootPath := req.PathParameter("rootPath")
+	resp.AddHeader("Access-Control-Allow-Origin", "*")
+	rootPath := "/" + req.PathParameter("rootPath")
 	decl := swagger.ApiDeclaration{SwaggerVersion: "1.1", BasePath: webServicesBasePath, ResourcePath: rootPath}
 	for _, each := range webServices {
 		// find the webservice
@@ -50,7 +53,7 @@ func getDeclarations(req *Request, resp *Response) {
 			pathToRoutes := map[string][]Route{}
 			for _, other := range each.Routes() {
 				routes := pathToRoutes[other.Path]
-				routes = append(routes, other)
+				pathToRoutes[other.Path] = append(routes, other)
 			}
 			for path, routes := range pathToRoutes {
 				api := swagger.Api{Path: path}

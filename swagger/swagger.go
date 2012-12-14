@@ -5,7 +5,7 @@ type ResourceListing struct {
 	ApiVersion     string `json:"apiVersion"`
 	SwaggerVersion string `json:"swaggerVersion"`
 	BasePath       string `json:"basePath"`
-	Apis           []Api
+	Apis           []Api  `json:"apis"`
 }
 
 type Api struct {
@@ -20,7 +20,7 @@ type ApiDeclaration struct {
 	SwaggerVersion string `json:"swaggerVersion"`
 	BasePath       string `json:"basePath"`
 	ResourcePath   string `json:"resourcePath"`
-	Apis           []Api
+	Apis           []Api  `json:"apis"`
 }
 
 type Operation struct {

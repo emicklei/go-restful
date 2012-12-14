@@ -18,11 +18,20 @@ func NewUserService() *restful.WebService {
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_XML, restful.MIME_JSON)
 		
-	ws.Route(ws.GET("/{user-id}").To(findUser))
-	ws.Route(ws.POST("").To(updateUser))
-	ws.Route(ws.PUT("/{user-id}").To(createUser))
-	ws.Route(ws.DELETE("/{user-id}").To(removeUser))
+	ws.Route(ws.GET("/{user-id}").
+				To(findUser).				
+				ParameterDoc(ws.Parameter("user-id","identifier of the user",restful.PATH)))
 
+	ws.Route(ws.POST("").To(updateUser))
+
+	ws.Route(ws.PUT("/{user-id}").
+				To(createUser).
+				ParameterDoc(ws.Parameter("user-id","identifier of the user",restful.PATH)))
+
+	ws.Route(ws.DELETE("/{user-id}").
+				To(removeUser).
+				Doc("deletes the user").
+				ParameterDoc(ws.Parameter("user-id","identifier of the user",restful.PATH)))
 	return ws
 }
 
@@ -66,7 +75,7 @@ func removeUser(request *restful.Request, response *restful.Response) {
 func main() {	
 	us := NewUserService()
 	restful.Add(us)
-	restful.Add(restful.NewSwaggerService("http://localhost:8080", "/api-docs.json"))
+	restful.Add(restful.NewSwaggerService("http://localhost:8080", "/apidocs"))
 	log.Printf("start listening on localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
