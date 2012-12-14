@@ -19,19 +19,18 @@ func NewUserService() *restful.WebService {
 		Produces(restful.MIME_XML, restful.MIME_JSON)
 		
 	ws.Route(ws.GET("/{user-id}").
-				To(findUser).				
-				ParameterDoc(ws.Parameter("user-id","identifier of the user",restful.PATH)))
+				To(findUser).		
+				Doc("get a user").
+				Param(ws.PathParameter("user-id","identifier of the user")))						
 
 	ws.Route(ws.POST("").To(updateUser))
 
 	ws.Route(ws.PUT("/{user-id}").
-				To(createUser).
-				ParameterDoc(ws.Parameter("user-id","identifier of the user",restful.PATH)))
+				To(createUser))
 
 	ws.Route(ws.DELETE("/{user-id}").
 				To(removeUser).
-				Doc("deletes the user").
-				ParameterDoc(ws.Parameter("user-id","identifier of the user",restful.PATH)))
+				Doc("deletes the user"))
 	return ws
 }
 

@@ -17,7 +17,7 @@ Example WebService:
 
 		ws.Route(ws.GET("/{id}").
 			Doc("Get the Application node by its id").
-			PathParam("id" , the unique string identifier for an application node").
+			Param(ws.PathParameter("id" , the unique string identifier for an application node")).
 			To(getApplication).
 			Writes(Application{}))
 		ws.Route(ws.POST("/").

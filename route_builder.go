@@ -66,8 +66,12 @@ func (self *RouteBuilder) Writes(sample interface{}) *RouteBuilder {
 	return self
 }
 
-// Parameter allows you to document the parameters of the Route.
-func (self *RouteBuilder) ParameterDoc(builder *ParameterBuilder) *RouteBuilder {
+// Param allows you to document the parameters of the Route.
+func (self *RouteBuilder) Param(parameter Parameter) *RouteBuilder {
+	if self.parameters == nil {
+		self.parameters = []Parameter{}
+	}
+	self.parameters = append(self.parameters, parameter)
 	return self
 }
 

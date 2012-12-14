@@ -1,36 +1,40 @@
 package restful
 
-import ()
-
-type ParameterKind int
-
 const (
-	PATH ParameterKind = iota
-	QUERY
-	BODY
+	PATH_PARAMETER = iota
+	QUERY_PARAMETER
+	BODY_PARAMETER
 )
 
 type Parameter struct {
-	Name, Description string
-	Kind              ParameterKind
+	Name, Description, DataType string
+	kind                        int
+	Required                    bool
+	AllowableValues             map[string]string
+	AllowMultiple               bool
 }
 
-type ParameterBuilder struct {
-	parameter *Parameter
-}
-
-func (self *ParameterBuilder) Name(name string) *ParameterBuilder {
-	self.parameter.Name = name
+func (self *Parameter) bePath() *Parameter {
+	self.kind = PATH_PARAMETER
 	return self
 }
-func (self *ParameterBuilder) Description(desc string) *ParameterBuilder {
-	self.parameter.Description = desc
+func (self *Parameter) beQuery() *Parameter {
+	self.kind = QUERY_PARAMETER
 	return self
 }
-func (self *ParameterBuilder) Kind(kind ParameterKind) *ParameterBuilder {
-	self.parameter.Kind = kind
+func (self *Parameter) beBody() *Parameter {
+	self.kind = BODY_PARAMETER
 	return self
 }
-func (self *ParameterBuilder) Build() Parameter {
-	return *self.parameter
+func (self *Parameter) Optional(optional bool) *Parameter {
+	self.Required = !optional
+	return self
+}
+func (self *Parameter) MultipleAllowed(multiple bool) *Parameter {
+	self.AllowMultiple = multiple
+	return self
+}
+func (self *Parameter) ValuesAllowed(values map[string]string) *Parameter {
+	self.AllowableValues = values
+	return self
 }

@@ -16,19 +16,34 @@ func (self *WebService) Path(root string) *WebService {
 	return self
 }
 
-// PathParameter documents a Path Parameter used in my Root Path.
-func (self *WebService) PathParameter(builder *ParameterBuilder) *WebService {
+// AddParameter adds a PathParameter to document parameters used in the root path.
+func (self *WebService) Param(parameter Parameter) *WebService {
 	if self.pathParameters == nil {
 		self.pathParameters = []Parameter{}
 	}
-	self.pathParameters = append(self.pathParameters, builder.Build())
+	self.pathParameters = append(self.pathParameters, parameter)
 	return self
 }
 
-// Parameter returns a new ParameterBuilder to document a Parameter (path,query,body).
-func (self *WebService) Parameter(name, documentation string, kind ParameterKind) *ParameterBuilder {
-	builder := new(ParameterBuilder)
-	return builder.Name(name).Description(documentation)
+// PathParameter creates a new Parameter of kind Path for documentation purposes.
+func (self *WebService) PathParameter(name, description string) *Parameter {
+	p := &Parameter{Name: name, Description: description}
+	p.bePath()
+	return p
+}
+
+// QueryParameter creates a new Parameter of kind Query for documentation purposes.
+func (self *WebService) QueryParameter(name, description string) *Parameter {
+	p := &Parameter{Name: name, Description: description}
+	p.beQuery()
+	return p
+}
+
+// BodyParameter creates a new Parameter of kind Body for documentation purposes.
+func (self *WebService) BodyParameter(name, description string) *Parameter {
+	p := &Parameter{Name: name, Description: description}
+	p.beBody()
+	return p
 }
 
 // Route creates a new Route using the RouteBuilder and add to the ordered list of Routes.

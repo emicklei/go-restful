@@ -3,6 +3,7 @@
 package restful
 
 import (
+	"log"
 	"net/http"
 )
 
@@ -29,6 +30,14 @@ func Add(service Dispatcher) {
 // Dispatch the incoming Http Request to a matching Dispatcher.
 // Matching algorithm is conform http://jsr311.java.net/nonav/releases/1.1/spec/spec.html, see jsr311.go
 func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
+	// catch all for 500 response
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("[restful] recover from panic situation:", r)
+			httpWriter.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}()
 	// step 1. Identify the root resource class (Dispatcher)
 	dispatcher, finalMatch, err := detectDispatcher(httpRequest.URL.Path, webServices)
 	if err != nil {
