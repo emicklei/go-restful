@@ -18,19 +18,20 @@ type RouteBuilder struct {
 	parameters              []Parameter
 }
 
+// To bind the route to a function. 
 // If this route is matched with the incoming Http Request then call this function with the *Request,*Response pair. Required.
 func (self *RouteBuilder) To(function RouteFunction) *RouteBuilder {
 	self.function = function
 	return self
 }
 
-// Specify what HTTP method to match. Required.
+// Method specifies what HTTP method to match. Required.
 func (self *RouteBuilder) Method(method string) *RouteBuilder {
 	self.httpMethod = method
 	return self
 }
 
-// Specify what MIME types can be produced ; the matched one will appear in the Content-Type Http header.
+// Produces specifies what MIME types can be produced ; the matched one will appear in the Content-Type Http header.
 func (self *RouteBuilder) Produces(mimeTypes ...string) *RouteBuilder {
 	self.produces = mimeTypes
 	return self
@@ -42,19 +43,19 @@ func (self *RouteBuilder) Consumes(mimeTypes ...string) *RouteBuilder {
 	return self
 }
 
-// Specify the relative (w.r.t WebService root path) URL path to match. Default is "/".
+// Path specifies the relative (w.r.t WebService root path) URL path to match. Default is "/".
 func (self *RouteBuilder) Path(subPath string) *RouteBuilder {
 	self.currentPath = subPath
 	return self
 }
 
-// Tell what this route is all about. Optional.
+// Doc tells what this route is all about. Optional.
 func (self *RouteBuilder) Doc(documentation string) *RouteBuilder {
 	self.doc = documentation
 	return self
 }
 
-// Tell what resource type will be read from the request payload. Optional.
+// Reads tells what resource type will be read from the request payload. Optional.
 func (self *RouteBuilder) Reads(sample interface{}) *RouteBuilder {
 	//self.readSample = sample
 	return self
@@ -92,7 +93,7 @@ func (self *RouteBuilder) copyDefaults(rootProduces, rootConsumes []string) {
 	}
 }
 
-// Create a new Route using the specification details collected by the RouteBuilder
+// Build creates a new Route using the specification details collected by the RouteBuilder
 func (self *RouteBuilder) Build() Route {
 	route := Route{
 		Method:       self.httpMethod,

@@ -13,17 +13,17 @@ type Request struct {
 	pathParameters map[string]string
 }
 
-// Return the Path parameter value by its name
+// PathParameter accesses the Path parameter value by its name
 func (self *Request) PathParameter(name string) string {
 	return self.pathParameters[name]
 }
 
-// Return the (first) Query parameter value by its name
+// QueryParameter returns the (first) Query parameter value by its name
 func (self *Request) QueryParameter(name string) string {
 	return self.Request.FormValue(name)
 }
 
-// Check the Accept header and read the content into the entityReference
+// ReadEntity check the Accept header and reads the content into the entityReference
 func (self *Request) ReadEntity(entityReference interface{}) error {
 	contentType := self.Request.Header.Get(HEADER_ContentType)
 	defer self.Request.Body.Close()

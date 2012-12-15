@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// Signature of function that can be bound to a Route.
+// Signature of a function that can be bound to a Route.
 type RouteFunction func(*Request, *Response)
 
 // Route binds a HTTP Method,Path,Consumes combination to a RouteFunction.
