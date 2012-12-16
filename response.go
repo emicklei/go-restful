@@ -66,6 +66,8 @@ func (self Response) WriteAsJson(value interface{}) Response {
 // WriteError is a convenience method for an error status with the actual error
 func (self Response) WriteError(status int, err error) Response {
 	self.WriteHeader(status)
-	self.WriteEntity(err)
+	if err != nil {
+		self.WriteEntity(err)
+	}
 	return self
 }

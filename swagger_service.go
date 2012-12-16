@@ -2,36 +2,42 @@ package restful
 
 import (
 	"github.com/emicklei/go-restful/swagger"
-
+//	"github.com/emicklei/hopwatch"
 //	"fmt"
+	"log"
+	"net/http"
 )
 
-type swaggerService struct {
-	WebService
-	basePath string
+type SwaggerConfig struct {
+	WebServicesUrl string  // url where the services are available, e.g. http://localhost:8080
+	ApiPath string  // path where the JSON api is avaiable , e.g. /apidocs
+	SwaggerPath string // path where the swagger UI will be served, e.g. /swagger
+	SwaggerFilePath string   // location of folder containing Swagger HTML5 application index.html
 }
 
 var webServicesBasePath string
 var swaggerServiceApiPath string
 
-// NewSwaggerService returns the WebService that provides the API documentation of all services
+// InstallSwaggerService add the WebService that provides the API documentation of all services
 // conform the Swagger documentation specifcation. (https://github.com/wordnik/swagger-core/wiki).
-// The services are defined relative to @basePath, e.g. http://myservice:8989 .
-// The JSON documentation is available on @apiPath, e.g. /api-docs.json
-func NewSwaggerService(wsPath, apiPath string) *WebService {
-	webServicesBasePath = wsPath
-	swaggerServiceApiPath = apiPath
+func InstallSwaggerService(config SwaggerConfig) {
+	// TODO just keep config around
+	webServicesBasePath = config.WebServicesUrl
+	swaggerServiceApiPath = config.ApiPath
 
 	ws := new(WebService)
-	ws.Path(apiPath)
+	ws.Path(config.ApiPath)
 	ws.Produces(MIME_JSON)
 	ws.Route(ws.GET("/").To(getListing))
-	ws.Route(ws.GET("/{rootPath}").To(getDeclarations))
-	return ws
+	ws.Route(ws.GET("/{rootPath}").To(getDeclarations))	
+	Add(ws)
+	
+	// Install FileServer
+	log.Printf("[restful] %v%v is mapped to folder %v", config.WebServicesUrl, config.SwaggerPath, config.SwaggerFilePath)
+	http.Handle(config.SwaggerPath, http.StripPrefix(config.SwaggerPath, http.FileServer(http.Dir(config.SwaggerFilePath))))
 }
 
 func getListing(req *Request, resp *Response) {
-	resp.AddHeader("Access-Control-Allow-Origin", "*")
 	listing := swagger.ResourceListing{SwaggerVersion: "1.1", BasePath: webServicesBasePath}
 	for _, each := range webServices {
 		// skip the api service itself
@@ -44,7 +50,6 @@ func getListing(req *Request, resp *Response) {
 }
 
 func getDeclarations(req *Request, resp *Response) {
-	resp.AddHeader("Access-Control-Allow-Origin", "*")
 	rootPath := "/" + req.PathParameter("rootPath")
 	decl := swagger.ApiDeclaration{SwaggerVersion: "1.1", BasePath: webServicesBasePath, ResourcePath: rootPath}
 	for _, each := range webServices {
@@ -60,6 +65,15 @@ func getDeclarations(req *Request, resp *Response) {
 				api := swagger.Api{Path: path}
 				for _, route := range routes {
 					operation := swagger.Operation{HttpMethod: route.Method, Summary: route.Doc}
+					for _ , param := range route.parameterDocs {
+						swparam := swagger.Parameter{
+							Name: param.name, 
+							Description: param.description,
+							ParamType: asParamType(param.kind),
+							DataType: "String",
+							Required: param.required }
+						operation.Parameters = append(operation.Parameters, swparam)
+					}
 					api.Operations = append(api.Operations, operation)
 				}
 				decl.Apis = append(decl.Apis, api)
@@ -67,4 +81,13 @@ func getDeclarations(req *Request, resp *Response) {
 		}
 	}
 	resp.WriteAsJson(decl)
+}
+
+func asParamType(kind int) string {
+	switch {
+		case kind == PATH_PARAMETER : return "path"
+		case kind == QUERY_PARAMETER : return "query"
+		case kind == BODY_PARAMETER : return "body"
+	}
+	return ""
 }

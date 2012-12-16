@@ -5,7 +5,6 @@
 package restful
 
 import (
-	"log"
 	"net/http"
 	"strings"
 )
@@ -15,15 +14,19 @@ type RouteFunction func(*Request, *Response)
 
 // Route binds a HTTP Method,Path,Consumes combination to a RouteFunction.
 type Route struct {
-	Doc      string
 	Method   string
 	Produces []string
 	Consumes []string
 	Path     string
 	Function RouteFunction
 
+	// cached values for dispatching
 	relativePath string
 	pathParts    []string
+
+	// documentation
+	Doc           string
+	parameterDocs []*Parameter
 }
 
 // Initialize for Route
@@ -72,11 +75,13 @@ func (self Route) matchesContentType(mimeTypes string) bool {
 func (self Route) extractParameters(urlPath string) map[string]string {
 	urlParts := tokenizePath(urlPath)
 	pathParameters := map[string]string{}
-	if len(self.pathParts) != len(urlParts) {
-		log.Panicf("mismatch parts url:%#v route:%#v", urlParts, self.pathParts)
-	}
 	for i, key := range self.pathParts {
-		value := urlParts[i]
+		var value string
+		if i >= len(urlParts) {
+			value = ""
+		} else {
+			value = urlParts[i]
+		}
 		if strings.HasPrefix(key, "{") { // path-parameter
 			pathParameters[strings.Trim(key, "{}")] = value
 		}

@@ -69,6 +69,13 @@ func TestMatchesPath_VarOnFront(t *testing.T) {
 	}
 }
 
+func TestExtractParameters_EmptyValue(t *testing.T) {
+	params := doExtractParams("/fixed/{var}", 2, "/fixed/", t)
+	if params["var"] != "" {
+		t.Errorf("parameter mismatch var")
+	}
+}
+
 func TestTokenizePath(t *testing.T) {
 	if len(tokenizePath("/")) != 0 {
 		t.Errorf("not empty path tokens")

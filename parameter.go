@@ -9,11 +9,11 @@ const (
 // Parameter is for documententing the parameter used in a Http Request
 // Parameter kinds are Path,Query and Body
 type Parameter struct {
-	Name, Description, DataType string
+	name, description, dataType string
 	kind                        int
-	Required                    bool
-	AllowableValues             map[string]string
-	AllowMultiple               bool
+	required                    bool
+	allowableValues             map[string]string
+	allowMultiple               bool
 }
 
 func (self *Parameter) bePath() *Parameter {
@@ -29,20 +29,26 @@ func (self *Parameter) beBody() *Parameter {
 	return self
 }
 
-// Optional sets the required field
-func (self *Parameter) Optional(optional bool) *Parameter {
-	self.Required = !optional
+// Required sets the required field and return the receiver
+func (self *Parameter) Required(required bool) *Parameter {
+	self.required = required
 	return self
 }
 
-// MultipleAllowed sets the AllowMultiple field
-func (self *Parameter) MultipleAllowed(multiple bool) *Parameter {
-	self.AllowMultiple = multiple
+// AllowMultiple sets the allowMultiple field and return the receiver
+func (self *Parameter) AllowMultiple(multiple bool) *Parameter {
+	self.allowMultiple = multiple
 	return self
 }
 
-// ValuesAllowed sets the AllowableValues field
-func (self *Parameter) ValuesAllowed(values map[string]string) *Parameter {
-	self.AllowableValues = values
+// AllowableValues sets the allowableValues field and return the receiver
+func (self *Parameter) AllowableValues(values map[string]string) *Parameter {
+	self.allowableValues = values
+	return self
+}
+
+// DataType sets the dataType field and return the receiver
+func (self *Parameter) DataType(typeName string) *Parameter {
+	self.dataType = typeName
 	return self
 }

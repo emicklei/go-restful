@@ -29,8 +29,8 @@ type Operation struct {
 	ResponseClass  string `json:"responseClass"`
 	Summary        string `json:"summary"`
 	Notes          string `json:"notes"`
-	Parameters     []Parameter
-	ErrorResponses []ErrorResponse
+	Parameters     []Parameter `json:"parameters"`
+	ErrorResponses []ErrorResponse `json:"errorResponses"`
 }
 
 type Parameter struct {
@@ -39,8 +39,8 @@ type Parameter struct {
 	Description     string `json:"description"`
 	DataType        string `json:"dataType"`
 	Required        bool   `json:"required"`
-	AllowableValues map[string]string
-	AllowMultiple   bool
+	AllowableValues map[string]string `json:"allowableValues"`
+	AllowMultiple   bool `json:"allowMultiple"`
 }
 
 type ErrorResponse struct {

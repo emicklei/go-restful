@@ -6,7 +6,7 @@ type WebService struct {
 	routes         []Route
 	produces       []string
 	consumes       []string
-	pathParameters []Parameter
+	pathParameters []*Parameter
 }
 
 // Path specifies the root URL template path of the WebService.
@@ -17,9 +17,9 @@ func (self *WebService) Path(root string) *WebService {
 }
 
 // AddParameter adds a PathParameter to document parameters used in the root path.
-func (self *WebService) Param(parameter Parameter) *WebService {
+func (self *WebService) Param(parameter *Parameter) *WebService {
 	if self.pathParameters == nil {
-		self.pathParameters = []Parameter{}
+		self.pathParameters = []*Parameter{}
 	}
 	self.pathParameters = append(self.pathParameters, parameter)
 	return self
@@ -27,21 +27,21 @@ func (self *WebService) Param(parameter Parameter) *WebService {
 
 // PathParameter creates a new Parameter of kind Path for documentation purposes.
 func (self *WebService) PathParameter(name, description string) *Parameter {
-	p := &Parameter{Name: name, Description: description}
+	p := &Parameter{name: name, description: description, required:true}
 	p.bePath()
 	return p
 }
 
 // QueryParameter creates a new Parameter of kind Query for documentation purposes.
 func (self *WebService) QueryParameter(name, description string) *Parameter {
-	p := &Parameter{Name: name, Description: description}
+	p := &Parameter{name: name, description: description, required:false}
 	p.beQuery()
 	return p
 }
 
 // BodyParameter creates a new Parameter of kind Body for documentation purposes.
 func (self *WebService) BodyParameter(name, description string) *Parameter {
-	p := &Parameter{Name: name, Description: description}
+	p := &Parameter{name: name, description: description, required:true}
 	p.beBody()
 	return p
 }

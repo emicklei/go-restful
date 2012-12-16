@@ -15,7 +15,7 @@ type RouteBuilder struct {
 	// documentation
 	doc                     string
 	readSample, writeSample string
-	parameters              []Parameter
+	parameters              []*Parameter
 }
 
 // To bind the route to a function. 
@@ -68,9 +68,9 @@ func (self *RouteBuilder) Writes(sample interface{}) *RouteBuilder {
 }
 
 // Param allows you to document the parameters of the Route.
-func (self *RouteBuilder) Param(parameter Parameter) *RouteBuilder {
+func (self *RouteBuilder) Param(parameter *Parameter) *RouteBuilder {
 	if self.parameters == nil {
-		self.parameters = []Parameter{}
+		self.parameters = []*Parameter{}
 	}
 	self.parameters = append(self.parameters, parameter)
 	return self
@@ -96,13 +96,14 @@ func (self *RouteBuilder) copyDefaults(rootProduces, rootConsumes []string) {
 // Build creates a new Route using the specification details collected by the RouteBuilder
 func (self *RouteBuilder) Build() Route {
 	route := Route{
-		Method:       self.httpMethod,
-		Path:         concatPath(self.rootPath, self.currentPath),
-		Produces:     self.produces,
-		Consumes:     self.consumes,
-		Function:     self.function,
-		relativePath: self.currentPath,
-		Doc:          self.doc}
+		Method:        self.httpMethod,
+		Path:          concatPath(self.rootPath, self.currentPath),
+		Produces:      self.produces,
+		Consumes:      self.consumes,
+		Function:      self.function,
+		relativePath:  self.currentPath,
+		Doc:           self.doc,
+		parameterDocs: self.parameters}
 	route.postBuild()
 	return route
 }

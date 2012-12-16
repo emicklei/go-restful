@@ -24,13 +24,20 @@ func NewUserService() *restful.WebService {
 		Doc("get a user").
 		Param(ws.PathParameter("user-id", "identifier of the user")))
 
-	ws.Route(ws.POST("").To(updateUser))
+	ws.Route(ws.POST("").To(updateUser).
+		// docs	
+		Doc("update a user"))
 
-	ws.Route(ws.PUT("/{user-id}").To(createUser))
+	ws.Route(ws.PUT("/{user-id}").To(createUser).
+		// docs	
+		Doc("create a user").
+		Param(ws.PathParameter("user-id", "identifier of the user")))
 
 	ws.Route(ws.DELETE("/{user-id}").To(removeUser).
-		// docs
-		Doc("deletes the user"))
+		// docs	
+		Doc("delete a user").
+		Param(ws.PathParameter("user-id", "identifier of the user")))
+	
 	return ws
 }
 
@@ -73,7 +80,15 @@ func removeUser(request *restful.Request, response *restful.Response) {
 
 func main() {
 	restful.Add(NewUserService())
-	restful.Add(restful.NewSwaggerService("http://localhost:8080", "/apidocs"))
+	
+	// Open http://localhost:8080/swagger and enter http://localhost:8080/apidocs in the api input field.
+	config := restful.SwaggerConfig{ 
+		WebServicesUrl: "http://localhost:8080",
+		ApiPath: "/apidocs",
+		SwaggerPath: "/swagger/",
+		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7" }	
+	restful.InstallSwaggerService(config)
+	
 	log.Printf("start listening on localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
