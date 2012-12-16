@@ -31,7 +31,10 @@ func InstallSwaggerService(config SwaggerConfig) {
 	ws.Path(config.ApiPath)
 	ws.Produces(MIME_JSON)
 	ws.Route(ws.GET("/").To(getListing))
-	ws.Route(ws.GET("/{rootPath}").To(getDeclarations))
+	ws.Route(ws.GET("/{a}").To(getDeclarations))
+	ws.Route(ws.GET("/{a}/{b}").To(getDeclarations))
+	ws.Route(ws.GET("/{a}/{b}/{c}").To(getDeclarations))
+	ws.Route(ws.GET("/{a}/{b}/{c}/{d}").To(getDeclarations)) // TODO maybe support * in the path spec?
 	Add(ws)
 
 	// Install FileServer
@@ -45,7 +48,7 @@ func getListing(req *Request, resp *Response) {
 		// skip the api service itself
 		if each.RootPath() != swaggerServiceApiPath {
 			api := swagger.Api{
-				Path: swaggerServiceApiPath + "/" + each.RootPath()}
+				Path: swaggerServiceApiPath + each.RootPath()}
 			//Description: each.Doc}
 			listing.Apis = append(listing.Apis, api)
 		}
@@ -54,12 +57,17 @@ func getListing(req *Request, resp *Response) {
 }
 
 func getDeclarations(req *Request, resp *Response) {
-	rootPath := "/" + req.PathParameter("rootPath")
+	rootPath := composeRootPath(req)
 	// log.Printf("rootPath:%V", rootPath)
 	decl := swagger.ApiDeclaration{SwaggerVersion: "1.1", BasePath: webServicesBasePath, ResourcePath: rootPath}
 	for _, each := range webServices {
 		// find the webservice
 		if each.RootPath() == rootPath {
+			// collect any path parameters
+			rootParams := []swagger.Parameter{}
+			for _, param := range each.PathParameters() {
+				rootParams = append(rootParams, asSwaggerParameter(param))
+			}
 			// aggregate by path
 			pathToRoutes := map[string][]Route{}
 			for _, other := range each.Routes() {
@@ -70,14 +78,13 @@ func getDeclarations(req *Request, resp *Response) {
 				api := swagger.Api{Path: path}
 				for _, route := range routes {
 					operation := swagger.Operation{HttpMethod: route.Method, Summary: route.Doc}
-					for _, param := range route.parameterDocs {
-						swparam := swagger.Parameter{
-							Name:        param.name,
-							Description: param.description,
-							ParamType:   asParamType(param.kind),
-							DataType:    "String",
-							Required:    param.required}
+					// share root params if any
+					for _, swparam := range rootParams {
 						operation.Parameters = append(operation.Parameters, swparam)
+					}
+					// route specific params					
+					for _, param := range route.parameterDocs {
+						operation.Parameters = append(operation.Parameters, asSwaggerParameter(param))
 					}
 					api.Operations = append(api.Operations, operation)
 				}
@@ -86,6 +93,35 @@ func getDeclarations(req *Request, resp *Response) {
 		}
 	}
 	resp.WriteAsJson(decl)
+}
+
+func asSwaggerParameter(param *Parameter) swagger.Parameter {
+	return swagger.Parameter{
+		Name:        param.name,
+		Description: param.description,
+		ParamType:   asParamType(param.kind),
+		DataType:    "String",
+		Required:    param.required}
+}
+
+// Between 1..4 path parameters supported
+func composeRootPath(req *Request) string {
+	path := "/" + req.PathParameter("a")
+	b := req.PathParameter("b")
+	if b == "" {
+		return path
+	}
+	path = path + "/" + b
+	c := req.PathParameter("c")
+	if c == "" {
+		return path
+	}
+	path = path + "/" + c
+	d := req.PathParameter("d")
+	if d == "" {
+		return path
+	}
+	return path + "/" + d
 }
 
 func asParamType(kind int) string {

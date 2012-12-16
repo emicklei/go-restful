@@ -10,6 +10,7 @@ import (
 type Dispatcher interface {
 	Routes() []Route
 	RootPath() string
+	PathParameters() []*Parameter
 	//	rootRegEx
 }
 

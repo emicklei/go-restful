@@ -80,6 +80,10 @@ func (self WebService) RootPath() string {
 	return self.rootPath
 }
 
+func (self WebService) PathParameters() []*Parameter {
+	return self.pathParameters
+}
+
 /*
 	Convenience methods
 */
