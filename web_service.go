@@ -27,21 +27,21 @@ func (self *WebService) Param(parameter *Parameter) *WebService {
 
 // PathParameter creates a new Parameter of kind Path for documentation purposes.
 func (self *WebService) PathParameter(name, description string) *Parameter {
-	p := &Parameter{name: name, description: description, required:true}
+	p := &Parameter{name: name, description: description, required: true}
 	p.bePath()
 	return p
 }
 
 // QueryParameter creates a new Parameter of kind Query for documentation purposes.
 func (self *WebService) QueryParameter(name, description string) *Parameter {
-	p := &Parameter{name: name, description: description, required:false}
+	p := &Parameter{name: name, description: description, required: false}
 	p.beQuery()
 	return p
 }
 
 // BodyParameter creates a new Parameter of kind Body for documentation purposes.
 func (self *WebService) BodyParameter(name, description string) *Parameter {
-	p := &Parameter{name: name, description: description, required:true}
+	p := &Parameter{name: name, description: description, required: true}
 	p.beBody()
 	return p
 }

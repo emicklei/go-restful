@@ -24,23 +24,23 @@ type ApiDeclaration struct {
 }
 
 type Operation struct {
-	HttpMethod     string `json:"httpMethod"`
-	Nickname       string `json:"nickname"`
-	ResponseClass  string `json:"responseClass"`
-	Summary        string `json:"summary"`
-	Notes          string `json:"notes"`
-	Parameters     []Parameter `json:"parameters"`
+	HttpMethod     string          `json:"httpMethod"`
+	Nickname       string          `json:"nickname"`
+	ResponseClass  string          `json:"responseClass"`
+	Summary        string          `json:"summary"`
+	Notes          string          `json:"notes"`
+	Parameters     []Parameter     `json:"parameters"`
 	ErrorResponses []ErrorResponse `json:"errorResponses"`
 }
 
 type Parameter struct {
-	ParamType       string `json:"paramType"`
-	Name            string `json:"name"`
-	Description     string `json:"description"`
-	DataType        string `json:"dataType"`
-	Required        bool   `json:"required"`
+	ParamType       string            `json:"paramType"`
+	Name            string            `json:"name"`
+	Description     string            `json:"description"`
+	DataType        string            `json:"dataType"`
+	Required        bool              `json:"required"`
 	AllowableValues map[string]string `json:"allowableValues"`
-	AllowMultiple   bool `json:"allowMultiple"`
+	AllowMultiple   bool              `json:"allowMultiple"`
 }
 
 type ErrorResponse struct {
