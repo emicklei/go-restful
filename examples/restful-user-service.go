@@ -81,11 +81,11 @@ func removeUser(request *restful.Request, response *restful.Response) {
 func main() {
 	restful.Add(NewUserService())
 	
-	// Open http://localhost:8080/swagger and enter http://localhost:8080/apidocs in the api input field.
+	// Open http://localhost:8080/apidocs and enter http://localhost:8080/apidocs.json in the api input field.
 	config := restful.SwaggerConfig{ 
 		WebServicesUrl: "http://localhost:8080",
-		ApiPath: "/apidocs",
-		SwaggerPath: "/swagger/",
+		ApiPath: "/apidocs.json",
+		SwaggerPath: "/apidocs/",
 		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7" }	
 	restful.InstallSwaggerService(config)
 	
