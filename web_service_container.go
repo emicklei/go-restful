@@ -45,12 +45,12 @@ func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 		httpWriter.WriteHeader(http.StatusNotFound)
 		return
 	}
-	// step 2. Obtain the object (dispatcher) that will handle the request and a set of candidate methods
+	// step 2. Obtain the set of candidate methods (Routes)
 	routes := selectRoutes(dispatcher, finalMatch)
 	// step 3. Identify the method (Route) that will handle the request
 	route, detected := detectRoute(routes, httpWriter, httpRequest)
 	if detected {
 		route.dispatch(httpWriter, httpRequest)
 	}
-	// a response has already been written
+	// else a non-200 response has already been written
 }
