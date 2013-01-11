@@ -5,6 +5,7 @@ package restful
 import (
 	"log"
 	"net/http"
+	"strings"
 )
 
 type Dispatcher interface {
@@ -18,14 +19,42 @@ type Dispatcher interface {
 var webServices = []Dispatcher{}
 var isRegisteredOnRoot = false
 
-// Register a new Dispatcher add it to the http listeners.
-// Check its root path to see if 
+// Add registers a new Dispatcher add it to the http listeners.
 func Add(service Dispatcher) {
-	webServices = append(webServices, service)
+	// If registered on root then no additional specific mapping is needed	
 	if !isRegisteredOnRoot {
-		http.HandleFunc("/", Dispatch)
-		isRegisteredOnRoot = true
+		pattern := fixedPrefixPath(service.RootPath())
+		// check if root path registration is needed
+		if "/" == pattern || "" == pattern {
+			http.HandleFunc("/", Dispatch)
+			isRegisteredOnRoot = true
+		} else {
+			// detect if registration already exists
+			alreadyMapped := false
+			for _, each := range webServices {
+				if each.RootPath() == service.RootPath() {
+					alreadyMapped = true
+					break
+				}
+			}
+			if !alreadyMapped {
+				http.HandleFunc(pattern, Dispatch)
+				if !strings.HasSuffix(pattern, "/") {
+					http.HandleFunc(pattern+"/", Dispatch)
+				}
+			}
+		}
 	}
+	webServices = append(webServices, service)
+}
+
+// fixedPrefixPath returns the fixed part of the partspec ; it may include template vars {}
+func fixedPrefixPath(pathspec string) string {
+	varBegin := strings.Index(pathspec, "{")
+	if -1 == varBegin {
+		return pathspec
+	}
+	return pathspec[:varBegin]
 }
 
 // Dispatch the incoming Http Request to a matching Dispatcher.

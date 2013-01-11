@@ -67,6 +67,7 @@ func createUser(request *restful.Request, response *restful.Response) {
 	err := request.ReadEntity(&usr)
 	if err == nil {
 		users[usr.Id] = usr
+		response.WriteHeader(http.StatusCreated)
 		response.WriteEntity(usr)
 	} else {
 		response.WriteError(http.StatusInternalServerError, err)

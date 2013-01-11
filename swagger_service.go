@@ -2,12 +2,8 @@ package restful
 
 import (
 	"github.com/emicklei/go-restful/swagger"
-	//	"github.com/emicklei/hopwatch"
-	//	"fmt"
 	"log"
 	"net/http"
-
-//	"net/url"
 )
 
 type SwaggerConfig struct {
@@ -35,10 +31,11 @@ func InstallSwaggerService(config SwaggerConfig) {
 	ws.Route(ws.GET("/{a}/{b}").To(getDeclarations))
 	ws.Route(ws.GET("/{a}/{b}/{c}").To(getDeclarations))
 	ws.Route(ws.GET("/{a}/{b}/{c}/{d}").To(getDeclarations)) // TODO maybe support * in the path spec?
+	log.Printf("[restful/swagger] listing is available at %v%v", config.WebServicesUrl, config.ApiPath)
 	Add(ws)
 
 	// Install FileServer
-	log.Printf("[restful] %v%v is mapped to folder %v", config.WebServicesUrl, config.SwaggerPath, config.SwaggerFilePath)
+	log.Printf("[restful/swagger] %v%v is mapped to folder %v", config.WebServicesUrl, config.SwaggerPath, config.SwaggerFilePath)
 	http.Handle(config.SwaggerPath, http.StripPrefix(config.SwaggerPath, http.FileServer(http.Dir(config.SwaggerFilePath))))
 }
 
