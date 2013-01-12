@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"net/http"
-	"strings"
 )
 
 // Response is a wrapper on the actual http ResponseWriter
 // It provides several convenience methods to prepare and write response content.
 type Response struct {
 	http.ResponseWriter
-	accept string
+	accept   string   // content-types what the Http Request says it want to receive
+	produces []string // content-types what the Route says it can produce
 }
 
 // InternalServerError is a shortcut for .WriteHeader(http.StatusInternalServerError)
@@ -27,13 +27,36 @@ func (self Response) AddHeader(header string, value string) Response {
 }
 
 // WriteEntity marshals the value using the representation denoted by the Accept Header (XML or JSON)
-// If no Accept header is specified then return MIME_XML content
+// If no Accept header is specified (or */*) then return the Content-Type as specified by the Route Produces collection.
+// Currently, Accept header can only have one mime type
+// If Produces is empty then the return MIME_XML content
+// Current implementation ignores any q-parameters in the Accept Header. 
 func (self Response) WriteEntity(value interface{}) Response {
-	if strings.Index(self.accept, MIME_JSON) != -1 {
-		self.WriteAsJson(value)
-		return self
+	if "" == self.accept || "*/*" == self.accept {
+		if len(self.produces) == 0 {
+			self.WriteAsXml(value)
+			return self
+		}
+		for _, each := range self.produces {
+			if MIME_JSON == each {
+				self.WriteAsJson(value)
+				return self
+			}
+		}
+	} else { // Accept header specified
+		for _, each := range self.produces {
+			if each == self.accept {
+				if MIME_JSON == each {
+					self.WriteAsJson(value)
+					return self
+				}
+				if MIME_XML == each {
+					self.WriteAsXml(value)
+					return self
+				}
+			}
+		}
 	}
-	//	if strings.Index(self.accept,MIME_XML) != -1 {
 	self.WriteAsXml(value)
 	return self
 }

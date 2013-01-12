@@ -38,7 +38,7 @@ func (self *Route) postBuild() {
 func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 	params := self.extractParameters(httpRequest.URL.Path)
 	accept := httpRequest.Header.Get(HEADER_Accept)
-	self.Function(&Request{httpRequest, params}, &Response{httpWriter, accept})
+	self.Function(&Request{httpRequest, params}, &Response{httpWriter, accept, self.Produces})
 }
 
 // Return whether the mimeType matches to what this Route can produce.
