@@ -19,4 +19,6 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 - [Design explained on blog](http://ernestmicklei.com/2012/11/11/go-restful-api-design/)
 - [Showcase: Landskape tool](https://github.com/emicklei/landskape)
 
+[![Build Status](https://travis-ci.org/emicklei/go-restful.png)](https://travis-ci.org/emicklei/go-restful)
+
 (c) 2012, http://ernestmicklei.com. MIT License
