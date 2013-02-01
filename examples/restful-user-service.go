@@ -82,6 +82,7 @@ func removeUser(request *restful.Request, response *restful.Response) {
 func main() {
 	restful.Add(NewUserService())
 	
+	// Optionally, you can install the Swagger Service which provides a nice Web UI on your REST API
 	// Open http://localhost:8080/apidocs and enter http://localhost:8080/apidocs.json in the api input field.
 	config := restful.SwaggerConfig{ 
 		WebServicesUrl: "http://localhost:8080",
