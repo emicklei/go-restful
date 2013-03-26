@@ -116,3 +116,10 @@ func (r Response) WriteServiceError(httpStatus int, err ServiceError) Response {
 	r.WriteEntity(err)
 	return r
 }
+
+// WriteStatus is a convenience method for an response status with empty body
+// e.g. request PUT user -> response 201 CREATED
+func (self Response) WriteStatus(status int) Response {
+	self.WriteHeader(status)
+	return self
+}
