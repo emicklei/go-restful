@@ -90,7 +90,7 @@ func (self Response) WriteAsJson(value interface{}) Response {
 func (self Response) WriteError(status int, err error) Response {
 	self.WriteHeader(status)
 	if err != nil {
-		self.WriteEntity(err)
+		self.WriteEntity(err.Error())
 	}
 	return self
 }
