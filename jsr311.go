@@ -25,6 +25,7 @@ func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *ht
 	}
 	if len(methodOk) == 0 {
 		httpWriter.WriteHeader(http.StatusMethodNotAllowed)
+		httpWriter.Write([]byte("405: Method Not Allowed"))
 		return Route{}, false
 	}
 	inputMediaOk := methodOk
