@@ -31,11 +31,3 @@ func TestWebService_CanCreateParameterKinds(t *testing.T) {
 		t.Error("query parameter expected")
 	}
 }
-
-// This example shows overriding the Dispatch function to add basic logging
-func ExampleDispatchFunc() {
-	restful.Dispatch = func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(r.Method, r.URL)
-		restful.DefaultDispatch(w, r)
-	}
-}

@@ -8,11 +8,15 @@ import (
 	"strings"
 )
 
-type DispatchFunc http.HandlerFunc
-
 // The Dispatch function is responsible to delegating to the appropriate Dispatcher that has been registered via Add.
 // The default implementation is DefaultDispatch which also does some basic panic handling.
-var Dispatch DispatchFunc
+//
+// Example of overriding it to add basic request logging:
+//	restful.Dispatch = func(w http.ResponseWriter, r *http.Request) {
+//		fmt.Println(r.Method, r.URL)
+//		restful.DefaultDispatch(w, r)
+//	}
+var Dispatch http.HandlerFunc
 
 type Dispatcher interface {
 	Routes() []Route
@@ -24,6 +28,7 @@ type Dispatcher interface {
 // Collection of registered Dispatchers that can handle Http requests
 var webServices = []Dispatcher{}
 var isRegisteredOnRoot = false
+
 
 // Add registers a new Dispatcher add it to the http listeners.
 func Add(service Dispatcher) {
