@@ -7,6 +7,13 @@ import (
 	"strings"
 )
 
+// If Accept header matching fails, fall back to this type, otherwise 
+// a "406: Not Acceptable" response is returned.
+// Valid values are restful.MIME_JSON and restful.MIME_XML
+// Example:
+// 	restful.DefaultResponseMimeType = restful.MIME_JSON
+var DefaultResponseMimeType string
+
 // Response is a wrapper on the actual http ResponseWriter
 // It provides several convenience methods to prepare and write response content.
 type Response struct {
@@ -57,7 +64,14 @@ func (self Response) WriteEntity(value interface{}) Response {
 			}
 		}
 	}
-	self.WriteHeader(http.StatusNotAcceptable)
+	if DefaultResponseMimeType == MIME_JSON {
+		self.WriteAsJson(value)
+	} else if DefaultResponseMimeType == MIME_XML {
+		self.WriteAsXml(value)
+	} else {
+		self.WriteHeader(http.StatusNotAcceptable)
+		self.Write([]byte("406: Not Acceptable"))
+	}
 	return self
 }
 
