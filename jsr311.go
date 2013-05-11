@@ -25,6 +25,7 @@ func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *ht
 	}
 	if len(methodOk) == 0 {
 		httpWriter.WriteHeader(http.StatusMethodNotAllowed)
+		httpWriter.Write([]byte("405: Method Not Allowed"))
 		return Route{}, false
 	}
 	inputMediaOk := methodOk
@@ -52,6 +53,7 @@ func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *ht
 	}
 	if len(outputMediaOk) == 0 {
 		httpWriter.WriteHeader(http.StatusNotAcceptable)
+		httpWriter.Write([]byte("406: Not Acceptable"))
 		return Route{}, false
 	}
 	return bestMatchByMedia(outputMediaOk, contentType, accept), true
