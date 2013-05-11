@@ -97,7 +97,7 @@ func asSwaggerParameter(param *Parameter) swagger.Parameter {
 		Name:        param.name,
 		Description: param.description,
 		ParamType:   asParamType(param.kind),
-		DataType:    "String",
+		DataType:    param.dataType,
 		Required:    param.required}
 }
 
