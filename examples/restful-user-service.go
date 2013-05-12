@@ -29,14 +29,14 @@ func NewUserService() *restful.WebService {
 	ws.Route(ws.POST("").To(updateUser).
 		// docs	
 		Doc("update a user").
-		Param(ws.BodyParameter("user", "representation of a user").DataType("main.User")).
+		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
 		Writes(User{}))
 
 	ws.Route(ws.PUT("/{user-id}").To(createUser).
 		// docs	
 		Doc("create a user").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-		Param(ws.BodyParameter("user", "representation of a user").DataType("main.User")).
+		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
 		Writes(User{}))
 
 	ws.Route(ws.DELETE("/{user-id}").To(removeUser).

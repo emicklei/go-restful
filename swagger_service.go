@@ -76,7 +76,8 @@ func getDeclarations(req *Request, resp *Response) {
 			for path, routes := range pathToRoutes {
 				api := swagger.Api{Path: path, Models: map[string]swagger.Model{}}
 				for _, route := range routes {
-					operation := swagger.Operation{HttpMethod: route.Method, Summary: route.Doc}
+					operation := swagger.Operation{HttpMethod: route.Method, Summary: route.Doc, ResponseClass: "void"}
+
 					// share root params if any
 					for _, swparam := range rootParams {
 						operation.Parameters = append(operation.Parameters, swparam)
@@ -85,8 +86,8 @@ func getDeclarations(req *Request, resp *Response) {
 					for _, param := range route.parameterDocs {
 						operation.Parameters = append(operation.Parameters, asSwaggerParameter(param))
 					}
+					addModelsFromRoute(&api, &operation, route)
 					api.Operations = append(api.Operations, operation)
-					addModelsFromRoute(&api, route)
 				}
 				decl.Apis = append(decl.Apis, api)
 			}
@@ -96,19 +97,23 @@ func getDeclarations(req *Request, resp *Response) {
 }
 
 // addModelsFromRoute takes any read or write sample from the Route and creates a Swagger model from it.
-func addModelsFromRoute(api *swagger.Api, route Route) {
+func addModelsFromRoute(api *swagger.Api, operation *swagger.Operation, route Route) {
 	if route.readSample != nil {
-		addModelFromSample(api, route.readSample)
+		addModelFromSample(api, operation, true, route.readSample)
 	}
 	if route.writeSample != nil {
-		addModelFromSample(api, route.writeSample)
+		addModelFromSample(api, operation, false, route.writeSample)
 	}
 }
 
 // addModelFromSample creates and adds (or overwrites) a Model from a sample resource
-func addModelFromSample(api *swagger.Api, sample interface{}) {
+func addModelFromSample(api *swagger.Api, operation *swagger.Operation, isResponse bool, sample interface{}) {
 	st := reflect.TypeOf(sample)
-	sm := swagger.Model{map[string]swagger.ModelProperty{}}
+	if isResponse {
+		operation.ResponseClass = st.String()
+	}
+	sm := swagger.Model{st.String(), map[string]swagger.ModelProperty{}}
+	// TODO handle recursive structures, hidden and array fields
 	for i := 0; i < st.NumField(); i++ {
 		sf := st.Field(i)
 		sp := swagger.ModelProperty{Type: sf.Type.Name()}

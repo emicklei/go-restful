@@ -49,6 +49,7 @@ type ErrorResponse struct {
 }
 
 type Model struct {
+	Id         string                   `json:"id"`
 	Properties map[string]ModelProperty `json:"properties"`
 }
 
