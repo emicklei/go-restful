@@ -9,10 +9,10 @@ type ResourceListing struct {
 }
 
 type Api struct {
-	Path        string      `json:"path"`
-	Description string      `json:"description"`
-	Operations  []Operation `json:"operations"`
-	Models      []Model     `json:"models"`
+	Path        string           `json:"path"`
+	Description string           `json:"description"`
+	Operations  []Operation      `json:"operations"`
+	Models      map[string]Model `json:"models"`
 }
 
 type ApiDeclaration struct {
@@ -48,4 +48,11 @@ type ErrorResponse struct {
 	Reason string `json:"reason"`
 }
 
-type Model struct{}
+type Model struct {
+	Properties map[string]ModelProperty `json:"properties"`
+}
+
+type ModelProperty struct {
+	Type        string `json:"type"`
+	Description string `json:"description"`
+}

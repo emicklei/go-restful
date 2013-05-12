@@ -4,6 +4,7 @@ import (
 	"github.com/emicklei/go-restful"
 	"log"
 	"net/http"
+	//"reflect"
 )
 
 type User struct {
@@ -22,22 +23,27 @@ func NewUserService() *restful.WebService {
 	ws.Route(ws.GET("/{user-id}").To(findUser).
 		// docs	
 		Doc("get a user").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")))
+		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
+		Reads(User{}))
 
 	ws.Route(ws.POST("").To(updateUser).
 		// docs	
-		Doc("update a user"))
+		Doc("update a user").
+		Param(ws.BodyParameter("user", "representation of a user").DataType("main.User")).
+		Writes(User{}))
 
 	ws.Route(ws.PUT("/{user-id}").To(createUser).
 		// docs	
 		Doc("create a user").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")))
+		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
+		Param(ws.BodyParameter("user", "representation of a user").DataType("main.User")).
+		Writes(User{}))
 
 	ws.Route(ws.DELETE("/{user-id}").To(removeUser).
 		// docs	
 		Doc("delete a user").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")))
-	
+
 	return ws
 }
 
@@ -81,16 +87,16 @@ func removeUser(request *restful.Request, response *restful.Response) {
 
 func main() {
 	restful.Add(NewUserService())
-	
+
 	// Optionally, you can install the Swagger Service which provides a nice Web UI on your REST API
 	// Open http://localhost:8080/apidocs and enter http://localhost:8080/apidocs.json in the api input field.
-	config := restful.SwaggerConfig{ 
-		WebServicesUrl: "http://localhost:8080",
-		ApiPath: "/apidocs.json",
-		SwaggerPath: "/apidocs/",
-		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7" }	
+	config := restful.SwaggerConfig{
+		WebServicesUrl:  "http://localhost:8080",
+		ApiPath:         "/apidocs.json",
+		SwaggerPath:     "/apidocs/",
+		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7"}
 	restful.InstallSwaggerService(config)
-	
+
 	log.Printf("start listening on localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

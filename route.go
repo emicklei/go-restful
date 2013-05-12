@@ -25,8 +25,9 @@ type Route struct {
 	pathParts    []string
 
 	// documentation
-	Doc           string
-	parameterDocs []*Parameter
+	Doc                     string
+	parameterDocs           []*Parameter
+	readSample, writeSample interface{} // structs that model an example request or response payload
 }
 
 // Initialize for Route

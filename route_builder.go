@@ -14,7 +14,7 @@ type RouteBuilder struct {
 	function    RouteFunction // required
 	// documentation
 	doc                     string
-	readSample, writeSample string
+	readSample, writeSample interface{}
 	parameters              []*Parameter
 }
 
@@ -57,13 +57,13 @@ func (self *RouteBuilder) Doc(documentation string) *RouteBuilder {
 
 // Reads tells what resource type will be read from the request payload. Optional.
 func (self *RouteBuilder) Reads(sample interface{}) *RouteBuilder {
-	//self.readSample = sample
+	self.readSample = sample
 	return self
 }
 
 // Writes tells what resource type will be written as the response payload. Optional.
 func (self *RouteBuilder) Writes(sample interface{}) *RouteBuilder {
-	//self.writeSample = sample
+	self.writeSample = sample
 	return self
 }
 
@@ -103,7 +103,9 @@ func (self *RouteBuilder) Build() Route {
 		Function:      self.function,
 		relativePath:  self.currentPath,
 		Doc:           self.doc,
-		parameterDocs: self.parameters}
+		parameterDocs: self.parameters,
+		readSample:    self.readSample,
+		writeSample:   self.writeSample}
 	route.postBuild()
 	return route
 }

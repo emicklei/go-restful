@@ -2,8 +2,10 @@ package restful
 
 import (
 	"github.com/emicklei/go-restful/swagger"
+	// "github.com/emicklei/hopwatch"
 	"log"
 	"net/http"
+	"reflect"
 )
 
 type SwaggerConfig struct {
@@ -72,7 +74,7 @@ func getDeclarations(req *Request, resp *Response) {
 				pathToRoutes[other.Path] = append(routes, other)
 			}
 			for path, routes := range pathToRoutes {
-				api := swagger.Api{Path: path}
+				api := swagger.Api{Path: path, Models: map[string]swagger.Model{}}
 				for _, route := range routes {
 					operation := swagger.Operation{HttpMethod: route.Method, Summary: route.Doc}
 					// share root params if any
@@ -84,12 +86,35 @@ func getDeclarations(req *Request, resp *Response) {
 						operation.Parameters = append(operation.Parameters, asSwaggerParameter(param))
 					}
 					api.Operations = append(api.Operations, operation)
+					addModelsFromRoute(&api, route)
 				}
 				decl.Apis = append(decl.Apis, api)
 			}
 		}
 	}
 	resp.WriteAsJson(decl)
+}
+
+// addModelsFromRoute takes any read or write sample from the Route and creates a Swagger model from it.
+func addModelsFromRoute(api *swagger.Api, route Route) {
+	if route.readSample != nil {
+		addModelFromSample(api, route.readSample)
+	}
+	if route.writeSample != nil {
+		addModelFromSample(api, route.writeSample)
+	}
+}
+
+// addModelFromSample creates and adds (or overwrites) a Model from a sample resource
+func addModelFromSample(api *swagger.Api, sample interface{}) {
+	st := reflect.TypeOf(sample)
+	sm := swagger.Model{map[string]swagger.ModelProperty{}}
+	for i := 0; i < st.NumField(); i++ {
+		sf := st.Field(i)
+		sp := swagger.ModelProperty{Type: sf.Type.Name()}
+		sm.Properties[sf.Name] = sp
+	}
+	api.Models[st.String()] = sm
 }
 
 func asSwaggerParameter(param *Parameter) swagger.Parameter {
