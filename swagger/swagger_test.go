@@ -6,7 +6,7 @@ import (
 )
 
 func TestApi(t *testing.T) {
-	value := Api{Path: "/", Description: "Some Path", Operations: []Operation{}, Models: []Model{}}
+	value := Api{Path: "/", Description: "Some Path", Operations: []Operation{}, Models: map[string]Model{}}
 	output, _ := json.MarshalIndent(value, " ", " ")
 	print(string(output))
 }
