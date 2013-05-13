@@ -8,6 +8,16 @@ import (
 	"strings"
 )
 
+// The Dispatch function is responsible to delegating to the appropriate Dispatcher that has been registered via Add.
+// The default implementation is DefaultDispatch which also does some basic panic handling.
+//
+// Example of overriding it to add basic request logging:
+//	restful.Dispatch = func(w http.ResponseWriter, r *http.Request) {
+//		fmt.Println(r.Method, r.URL)
+//		restful.DefaultDispatch(w, r)
+//	}
+var Dispatch http.HandlerFunc
+
 type Dispatcher interface {
 	Routes() []Route
 	RootPath() string
@@ -19,9 +29,10 @@ type Dispatcher interface {
 var webServices = []Dispatcher{}
 var isRegisteredOnRoot = false
 
+
 // Add registers a new Dispatcher add it to the http listeners.
 func Add(service Dispatcher) {
-	// If registered on root then no additional specific mapping is needed	
+	// If registered on root then no additional specific mapping is needed
 	if !isRegisteredOnRoot {
 		pattern := fixedPrefixPath(service.RootPath())
 		// check if root path registration is needed
@@ -59,7 +70,7 @@ func fixedPrefixPath(pathspec string) string {
 
 // Dispatch the incoming Http Request to a matching Dispatcher.
 // Matching algorithm is conform http://jsr311.java.net/nonav/releases/1.1/spec/spec.html, see jsr311.go
-func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
+func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 	// catch all for 500 response
 	defer func() {
 		if r := recover(); r != nil {
@@ -82,4 +93,8 @@ func Dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 		route.dispatch(httpWriter, httpRequest)
 	}
 	// else a non-200 response has already been written
+}
+
+func init() {
+	Dispatch = DefaultDispatch
 }
