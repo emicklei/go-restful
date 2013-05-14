@@ -48,6 +48,11 @@ func Add(service Dispatcher) {
 	webServices = append(webServices, service)
 }
 
+// RegisteredWebServices returns the collections of added Dispatchers (WebService is an implementation)
+func RegisteredWebServices() []Dispatcher {
+	return webServices
+}
+
 // fixedPrefixPath returns the fixed part of the partspec ; it may include template vars {}
 func fixedPrefixPath(pathspec string) string {
 	varBegin := strings.Index(pathspec, "{")
