@@ -21,7 +21,7 @@ var isRegisteredOnRoot = false
 
 // Add registers a new Dispatcher add it to the http listeners.
 func Add(service Dispatcher) {
-	// If registered on root then no additional specific mapping is needed	
+	// If registered on root then no additional specific mapping is needed
 	if !isRegisteredOnRoot {
 		pattern := fixedPrefixPath(service.RootPath())
 		// check if root path registration is needed

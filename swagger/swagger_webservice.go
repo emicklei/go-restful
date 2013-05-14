@@ -1,7 +1,7 @@
-package restful
+package swagger
 
 import (
-	"github.com/emicklei/go-restful/swagger"
+	"github.com/emicklei/go-restful"
 	// "github.com/emicklei/hopwatch"
 	"log"
 	"net/http"
@@ -13,41 +13,39 @@ type SwaggerConfig struct {
 	ApiPath         string // path where the JSON api is avaiable , e.g. /apidocs
 	SwaggerPath     string // path where the swagger UI will be served, e.g. /swagger
 	SwaggerFilePath string // location of folder containing Swagger HTML5 application index.html
+	WebServices     []restful.Dispatcher
 }
 
-var webServicesBasePath string
-var swaggerServiceApiPath string
+var config SwaggerConfig
 
 // InstallSwaggerService add the WebService that provides the API documentation of all services
 // conform the Swagger documentation specifcation. (https://github.com/wordnik/swagger-core/wiki).
-func InstallSwaggerService(config SwaggerConfig) {
-	// TODO just keep config around
-	webServicesBasePath = config.WebServicesUrl
-	swaggerServiceApiPath = config.ApiPath
+func InstallSwaggerService(aSwaggerConfig SwaggerConfig) {
+	config = aSwaggerConfig
 
-	ws := new(WebService)
+	ws := new(restful.WebService)
 	ws.Path(config.ApiPath)
-	ws.Produces(MIME_JSON)
+	ws.Produces(restful.MIME_JSON)
 	ws.Route(ws.GET("/").To(getListing))
 	ws.Route(ws.GET("/{a}").To(getDeclarations))
 	ws.Route(ws.GET("/{a}/{b}").To(getDeclarations))
 	ws.Route(ws.GET("/{a}/{b}/{c}").To(getDeclarations))
 	ws.Route(ws.GET("/{a}/{b}/{c}/{d}").To(getDeclarations)) // TODO maybe support * in the path spec?
 	log.Printf("[restful/swagger] listing is available at %v%v", config.WebServicesUrl, config.ApiPath)
-	Add(ws)
+	restful.Add(ws)
 
 	// Install FileServer
 	log.Printf("[restful/swagger] %v%v is mapped to folder %v", config.WebServicesUrl, config.SwaggerPath, config.SwaggerFilePath)
 	http.Handle(config.SwaggerPath, http.StripPrefix(config.SwaggerPath, http.FileServer(http.Dir(config.SwaggerFilePath))))
 }
 
-func getListing(req *Request, resp *Response) {
-	listing := swagger.ResourceListing{SwaggerVersion: "1.1", BasePath: webServicesBasePath}
-	for _, each := range webServices {
+func getListing(req *restful.Request, resp *restful.Response) {
+	listing := ResourceListing{SwaggerVersion: "1.1", BasePath: config.WebServicesUrl}
+	for _, each := range config.WebServices {
 		// skip the api service itself
-		if each.RootPath() != swaggerServiceApiPath {
-			api := swagger.Api{
-				Path: swaggerServiceApiPath + each.RootPath()}
+		if each.RootPath() != config.ApiPath {
+			api := Api{
+				Path: config.ApiPath + each.RootPath()}
 			//Description: each.Doc}
 			listing.Apis = append(listing.Apis, api)
 		}
@@ -55,36 +53,36 @@ func getListing(req *Request, resp *Response) {
 	resp.WriteAsJson(listing)
 }
 
-func getDeclarations(req *Request, resp *Response) {
+func getDeclarations(req *restful.Request, resp *restful.Response) {
 	rootPath := composeRootPath(req)
 	// log.Printf("rootPath:%V", rootPath)
-	decl := swagger.ApiDeclaration{SwaggerVersion: "1.1", BasePath: webServicesBasePath, ResourcePath: rootPath}
-	for _, each := range webServices {
+	decl := ApiDeclaration{SwaggerVersion: "1.1", BasePath: config.WebServicesUrl, ResourcePath: rootPath}
+	for _, each := range config.WebServices {
 		// find the webservice
 		if each.RootPath() == rootPath {
 			// collect any path parameters
-			rootParams := []swagger.Parameter{}
+			rootParams := []Parameter{}
 			for _, param := range each.PathParameters() {
-				rootParams = append(rootParams, asSwaggerParameter(param))
+				rootParams = append(rootParams, asSwaggerParameter(param.Data()))
 			}
 			// aggregate by path
-			pathToRoutes := map[string][]Route{}
+			pathToRoutes := map[string][]restful.Route{}
 			for _, other := range each.Routes() {
 				routes := pathToRoutes[other.Path]
 				pathToRoutes[other.Path] = append(routes, other)
 			}
 			for path, routes := range pathToRoutes {
-				api := swagger.Api{Path: path, Models: map[string]swagger.Model{}}
+				api := Api{Path: path, Models: map[string]Model{}}
 				for _, route := range routes {
-					operation := swagger.Operation{HttpMethod: route.Method, Summary: route.Doc, ResponseClass: "void"}
+					operation := Operation{HttpMethod: route.Method, Summary: route.Doc, ResponseClass: "void"}
 
 					// share root params if any
 					for _, swparam := range rootParams {
 						operation.Parameters = append(operation.Parameters, swparam)
 					}
-					// route specific params					
-					for _, param := range route.parameterDocs {
-						operation.Parameters = append(operation.Parameters, asSwaggerParameter(param))
+					// route specific params
+					for _, param := range route.ParameterDocs {
+						operation.Parameters = append(operation.Parameters, asSwaggerParameter(param.Data()))
 					}
 					addModelsFromRoute(&api, &operation, route)
 					api.Operations = append(api.Operations, operation)
@@ -97,42 +95,42 @@ func getDeclarations(req *Request, resp *Response) {
 }
 
 // addModelsFromRoute takes any read or write sample from the Route and creates a Swagger model from it.
-func addModelsFromRoute(api *swagger.Api, operation *swagger.Operation, route Route) {
-	if route.readSample != nil {
-		addModelFromSample(api, operation, true, route.readSample)
+func addModelsFromRoute(api *Api, operation *Operation, route restful.Route) {
+	if route.ReadSample != nil {
+		addModelFromSample(api, operation, true, route.ReadSample)
 	}
-	if route.writeSample != nil {
-		addModelFromSample(api, operation, false, route.writeSample)
+	if route.WriteSample != nil {
+		addModelFromSample(api, operation, false, route.WriteSample)
 	}
 }
 
 // addModelFromSample creates and adds (or overwrites) a Model from a sample resource
-func addModelFromSample(api *swagger.Api, operation *swagger.Operation, isResponse bool, sample interface{}) {
+func addModelFromSample(api *Api, operation *Operation, isResponse bool, sample interface{}) {
 	st := reflect.TypeOf(sample)
 	if isResponse {
 		operation.ResponseClass = st.String()
 	}
-	sm := swagger.Model{st.String(), map[string]swagger.ModelProperty{}}
+	sm := Model{st.String(), map[string]ModelProperty{}}
 	// TODO handle recursive structures, hidden and array fields
 	for i := 0; i < st.NumField(); i++ {
 		sf := st.Field(i)
-		sp := swagger.ModelProperty{Type: sf.Type.Name()}
+		sp := ModelProperty{Type: sf.Type.Name()}
 		sm.Properties[sf.Name] = sp
 	}
 	api.Models[st.String()] = sm
 }
 
-func asSwaggerParameter(param *Parameter) swagger.Parameter {
-	return swagger.Parameter{
-		Name:        param.name,
-		Description: param.description,
-		ParamType:   asParamType(param.kind),
-		DataType:    param.dataType,
-		Required:    param.required}
+func asSwaggerParameter(param restful.ParameterData) Parameter {
+	return Parameter{
+		Name:        param.Name,
+		Description: param.Description,
+		ParamType:   asParamType(param.Kind),
+		DataType:    param.DataType,
+		Required:    param.Required}
 }
 
 // Between 1..4 path parameters supported
-func composeRootPath(req *Request) string {
+func composeRootPath(req *restful.Request) string {
 	path := "/" + req.PathParameter("a")
 	b := req.PathParameter("b")
 	if b == "" {
@@ -153,11 +151,11 @@ func composeRootPath(req *Request) string {
 
 func asParamType(kind int) string {
 	switch {
-	case kind == PATH_PARAMETER:
+	case kind == restful.PATH_PARAMETER:
 		return "path"
-	case kind == QUERY_PARAMETER:
+	case kind == restful.QUERY_PARAMETER:
 		return "query"
-	case kind == BODY_PARAMETER:
+	case kind == restful.BODY_PARAMETER:
 		return "body"
 	}
 	return ""

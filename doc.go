@@ -19,11 +19,11 @@ Example WebService:
 			// for documentation
 			Doc("Get the Application node by its id").
 			Param(ws.PathParameter("id" , "the identifier for an application node")).
-			Param(ws.QueryParameter("environment" , "the scope in which the application node lives")).			
+			Param(ws.QueryParameter("environment" , "the scope in which the application node lives")).
 			Writes(Application{}))
 		ws.Route(ws.POST("/").To(saveApplication).
 			// for documentation
-			Doc("Create or update the Application node").			
+			Doc("Create or update the Application node").
 			Reads(Application{}))
 		return ws
 	}
@@ -35,13 +35,13 @@ Example WebService:
 		// response.AddHeader("X-Something","other")
 		// response.WriteEntity(anApp) , uses Accept header to detect XML/JSON
 		// response.WriterError(http.StatusInternalServerError,err)
-	}	
+	}
 
 Example main:
 
 	func main() {
-		restful.Add(landscapeservice.New())	
-		log.Fatal(http.ListenAndServe(":8080", nil))	
+		restful.Add(landscapeservice.New())
+		log.Fatal(http.ListenAndServe(":8080", nil))
 	}
 
 [project]: https://github.com/emicklei/go-restful
