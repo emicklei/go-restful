@@ -15,7 +15,7 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 ### Resources
 
 - [Documentation go-restful (godoc.org)](http://godoc.org/github.com/emicklei/go-restful)
-- [Hello world, plain and simple](https://github.com/emicklei/go-restful/tree/master/examples/hello/restful-hello-world.go)  
+- [Hello world, plain and simple](https://github.com/emicklei/go-restful/tree/master/examples/restful-hello-world.go)  
 - [Full API of a UserService](https://github.com/emicklei/go-restful/tree/master/examples/restful-user-service.go) 
 - [Example posted on blog](http://ernestmicklei.com/2012/11/24/go-restful-first-working-example/)
 - [Design explained on blog](http://ernestmicklei.com/2012/11/11/go-restful-api-design/)

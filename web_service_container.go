@@ -29,7 +29,6 @@ type Dispatcher interface {
 var webServices = []Dispatcher{}
 var isRegisteredOnRoot = false
 
-
 // Add registers a new Dispatcher add it to the http listeners.
 func Add(service Dispatcher) {
 	// If registered on root then no additional specific mapping is needed
