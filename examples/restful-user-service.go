@@ -18,7 +18,7 @@ func NewUserService() *restful.WebService {
 	ws.
 		Path("/users").
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
-		Produces(restful.MIME_JSON, restful.MIME_XML)
+		Produces(restful.MIME_JSON, restful.MIME_XML) // you can specify this per route as well
 
 	ws.Route(ws.GET("/{user-id}").To(findUser).
 		// docs
@@ -47,6 +47,8 @@ func NewUserService() *restful.WebService {
 	return ws
 }
 
+// GET http://localhost:8080/users/1
+//
 func findUser(request *restful.Request, response *restful.Response) {
 	id := request.PathParameter("user-id")
 	usr := users[id]
@@ -57,6 +59,9 @@ func findUser(request *restful.Request, response *restful.Response) {
 	}
 }
 
+// POST http://localhost:8080/users/1
+// <User><Id>1</Id><Name>Melissa Raspberry</Name></User>
+//
 func updateUser(request *restful.Request, response *restful.Response) {
 	usr := new(User)
 	err := request.ReadEntity(&usr)
@@ -68,6 +73,9 @@ func updateUser(request *restful.Request, response *restful.Response) {
 	}
 }
 
+// PUT http://localhost:8080/users/1
+// <User><Id>1</Id><Name>Melissa</Name></User>
+//
 func createUser(request *restful.Request, response *restful.Response) {
 	usr := User{Id: request.PathParameter("user-id")}
 	err := request.ReadEntity(&usr)
@@ -80,6 +88,8 @@ func createUser(request *restful.Request, response *restful.Response) {
 	}
 }
 
+// DELETE http://localhost:8080/users/1
+//
 func removeUser(request *restful.Request, response *restful.Response) {
 	id := request.PathParameter("user-id")
 	delete(users, id)
@@ -89,14 +99,14 @@ func main() {
 	restful.Add(NewUserService())
 
 	// Optionally, you can install the Swagger Service which provides a nice Web UI on your REST API
-	// You need to download the Swagger HTML5 assets and change the FilePath location in the config.
+	// You need to download the Swagger HTML5 assets and change the FilePath location in the config below.
 	// Open http://localhost:8080/apidocs and enter http://localhost:8080/apidocs.json in the api input field.
 	config := swagger.Config{
 		WebServicesUrl:  "http://localhost:8080",
 		ApiPath:         "/apidocs.json",
 		SwaggerPath:     "/apidocs/",
 		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7",
-		WebServices:     restful.RegisteredWebServices()}
+		WebServices:     restful.RegisteredWebServices()} // you control what services are visible
 	swagger.InstallSwaggerService(config)
 
 	log.Printf("start listening on localhost:8080")
