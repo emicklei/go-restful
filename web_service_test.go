@@ -5,7 +5,7 @@ import (
 )
 
 func TestParameter(t *testing.T) {
-	p := &Parameter{name: "name", description: "desc"}
+	p := &Parameter{&ParameterData{Name: "name", Description: "desc"}}
 	p.AllowMultiple(true)
 	p.DataType("int")
 	p.Required(true)
@@ -15,19 +15,19 @@ func TestParameter(t *testing.T) {
 
 	ws := new(WebService)
 	ws.Param(p)
-	if ws.pathParameters[0].name != "name" {
+	if ws.pathParameters[0].Data().Name != "name" {
 		t.Error("path parameter (or name) invalid")
 	}
 }
 func TestWebService_CanCreateParameterKinds(t *testing.T) {
 	ws := new(WebService)
-	if ws.BodyParameter("b", "b").kind != BODY_PARAMETER {
+	if ws.BodyParameter("b", "b").Kind() != BODY_PARAMETER {
 		t.Error("body parameter expected")
 	}
-	if ws.PathParameter("p", "p").kind != PATH_PARAMETER {
+	if ws.PathParameter("p", "p").Kind() != PATH_PARAMETER {
 		t.Error("path parameter expected")
 	}
-	if ws.QueryParameter("q", "q").kind != QUERY_PARAMETER {
+	if ws.QueryParameter("q", "q").Kind() != QUERY_PARAMETER {
 		t.Error("query parameter expected")
 	}
 }

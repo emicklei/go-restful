@@ -1,5 +1,5 @@
 // Copyright 2012 Ernest Micklei. All rights reserved.
-// Use of this source code is governed by a license 
+// Use of this source code is governed by a license
 // that can be found in the LICENSE file.
 
 package restful
@@ -26,8 +26,8 @@ type Route struct {
 
 	// documentation
 	Doc                     string
-	parameterDocs           []*Parameter
-	readSample, writeSample interface{} // structs that model an example request or response payload
+	ParameterDocs           []*Parameter
+	ReadSample, WriteSample interface{} // structs that model an example request or response payload
 }
 
 // Initialize for Route

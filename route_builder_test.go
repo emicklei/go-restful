@@ -5,7 +5,7 @@ import (
 )
 
 func TestRouteBuilder_PathParameter(t *testing.T) {
-	p := &Parameter{name: "name", description: "desc"}
+	p := &Parameter{&ParameterData{Name: "name", Description: "desc"}}
 	p.AllowMultiple(true)
 	p.DataType("int")
 	p.Required(true)
@@ -16,19 +16,19 @@ func TestRouteBuilder_PathParameter(t *testing.T) {
 	b := new(RouteBuilder)
 	b.Param(p)
 	r := b.Build()
-	if !r.parameterDocs[0].allowMultiple {
+	if !r.ParameterDocs[0].Data().AllowMultiple {
 		t.Error("AllowMultiple invalid")
 	}
-	if r.parameterDocs[0].dataType != "int" {
+	if r.ParameterDocs[0].Data().DataType != "int" {
 		t.Error("dataType invalid")
 	}
-	if !r.parameterDocs[0].required {
+	if !r.ParameterDocs[0].Data().Required {
 		t.Error("required invalid")
 	}
-	if r.parameterDocs[0].kind != PATH_PARAMETER {
+	if r.ParameterDocs[0].Data().Kind != PATH_PARAMETER {
 		t.Error("kind invalid")
 	}
-	if r.parameterDocs[0].allowableValues["a"] != "b" {
+	if r.ParameterDocs[0].Data().AllowableValues["a"] != "b" {
 		t.Error("allowableValues invalid")
 	}
 }

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// If Accept header matching fails, fall back to this type, otherwise 
+// If Accept header matching fails, fall back to this type, otherwise
 // a "406: Not Acceptable" response is returned.
 // Valid values are restful.MIME_JSON and restful.MIME_XML
 // Example:
@@ -37,7 +37,7 @@ func (self Response) AddHeader(header string, value string) Response {
 // WriteEntity marshals the value using the representation denoted by the Accept Header (XML or JSON)
 // If no Accept header is specified (or */*) then return the Content-Type as specified by the first in the Route.Produces.
 // If an Accept header is specified then return the Content-Type as specified by the first in the Route.Produces that is matched with the Accept header.
-// Current implementation ignores any q-parameters in the Accept Header. 
+// Current implementation ignores any q-parameters in the Accept Header.
 func (self Response) WriteEntity(value interface{}) Response {
 	if "" == self.accept || "*/*" == self.accept {
 		for _, each := range self.produces {
@@ -50,7 +50,7 @@ func (self Response) WriteEntity(value interface{}) Response {
 				return self
 			}
 		}
-	} else { // Accept header specified ; scan for each element in Route.Produces		
+	} else { // Accept header specified ; scan for each element in Route.Produces
 		for _, each := range self.produces {
 			if strings.Index(self.accept, each) != -1 {
 				if MIME_JSON == each {

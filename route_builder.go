@@ -18,7 +18,7 @@ type RouteBuilder struct {
 	parameters              []*Parameter
 }
 
-// To bind the route to a function. 
+// To bind the route to a function.
 // If this route is matched with the incoming Http Request then call this function with the *Request,*Response pair. Required.
 func (self *RouteBuilder) To(function RouteFunction) *RouteBuilder {
 	self.function = function
@@ -103,9 +103,9 @@ func (self *RouteBuilder) Build() Route {
 		Function:      self.function,
 		relativePath:  self.currentPath,
 		Doc:           self.doc,
-		parameterDocs: self.parameters,
-		readSample:    self.readSample,
-		writeSample:   self.writeSample}
+		ParameterDocs: self.parameters,
+		ReadSample:    self.readSample,
+		WriteSample:   self.writeSample}
 	route.postBuild()
 	return route
 }
