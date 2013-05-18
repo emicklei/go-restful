@@ -1,4 +1,3 @@
 language: go
-before_install: go get -d -v ./... 
 install: go build -v ...restful && go build -v ...swagger 
 script: go test -v ...restful && go test -v ...swagger
