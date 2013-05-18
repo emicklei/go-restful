@@ -23,9 +23,8 @@ func NewUserService() *restful.WebService {
 
 	logging := LoggingFilter{findUser}.handleFilter
 
-	counter := new(CountFilter)
-	counter.WrappedFunction = logging
-	counting := counter.handleFilter
+	counter := CountFilter{0, logging}
+	counting := (&counter).handleFilter
 	ws.Route(ws.GET("/{user-id}").To(counting))
 
 	//ws.Filter("/users/", handleLogging)
