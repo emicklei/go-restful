@@ -79,7 +79,7 @@ func (self Response) WriteEntity(value interface{}) Response {
 func (self Response) WriteAsXml(value interface{}) Response {
 	output, err := xml.MarshalIndent(value, " ", " ")
 	if err != nil {
-		self.InternalServerError()
+		self.WriteError(http.StatusInternalServerError, err)
 	} else {
 		self.Header().Set(HEADER_ContentType, MIME_XML)
 		self.Write([]byte(xml.Header))
@@ -92,7 +92,7 @@ func (self Response) WriteAsXml(value interface{}) Response {
 func (self Response) WriteAsJson(value interface{}) Response {
 	output, err := json.MarshalIndent(value, " ", " ")
 	if err != nil {
-		self.InternalServerError()
+		self.WriteError(http.StatusInternalServerError, err)
 	} else {
 		self.Header().Set(HEADER_ContentType, MIME_JSON)
 		self.Write(output)
