@@ -20,16 +20,18 @@ Example WebService:
 			Doc("Get the Application node by its id").
 			Param(ws.PathParameter("id" , "the identifier for an application node")).
 			Param(ws.QueryParameter("environment" , "the scope in which the application node lives")).
-			Writes(Application{}))
+			Writes(Application{})) // to the response
+
 		ws.Route(ws.POST("/").To(saveApplication).
 			// for documentation
 			Doc("Create or update the Application node").
-			Reads(Application{}))
+			Reads(Application{})) // from the request
 		return ws
 	}
 	func getApplication(request *Request, response *Response) {
-		// id := request.PathParameter("id")
-		// env := request.QueryParameter("environment")
+			id := request.PathParameter("id")
+			env := request.QueryParameter("environment")
+			...
 	}
 	func saveApplication(request *Request, response *Response) {
 		// response.AddHeader("X-Something","other")
