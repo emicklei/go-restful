@@ -14,6 +14,15 @@ type UserList struct {
 	Users []User
 }
 
+func main() {
+	// install a global filter	 (processed before any webservice)
+	restful.Dispatch = globalLogging
+
+	restful.Add(NewUserService())
+	log.Printf("start listening on localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
 func NewUserService() *restful.WebService {
 	ws := new(restful.WebService)
 	ws.
@@ -21,77 +30,71 @@ func NewUserService() *restful.WebService {
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_JSON, restful.MIME_XML)
 
-	logging := LoggingFilter{findUser}.handleFilter
+	// install a webservice filter (processed before any route)
+	ws.Filter(webserviceLogging)
 
-	counter := CountFilter{0, logging}
-	counting := (&counter).handleFilter
-	ws.Route(ws.GET("/{user-id}").To(counting))
+	// install a counter filter
+	ws.Route(ws.GET("").Filter(NewCountFilter().routeCounter).To(getAllUsers))
 
-	//ws.Filter("/users/", handleLogging)
+	// install 2 chained route filters (processed before calling findUser)
+	ws.Route(ws.GET("/{user-id}").Filter(routeLogging).Filter(NewCountFilter().routeCounter).To(findUser))
 	return ws
 }
 
-// GlobalFilter
-func globalHandleLogging(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[global-filter] %s,%s\n", r.Method, r.URL)
+// Global Filter
+func globalLogging(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[global-filter (logger)] %s,%s\n", r.Method, r.URL)
 	restful.DefaultDispatch(w, r)
 }
 
-// WebServiceFilter
-func webserviceHandleLogging(httpWriter http.ResponseWriter, httpRequest *http.Request) {
-	log.Printf("[webservice-filter] %s,%s\n", httpRequest.Method, httpRequest.URL)
+// WebService Filter
+func webserviceLogging(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
+	log.Printf("[webservice-filter (logger)] %s,%s\n", req.Request.Method, req.Request.URL)
+	chain.ProcessFilter(req, resp)
 }
 
-// RouteFunctionFilter
-type LoggingFilter struct {
-	WrappedFunction restful.RouteFunction
+// Route Filter (defines FilterFunction)
+func routeLogging(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
+	log.Printf("[route-filter (logger)] %s,%s\n", req.Request.Method, req.Request.URL)
+	chain.ProcessFilter(req, resp)
 }
 
-func (l LoggingFilter) handleFilter(request *restful.Request, response *restful.Response) {
-	log.Printf("[function-filter (logging)] req:%v resp:%v", request, response)
-	l.WrappedFunction(request, response)
-}
-
+// Route Filter (as a struct that defines a FilterFunction)
+// CountFilter implements a FilterFunction for counting requests.
 type CountFilter struct {
-	Count           int
-	WrappedFunction restful.RouteFunction
+	count   int
+	counter chan int // for go-routine safe count increments
 }
 
-func (c *CountFilter) handleFilter(request *restful.Request, response *restful.Response) {
-	c.Count++
-	log.Printf("[function-filter (count)] count:%d, req:%v resp:%v", c.Count, request, response)
-	c.WrappedFunction(request, response)
+// NewCountFilter creates and initializes a new CountFilter.
+func NewCountFilter() *CountFilter {
+	c := new(CountFilter)
+	c.counter = make(chan int)
+	go func() {
+		for {
+			c.count += <-c.counter
+		}
+	}()
+	return c
 }
 
-// Global Filter > replace Dispatch function , type HandlerFunc func(ResponseWriter, *Request
-// WebService Filter >  filter on pattern?
-// Route Filter > RouteFunction func(*Request, *Response)
-
-//  A filter dynamically intercepts requests and responses to transform or use the information contained in the requests or responses.
-// http://www.oracle.com/technetwork/java/filters-137243.html
-//func handleLogging(request *restful.Request, response *restful.Response, chain *FilterChain) {
-//	log.Printf("req:%v resp:%v", request, response)
-
-//	chain.handleNextFilter(request, response)
-//}
+// routeCounter increments the count of the filter (through a channel)
+func (c *CountFilter) routeCounter(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
+	c.counter <- 1
+	log.Printf("[route-filter (counter)] count:%d", c.count)
+	chain.ProcessFilter(req, resp)
+}
 
 // GET http://localhost:8080/users
 //
 func getAllUsers(request *restful.Request, response *restful.Response) {
+	log.Printf("getAllUsers")
 	response.WriteEntity(UserList{[]User{User{"42", "Gandalf"}, User{"3.14", "Pi"}}})
 }
 
 // GET http://localhost:8080/users/42
 //
 func findUser(request *restful.Request, response *restful.Response) {
+	log.Printf("findUser")
 	response.WriteEntity(User{"42", "Gandalf"})
-}
-
-func main() {
-	// Install global filter (directly using replacement of Dispatch)
-	restful.Dispatch = globalHandleLogging
-
-	restful.Add(NewUserService())
-	log.Printf("start listening on localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
 }

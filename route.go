@@ -19,6 +19,7 @@ type Route struct {
 	Consumes []string
 	Path     string
 	Function RouteFunction
+	Filters  []FilterFunction
 
 	// cached values for dispatching
 	relativePath string
@@ -39,7 +40,15 @@ func (self *Route) postBuild() {
 func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 	params := self.extractParameters(httpRequest.URL.Path)
 	accept := httpRequest.Header.Get(HEADER_Accept)
-	self.Function(&Request{httpRequest, params}, &Response{httpWriter, accept, self.Produces})
+	wrappedRequest := &Request{httpRequest, params}
+	wrappedResponse := &Response{httpWriter, accept, self.Produces}
+	if len(self.Filters) > 0 {
+		chain := FilterChain{Filters: self.Filters, Target: self.Function}
+		chain.ProcessFilter(wrappedRequest, wrappedResponse)
+	} else {
+		// unfiltered
+		self.Function(wrappedRequest, wrappedResponse)
+	}
 }
 
 // Return whether the mimeType matches to what this Route can produce.

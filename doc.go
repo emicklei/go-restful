@@ -46,6 +46,11 @@ Example main:
 		log.Fatal(http.ListenAndServe(":8080", nil))
 	}
 
+Filter
+
+A filter dynamically intercepts requests and responses to transform or use the information contained in the requests or responses.
+
+
 [project]: https://github.com/emicklei/go-restful
 
 [example]: http://ernestmicklei.com/2012/11/24/go-restful-first-working-example/

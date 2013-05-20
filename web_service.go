@@ -7,6 +7,7 @@ type WebService struct {
 	produces       []string
 	consumes       []string
 	pathParameters []*Parameter
+	filters        []FilterFunction
 }
 
 // Path specifies the root URL template path of the WebService.
@@ -80,8 +81,20 @@ func (self WebService) RootPath() string {
 	return self.rootPath
 }
 
+// PathParameters return the path parameter names for (shared amoung its Routes)
 func (self WebService) PathParameters() []*Parameter {
 	return self.pathParameters
+}
+
+// Filters returns the list of FilterFunction
+func (self *WebService) Filters() []FilterFunction {
+	return self.filters
+}
+
+// Filter adds a filter function to the chain of filters applicable to all its Routes
+func (self *WebService) Filter(filter FilterFunction) *WebService {
+	self.filters = append(self.filters, filter)
+	return self
 }
 
 /*

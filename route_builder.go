@@ -12,6 +12,7 @@ type RouteBuilder struct {
 	consumes    []string
 	httpMethod  string        // required
 	function    RouteFunction // required
+	filters     []FilterFunction
 	// documentation
 	doc                     string
 	readSample, writeSample interface{}
@@ -81,6 +82,12 @@ func (self *RouteBuilder) servicePath(path string) *RouteBuilder {
 	return self
 }
 
+// Filter appends a FilterFunction to the end of filters for this Route to build.
+func (self *RouteBuilder) Filter(filter FilterFunction) *RouteBuilder {
+	self.filters = append(self.filters, filter)
+	return self
+}
+
 // If no specific Route path then set to rootPath
 // If no specific Produces then set to rootProduces
 // If no specific Consumes then set to rootConsumes
@@ -101,6 +108,7 @@ func (self *RouteBuilder) Build() Route {
 		Produces:      self.produces,
 		Consumes:      self.consumes,
 		Function:      self.function,
+		Filters:       self.filters,
 		relativePath:  self.currentPath,
 		Doc:           self.doc,
 		ParameterDocs: self.parameters,

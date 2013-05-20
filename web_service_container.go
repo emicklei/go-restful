@@ -22,6 +22,7 @@ type Dispatcher interface {
 	Routes() []Route
 	RootPath() string
 	PathParameters() []*Parameter
+	Filters() []FilterFunction
 	//	rootRegEx
 }
 
@@ -94,7 +95,22 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 	// step 3. Identify the method (Route) that will handle the request
 	route, detected := detectRoute(routes, httpWriter, httpRequest)
 	if detected {
-		route.dispatch(httpWriter, httpRequest)
+		// pass through filters (if any)
+		filters := dispatcher.Filters()
+		if len(filters) > 0 {
+			accept := httpRequest.Header.Get(HEADER_Accept)
+			wrappedRequest := &Request{httpRequest, map[string]string{}} // empty parameters
+			wrappedResponse := &Response{httpWriter, accept, []string{}} // empty content-types
+
+			chain := FilterChain{Filters: filters, Target: func(req *Request, resp *Response) {
+				// handle request by route
+				route.dispatch(resp, req.Request)
+			}}
+			chain.ProcessFilter(wrappedRequest, wrappedResponse)
+		} else {
+			// handle request by route
+			route.dispatch(httpWriter, httpRequest)
+		}
 	}
 	// else a non-200 response has already been written
 }
