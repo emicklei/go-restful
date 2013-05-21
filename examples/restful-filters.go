@@ -4,6 +4,7 @@ import (
 	"github.com/emicklei/go-restful"
 	"log"
 	"net/http"
+	"time"
 )
 
 type User struct {
@@ -16,7 +17,7 @@ type UserList struct {
 
 func main() {
 	// install a global filter	 (processed before any webservice)
-	restful.Dispatch = globalLogging
+	restful.Filter(globalLogging)
 
 	restful.Add(NewUserService())
 	log.Printf("start listening on localhost:8080")
@@ -31,7 +32,7 @@ func NewUserService() *restful.WebService {
 		Produces(restful.MIME_JSON, restful.MIME_XML)
 
 	// install a webservice filter (processed before any route)
-	ws.Filter(webserviceLogging)
+	ws.Filter(webserviceLogging).Filter(measureTime)
 
 	// install a counter filter
 	ws.Route(ws.GET("").Filter(NewCountFilter().routeCounter).To(getAllUsers))
@@ -42,15 +43,22 @@ func NewUserService() *restful.WebService {
 }
 
 // Global Filter
-func globalLogging(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[global-filter (logger)] %s,%s\n", r.Method, r.URL)
-	restful.DefaultDispatch(w, r)
+func globalLogging(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
+	log.Printf("[global-filter (logger)] %s,%s\n", req.Request.Method, req.Request.URL)
+	chain.ProcessFilter(req, resp)
 }
 
 // WebService Filter
 func webserviceLogging(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
 	log.Printf("[webservice-filter (logger)] %s,%s\n", req.Request.Method, req.Request.URL)
 	chain.ProcessFilter(req, resp)
+}
+
+// WebService (post-process) Filter (as a struct that defines a FilterFunction)
+func measureTime(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
+	now := time.Now()
+	chain.ProcessFilter(req, resp)
+	log.Printf("[webservice-filter (timer)] %v\n", time.Now().Sub(now))
 }
 
 // Route Filter (defines FilterFunction)

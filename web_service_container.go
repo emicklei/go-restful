@@ -29,6 +29,7 @@ type Dispatcher interface {
 // Collection of registered Dispatchers that can handle Http requests
 var webServices = []Dispatcher{}
 var isRegisteredOnRoot = false
+var globalFilters = []FilterFunction{}
 
 // Add registers a new Dispatcher add it to the http listeners.
 func Add(service Dispatcher) {
@@ -59,6 +60,11 @@ func Add(service Dispatcher) {
 	webServices = append(webServices, service)
 }
 
+// Filter appends a global FilterFunction. These are called before dispatch a http.Request to a Dispatcher.
+func Filter(filter FilterFunction) {
+	globalFilters = append(globalFilters, filter)
+}
+
 // RegisteredWebServices returns the collections of added Dispatchers (WebService is an implementation)
 func RegisteredWebServices() []Dispatcher {
 	return webServices
@@ -84,6 +90,19 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 			return
 		}
 	}()
+	// step 0. Process any global filters
+	if len(globalFilters) > 0 {
+		wrappedRequest, wrappedResponse := newBasicRequestResponse(httpWriter, httpRequest)
+		proceed := false
+		chain := FilterChain{Filters: globalFilters, Target: func(req *Request, resp *Response) {
+			// we passed all filters
+			proceed = true
+		}}
+		chain.ProcessFilter(wrappedRequest, wrappedResponse)
+		if !proceed {
+			return
+		}
+	}
 	// step 1. Identify the root resource class (Dispatcher)
 	dispatcher, finalMatch, err := detectDispatcher(httpRequest.URL.Path, webServices)
 	if err != nil {
@@ -98,10 +117,7 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 		// pass through filters (if any)
 		filters := dispatcher.Filters()
 		if len(filters) > 0 {
-			accept := httpRequest.Header.Get(HEADER_Accept)
-			wrappedRequest := &Request{httpRequest, map[string]string{}} // empty parameters
-			wrappedResponse := &Response{httpWriter, accept, []string{}} // empty content-types
-
+			wrappedRequest, wrappedResponse := newBasicRequestResponse(httpWriter, httpRequest)
 			chain := FilterChain{Filters: filters, Target: func(req *Request, resp *Response) {
 				// handle request by route
 				route.dispatch(resp, req.Request)
@@ -113,6 +129,14 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 		}
 	}
 	// else a non-200 response has already been written
+}
+
+// newBasicRequestResponse create a pair of Request,Response from its http versions.
+// It is basic because no parameter or (produces) content-type information is given.
+func newBasicRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {
+	accept := httpRequest.Header.Get(HEADER_Accept)
+	return &Request{httpRequest, map[string]string{}}, // empty parameters
+		&Response{httpWriter, accept, []string{}} // empty content-types
 }
 
 func init() {
