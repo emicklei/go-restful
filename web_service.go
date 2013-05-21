@@ -87,7 +87,7 @@ func (self WebService) PathParameters() []*Parameter {
 }
 
 // Filters returns the list of FilterFunction
-func (self *WebService) Filters() []FilterFunction {
+func (self WebService) Filters() []FilterFunction {
 	return self.filters
 }
 
