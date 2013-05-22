@@ -55,6 +55,9 @@ Each filter must define a FilterFunction:
 
 	func (req *restful.Request, resp *restful.Response, chain *restful.FilterChain)
 
+Use the following statement to pass the request,response pair to the next filter or RouteFunction
+
+	chain.ProcessFilter(req, resp)
 
 Global Filters
 
