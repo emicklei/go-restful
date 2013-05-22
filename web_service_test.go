@@ -1,6 +1,8 @@
 package restful
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -30,4 +32,56 @@ func TestWebService_CanCreateParameterKinds(t *testing.T) {
 	if ws.QueryParameter("q", "q").Kind() != QUERY_PARAMETER {
 		t.Error("query parameter expected")
 	}
+}
+
+func TestCapturePanic(t *testing.T) {
+	tearDown()
+	Add(newPanicingService())
+	httpRequest, _ := http.NewRequest("GET", "http://here.com/fire", nil)
+	httpRequest.Header.Set("Accept", "*/*")
+	httpWriter := httptest.NewRecorder()
+	DefaultDispatch(httpWriter, httpRequest)
+	if 500 != httpWriter.Code {
+		t.Error("500 expected on fire")
+	}
+}
+
+func TestNotFound(t *testing.T) {
+	tearDown()
+	httpRequest, _ := http.NewRequest("GET", "http://here.com/missing", nil)
+	httpRequest.Header.Set("Accept", "*/*")
+	httpWriter := httptest.NewRecorder()
+	DefaultDispatch(httpWriter, httpRequest)
+	if 404 != httpWriter.Code {
+		t.Error("404 expected on missing")
+	}
+}
+
+func TestMethodNotAllowed(t *testing.T) {
+	tearDown()
+	Add(newGetOnlyService())
+	httpRequest, _ := http.NewRequest("POST", "http://here.com/get", nil)
+	httpRequest.Header.Set("Accept", "*/*")
+	httpWriter := httptest.NewRecorder()
+	DefaultDispatch(httpWriter, httpRequest)
+	if 405 != httpWriter.Code {
+		t.Error("405 expected method not allowed")
+	}
+}
+
+func newPanicingService() *WebService {
+	ws := new(WebService)
+	ws.Route(ws.GET("/fire").To(doPanic))
+	return ws
+}
+
+func newGetOnlyService() *WebService {
+	ws := new(WebService)
+	ws.Route(ws.GET("/get").To(doPanic))
+	return ws
+}
+
+func doPanic(req *Request, resp *Response) {
+	println("lightning...")
+	panic("fire")
 }
