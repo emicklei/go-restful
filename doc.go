@@ -83,6 +83,8 @@ These are processed before calling the function associated with the Route.
 	ws.Route(ws.GET("/{user-id}").Filter(routeLogging).Filter(NewCountFilter().routeCounter).To(findUser))
 
 
+See the example https://github.com/emicklei/go-restful/blob/master/examples/restful-filters.go with full implementations.
+
 Serving files
 
 Use the Go standard http.ServeFile function to serve file system assets.
@@ -97,6 +99,8 @@ Use the Go standard http.ServeFile function to serve file system assets.
 			req.Request,
 			path.Join(rootdir, req.PathParameter("resource")))
 	}
+
+See the example https://github.com/emicklei/go-restful/blob/master/examples/restful-serve-static.go with full implementations.
 
 Error Handling
 
