@@ -23,13 +23,13 @@ var paths = []struct {
 }
 
 func TestDetectDispatcher(t *testing.T) {
-	ws1 := WebService{rootPath: "/"}
-	ws2 := WebService{rootPath: "/p"}
-	ws3 := WebService{rootPath: "/q"}
-	ws4 := WebService{rootPath: "/p/q"}
-	ws5 := WebService{rootPath: "/p/{q}"}
-	ws6 := WebService{rootPath: "/p/{q}/"}
-	ws7 := WebService{rootPath: "/{p}/q"}
+	ws1 := new(WebService).Path("/")
+	ws2 := new(WebService).Path("/p")
+	ws3 := new(WebService).Path("/q")
+	ws4 := new(WebService).Path("/p/q")
+	ws5 := new(WebService).Path("/p/{q}")
+	ws6 := new(WebService).Path("/p/{q}/")
+	ws7 := new(WebService).Path("/{p}/q")
 	var dispatchers = []Dispatcher{ws1, ws2, ws3, ws4, ws5, ws6, ws7}
 
 	ok := true
@@ -57,7 +57,7 @@ func TestDetectDispatcher(t *testing.T) {
 // Step 2 tests
 //
 func TestSelectRoutesSlash(t *testing.T) {
-	ws1 := WebService{rootPath: "/"}
+	ws1 := new(WebService).Path("/")
 	ws1.Route(ws1.GET(""))
 	ws1.Route(ws1.GET("/"))
 	ws1.Route(ws1.GET("/u"))
@@ -69,7 +69,7 @@ func TestSelectRoutesSlash(t *testing.T) {
 	checkRoutesContains(routes, "/u", t)
 }
 func TestSelectRoutesU(t *testing.T) {
-	ws1 := WebService{rootPath: "/u"}
+	ws1 := new(WebService).Path("/u")
 	ws1.Route(ws1.GET(""))
 	ws1.Route(ws1.GET("/"))
 	ws1.Route(ws1.GET("/v"))
@@ -80,7 +80,7 @@ func TestSelectRoutesU(t *testing.T) {
 }
 
 func TestSelectRoutesUsers1(t *testing.T) {
-	ws1 := WebService{rootPath: "/users"}
+	ws1 := new(WebService).Path("/users")
 	ws1.Route(ws1.POST(""))
 	ws1.Route(ws1.POST("/"))
 	ws1.Route(ws1.PUT("/{id}"))

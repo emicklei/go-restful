@@ -1,8 +1,13 @@
 package restful
 
+import (
+	"log"
+)
+
 // WebService holds a collection of Route values that bind a Http Method + URL Path to a function.
 type WebService struct {
 	rootPath       string
+	pathExpression *PathExpression // cached compilation of rootPath as RegExp
 	routes         []Route
 	produces       []string
 	consumes       []string
@@ -14,7 +19,17 @@ type WebService struct {
 // All Routes will be relative to this path.
 func (self *WebService) Path(root string) *WebService {
 	self.rootPath = root
+	compiled, err := NewPathExpression(root)
+	if err != nil {
+		log.Fatalf("[restful] Invalid path:%s because:%v", root, err)
+	}
+	self.pathExpression = compiled
 	return self
+}
+
+// RootExpression returns the compiled (RegExp) expression from the rootPath
+func (self WebService) RootExpression() *PathExpression {
+	return self.pathExpression
 }
 
 // AddParameter adds a PathParameter to document parameters used in the root path.

@@ -18,12 +18,13 @@ import (
 //	}
 var Dispatch http.HandlerFunc
 
+// TODO interface still useful?
 type Dispatcher interface {
 	Routes() []Route
 	RootPath() string
+	RootExpression() *PathExpression
 	PathParameters() []*Parameter
 	Filters() []FilterFunction
-	//	rootRegEx
 }
 
 // Collection of registered Dispatchers that can handle Http requests

@@ -70,13 +70,13 @@ func TestMethodNotAllowed(t *testing.T) {
 }
 
 func newPanicingService() *WebService {
-	ws := new(WebService)
+	ws := new(WebService).Path("")
 	ws.Route(ws.GET("/fire").To(doPanic))
 	return ws
 }
 
 func newGetOnlyService() *WebService {
-	ws := new(WebService)
+	ws := new(WebService).Path("")
 	ws.Route(ws.GET("/get").To(doPanic))
 	return ws
 }

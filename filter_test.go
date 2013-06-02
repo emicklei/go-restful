@@ -21,7 +21,7 @@ func tearDown() {
 }
 
 func newTestService(addServiceFilter bool, addRouteFilter bool) *WebService {
-	ws := new(WebService)
+	ws := new(WebService).Path("")
 	if addServiceFilter {
 		ws.Filter(serviceFilter)
 	}
