@@ -1,4 +1,4 @@
-package main 
+package main
 
 import (
 	"github.com/emicklei/go-restful"
@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	ws := new(restful.WebService)
+	ws := new(restful.WebService).Path("")
 	ws.Route(ws.GET("/hello").To(hello))
 	restful.Add(ws)
 	http.ListenAndServe(":8080", nil)
