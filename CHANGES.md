@@ -1,6 +1,11 @@
 Change history of go-restful
 =
 
+2013-06-03
+
+ - (api change) removed Dispatcher interface, hide PathExpression
+ - changed receiver names of type functions to be more idiomatic Go
+
 2013-06-02
 
  - (optimize) Cache the RegExp compilation of Paths.
