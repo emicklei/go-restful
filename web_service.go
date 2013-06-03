@@ -19,7 +19,7 @@ type WebService struct {
 // All Routes will be relative to this path.
 func (w *WebService) Path(root string) *WebService {
 	w.rootPath = root
-	compiled, err := NewPathExpression(root)
+	compiled, err := newPathExpression(root)
 	if err != nil {
 		log.Fatalf("[restful] Invalid path:%s because:%v", root, err)
 	}

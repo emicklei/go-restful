@@ -21,7 +21,7 @@ type pathExpression struct {
 
 // NewPathExpression creates a PathExpression from the input URL path.
 // Returns an error if the path is invalid.
-func NewPathExpression(path string) (*pathExpression, error) {
+func newPathExpression(path string) (*pathExpression, error) {
 	expression, literalCount, varCount := templateToRegularExpression(path)
 	compiled, err := regexp.Compile(expression)
 	if err != nil {

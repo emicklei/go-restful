@@ -103,7 +103,7 @@ func (b *RouteBuilder) copyDefaults(rootProduces, rootConsumes []string) {
 
 // Build creates a new Route using the specification details collected by the RouteBuilder
 func (b *RouteBuilder) Build() Route {
-	pathExpr, err := NewPathExpression(b.currentPath)
+	pathExpr, err := newPathExpression(b.currentPath)
 	if err != nil {
 		log.Fatalf("[restful] Invalid path:%s because:%v", b.currentPath, err)
 	}
