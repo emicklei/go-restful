@@ -22,9 +22,9 @@ type Route struct {
 	Filters  []FilterFunction
 
 	// cached values for dispatching
-	relativePath   string
-	pathParts      []string
-	pathExpression *PathExpression // cached compilation of relativePath as RegExp
+	relativePath string
+	pathParts    []string
+	pathExpr     *pathExpression // cached compilation of relativePath as RegExp
 
 	// documentation
 	Doc                     string

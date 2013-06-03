@@ -12,7 +12,7 @@ import (
 
 // PathExpression holds a compiled path expression (RegExp) needed to match against
 // Http request paths and to extract path parameter values.
-type PathExpression struct {
+type pathExpression struct {
 	LiteralCount int
 	VarCount     int
 	Matcher      *regexp.Regexp
@@ -21,13 +21,13 @@ type PathExpression struct {
 
 // NewPathExpression creates a PathExpression from the input URL path.
 // Returns an error if the path is invalid.
-func NewPathExpression(path string) (*PathExpression, error) {
+func NewPathExpression(path string) (*pathExpression, error) {
 	expression, literalCount, varCount := templateToRegularExpression(path)
 	compiled, err := regexp.Compile(expression)
 	if err != nil {
 		return nil, err
 	}
-	return &PathExpression{literalCount, varCount, compiled, expression}, nil
+	return &pathExpression{literalCount, varCount, compiled, expression}, nil
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-370003.7.3

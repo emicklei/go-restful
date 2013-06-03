@@ -15,7 +15,7 @@ func setupServices(addGlobalFilter bool, addServiceFilter bool, addRouteFilter b
 }
 
 func tearDown() {
-	webServices = []Dispatcher{}
+	webServices = []*WebService{}
 	isRegisteredOnRoot = true // this allows for setupServices multiple times
 	globalFilters = []FilterFunction{}
 }

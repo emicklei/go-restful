@@ -30,7 +30,7 @@ func TestDetectDispatcher(t *testing.T) {
 	ws5 := new(WebService).Path("/p/{q}")
 	ws6 := new(WebService).Path("/p/{q}/")
 	ws7 := new(WebService).Path("/{p}/q")
-	var dispatchers = []Dispatcher{ws1, ws2, ws3, ws4, ws5, ws6, ws7}
+	var dispatchers = []*WebService{ws1, ws2, ws3, ws4, ws5, ws6, ws7}
 
 	ok := true
 	for i, fixture := range paths {

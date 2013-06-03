@@ -108,18 +108,18 @@ func (self *RouteBuilder) Build() Route {
 		log.Fatalf("[restful] Invalid path:%s because:%v", self.currentPath, err)
 	}
 	route := Route{
-		Method:         self.httpMethod,
-		Path:           concatPath(self.rootPath, self.currentPath),
-		Produces:       self.produces,
-		Consumes:       self.consumes,
-		Function:       self.function,
-		Filters:        self.filters,
-		relativePath:   self.currentPath,
-		pathExpression: pathExpr,
-		Doc:            self.doc,
-		ParameterDocs:  self.parameters,
-		ReadSample:     self.readSample,
-		WriteSample:    self.writeSample}
+		Method:        self.httpMethod,
+		Path:          concatPath(self.rootPath, self.currentPath),
+		Produces:      self.produces,
+		Consumes:      self.consumes,
+		Function:      self.function,
+		Filters:       self.filters,
+		relativePath:  self.currentPath,
+		pathExpr:      pathExpr,
+		Doc:           self.doc,
+		ParameterDocs: self.parameters,
+		ReadSample:    self.readSample,
+		WriteSample:   self.writeSample}
 	route.postBuild()
 	return route
 }

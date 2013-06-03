@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// The Dispatch function is responsible to delegating to the appropriate Dispatcher that has been registered via Add.
+// The Dispatch function is responsible to delegating to the appropriate WebService that has been registered via Add.
 // The default implementation is DefaultDispatch which also does some basic panic handling.
 //
 // Example of overriding it to add basic request logging:
@@ -18,22 +18,13 @@ import (
 //	}
 var Dispatch http.HandlerFunc
 
-// TODO interface still useful?
-type Dispatcher interface {
-	Routes() []Route
-	RootPath() string
-	RootExpression() *PathExpression
-	PathParameters() []*Parameter
-	Filters() []FilterFunction
-}
-
 // Collection of registered Dispatchers that can handle Http requests
-var webServices = []Dispatcher{}
+var webServices = []*WebService{}
 var isRegisteredOnRoot = false
 var globalFilters = []FilterFunction{}
 
-// Add registers a new Dispatcher add it to the http listeners.
-func Add(service Dispatcher) {
+// Add registers a new WebService add it to the http listeners.
+func Add(service *WebService) {
 	// If registered on root then no additional specific mapping is needed
 	if !isRegisteredOnRoot {
 		pattern := fixedPrefixPath(service.RootPath())
@@ -61,13 +52,13 @@ func Add(service Dispatcher) {
 	webServices = append(webServices, service)
 }
 
-// Filter appends a global FilterFunction. These are called before dispatch a http.Request to a Dispatcher.
+// Filter appends a global FilterFunction. These are called before dispatch a http.Request to a WebService.
 func Filter(filter FilterFunction) {
 	globalFilters = append(globalFilters, filter)
 }
 
 // RegisteredWebServices returns the collections of added Dispatchers (WebService is an implementation)
-func RegisteredWebServices() []Dispatcher {
+func RegisteredWebServices() []*WebService {
 	return webServices
 }
 
@@ -80,7 +71,7 @@ func fixedPrefixPath(pathspec string) string {
 	return pathspec[:varBegin]
 }
 
-// Dispatch the incoming Http Request to a matching Dispatcher.
+// Dispatch the incoming Http Request to a matching WebService.
 // Matching algorithm is conform http://jsr311.java.net/nonav/releases/1.1/spec/spec.html, see jsr311.go
 func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
 	// catch all for 500 response
@@ -104,7 +95,7 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 			return
 		}
 	}
-	// step 1. Identify the root resource class (Dispatcher)
+	// step 1. Identify the root resource class (WebService)
 	dispatcher, finalMatch, err := detectDispatcher(httpRequest.URL.Path, webServices)
 	if err != nil {
 		httpWriter.WriteHeader(http.StatusNotFound)
@@ -116,7 +107,7 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 	route, detected := detectRoute(routes, httpWriter, httpRequest)
 	if detected {
 		// pass through filters (if any)
-		filters := dispatcher.Filters()
+		filters := dispatcher.filters
 		if len(filters) > 0 {
 			wrappedRequest, wrappedResponse := newBasicRequestResponse(httpWriter, httpRequest)
 			chain := FilterChain{Filters: filters, Target: func(req *Request, resp *Response) {

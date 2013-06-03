@@ -5,7 +5,6 @@ package restful
 // Concept of locators is not implemented.
 import (
 	"errors"
-	//	"github.com/emicklei/hopwatch"
 	"net/http"
 	"sort"
 )
@@ -62,13 +61,13 @@ func bestMatchByMedia(routes []Route, contentType string, accept string) Route {
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2  (step 2)
-func selectRoutes(dispatcher Dispatcher, pathRemainder string) []Route {
+func selectRoutes(dispatcher *WebService, pathRemainder string) []Route {
 	if pathRemainder == "" || pathRemainder == "/" {
 		return dispatcher.Routes()
 	}
 	filtered := sortableRouteCandidates{}
 	for _, each := range dispatcher.Routes() {
-		pathExpr := each.pathExpression
+		pathExpr := each.pathExpr
 		matches := pathExpr.Matcher.FindStringSubmatch(pathRemainder)
 		if matches != nil {
 			lastMatch := matches[len(matches)-1]
@@ -83,9 +82,10 @@ func selectRoutes(dispatcher Dispatcher, pathRemainder string) []Route {
 	}
 	sort.Sort(filtered)
 	rmatch := filtered.candidates[0].expressionToMatch()
-	// select routes from candidates whoes expression matches rmatch
-	matchingRoutes := []Route{}
-	for _, each := range filtered.candidates {
+	matchingRoutes := []Route{filtered.candidates[0].route}
+	// select other routes from candidates whoes expression matches rmatch
+	for c := 1; c < len(filtered.candidates); c++ {
+		each := filtered.candidates[c]
 		if each.expressionToMatch() == rmatch {
 			matchingRoutes = append(matchingRoutes, each.route)
 		}
@@ -94,10 +94,10 @@ func selectRoutes(dispatcher Dispatcher, pathRemainder string) []Route {
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
-func detectDispatcher(requestPath string, dispatchers []Dispatcher) (Dispatcher, string, error) {
+func detectDispatcher(requestPath string, dispatchers []*WebService) (*WebService, string, error) {
 	filtered := sortableDispatcherCandidates{}
 	for _, each := range dispatchers {
-		pathExpr := each.RootExpression()
+		pathExpr := each.pathExpr
 		matches := pathExpr.Matcher.FindStringSubmatch(requestPath)
 		if matches != nil {
 			filtered.candidates = append(filtered.candidates,
@@ -121,7 +121,7 @@ type routeCandidate struct {
 }
 
 func (r routeCandidate) expressionToMatch() string {
-	return r.route.pathExpression.Source
+	return r.route.pathExpr.Source
 }
 
 type sortableRouteCandidates struct {
@@ -158,7 +158,7 @@ func (self sortableRouteCandidates) Less(j, i int) bool { // Do reverse so the i
 // Types and functions to support the sorting of Dispatchers
 
 type dispatcherCandidate struct {
-	dispatcher      Dispatcher
+	dispatcher      *WebService
 	finalMatch      string
 	matchesCount    int
 	literalCount    int
