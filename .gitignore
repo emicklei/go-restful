@@ -24,3 +24,7 @@ _testmain.go
 restful.html
 
 *.out
+
+tmp.prof
+
+go-restful.test
