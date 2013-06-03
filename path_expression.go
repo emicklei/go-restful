@@ -1,4 +1,4 @@
-// Copyright 2012 Ernest Micklei. All rights reserved.
+// Copyright 2013 Ernest Micklei. All rights reserved.
 // Use of this source code is governed by a license
 // that can be found in the LICENSE file.
 
@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+// PathExpression holds a compiled path expression (RegExp) needed to match against
+// Http request paths and to extract path parameter values.
 type PathExpression struct {
 	LiteralCount int
 	VarCount     int
@@ -17,6 +19,8 @@ type PathExpression struct {
 	Source       string
 }
 
+// NewPathExpression creates a PathExpression from the input URL path.
+// Returns an error if the path is invalid.
 func NewPathExpression(path string) (*PathExpression, error) {
 	expression, literalCount, varCount := templateToRegularExpression(path)
 	compiled, err := regexp.Compile(expression)

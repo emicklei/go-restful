@@ -1,6 +1,10 @@
 Change history of go-restful
 =
 
+2013-06-02
+
+ - (optimize) Cache the RegExp compilation of Paths.
+
 2013-05-22
 	
  - (api add) Added support for request/response filter functions
