@@ -22,104 +22,104 @@ type RouteBuilder struct {
 
 // To bind the route to a function.
 // If this route is matched with the incoming Http Request then call this function with the *Request,*Response pair. Required.
-func (self *RouteBuilder) To(function RouteFunction) *RouteBuilder {
-	self.function = function
-	return self
+func (b *RouteBuilder) To(function RouteFunction) *RouteBuilder {
+	b.function = function
+	return b
 }
 
 // Method specifies what HTTP method to match. Required.
-func (self *RouteBuilder) Method(method string) *RouteBuilder {
-	self.httpMethod = method
-	return self
+func (b *RouteBuilder) Method(method string) *RouteBuilder {
+	b.httpMethod = method
+	return b
 }
 
 // Produces specifies what MIME types can be produced ; the matched one will appear in the Content-Type Http header.
-func (self *RouteBuilder) Produces(mimeTypes ...string) *RouteBuilder {
-	self.produces = mimeTypes
-	return self
+func (b *RouteBuilder) Produces(mimeTypes ...string) *RouteBuilder {
+	b.produces = mimeTypes
+	return b
 }
 
 // Specify what MIME types can be consumes ; the Accept Http header must matched any of these
-func (self *RouteBuilder) Consumes(mimeTypes ...string) *RouteBuilder {
-	self.consumes = mimeTypes
-	return self
+func (b *RouteBuilder) Consumes(mimeTypes ...string) *RouteBuilder {
+	b.consumes = mimeTypes
+	return b
 }
 
 // Path specifies the relative (w.r.t WebService root path) URL path to match. Default is "/".
-func (self *RouteBuilder) Path(subPath string) *RouteBuilder {
-	self.currentPath = subPath
-	return self
+func (b *RouteBuilder) Path(subPath string) *RouteBuilder {
+	b.currentPath = subPath
+	return b
 }
 
 // Doc tells what this route is all about. Optional.
-func (self *RouteBuilder) Doc(documentation string) *RouteBuilder {
-	self.doc = documentation
-	return self
+func (b *RouteBuilder) Doc(documentation string) *RouteBuilder {
+	b.doc = documentation
+	return b
 }
 
 // Reads tells what resource type will be read from the request payload. Optional.
-func (self *RouteBuilder) Reads(sample interface{}) *RouteBuilder {
-	self.readSample = sample
-	return self
+func (b *RouteBuilder) Reads(sample interface{}) *RouteBuilder {
+	b.readSample = sample
+	return b
 }
 
 // Writes tells what resource type will be written as the response payload. Optional.
-func (self *RouteBuilder) Writes(sample interface{}) *RouteBuilder {
-	self.writeSample = sample
-	return self
+func (b *RouteBuilder) Writes(sample interface{}) *RouteBuilder {
+	b.writeSample = sample
+	return b
 }
 
 // Param allows you to document the parameters of the Route.
-func (self *RouteBuilder) Param(parameter *Parameter) *RouteBuilder {
-	if self.parameters == nil {
-		self.parameters = []*Parameter{}
+func (b *RouteBuilder) Param(parameter *Parameter) *RouteBuilder {
+	if b.parameters == nil {
+		b.parameters = []*Parameter{}
 	}
-	self.parameters = append(self.parameters, parameter)
-	return self
+	b.parameters = append(b.parameters, parameter)
+	return b
 }
 
-func (self *RouteBuilder) servicePath(path string) *RouteBuilder {
-	self.rootPath = path
-	return self
+func (b *RouteBuilder) servicePath(path string) *RouteBuilder {
+	b.rootPath = path
+	return b
 }
 
 // Filter appends a FilterFunction to the end of filters for this Route to build.
-func (self *RouteBuilder) Filter(filter FilterFunction) *RouteBuilder {
-	self.filters = append(self.filters, filter)
-	return self
+func (b *RouteBuilder) Filter(filter FilterFunction) *RouteBuilder {
+	b.filters = append(b.filters, filter)
+	return b
 }
 
 // If no specific Route path then set to rootPath
 // If no specific Produces then set to rootProduces
 // If no specific Consumes then set to rootConsumes
-func (self *RouteBuilder) copyDefaults(rootProduces, rootConsumes []string) {
-	if len(self.produces) == 0 {
-		self.produces = rootProduces
+func (b *RouteBuilder) copyDefaults(rootProduces, rootConsumes []string) {
+	if len(b.produces) == 0 {
+		b.produces = rootProduces
 	}
-	if len(self.consumes) == 0 {
-		self.consumes = rootConsumes
+	if len(b.consumes) == 0 {
+		b.consumes = rootConsumes
 	}
 }
 
 // Build creates a new Route using the specification details collected by the RouteBuilder
-func (self *RouteBuilder) Build() Route {
-	pathExpr, err := NewPathExpression(self.currentPath)
+func (b *RouteBuilder) Build() Route {
+	pathExpr, err := NewPathExpression(b.currentPath)
 	if err != nil {
-		log.Fatalf("[restful] Invalid path:%s because:%v", self.currentPath, err)
+		log.Fatalf("[restful] Invalid path:%s because:%v", b.currentPath, err)
 	}
 	route := Route{
-		Method:        self.httpMethod,
-		Path:          concatPath(self.rootPath, self.currentPath),
-		Produces:      self.produces,
-		Consumes:      self.consumes,
-		Function:      self.function,
-		Filters:       self.filters,
-		relativePath:  self.currentPath,
+		Method:        b.httpMethod,
+		Path:          concatPath(b.rootPath, b.currentPath),
+		Produces:      b.produces,
+		Consumes:      b.consumes,
+		Function:      b.function,
+		Filters:       b.filters,
+		relativePath:  b.currentPath,
 		pathExpr:      pathExpr,
-		Doc:           self.doc,
-		ParameterDocs: self.parameters,
-		ReadSample:    self.readSample,
-		WriteSample:   self.writeSample}
+		Doc:           b.doc,
+		ParameterDocs: b.parameters,
+		ReadSample:    b.readSample,
+		WriteSample:   b.writeSample}
 	route.postBuild()
 	return route
 }

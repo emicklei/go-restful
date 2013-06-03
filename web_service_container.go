@@ -25,6 +25,9 @@ var globalFilters = []FilterFunction{}
 
 // Add registers a new WebService add it to the http listeners.
 func Add(service *WebService) {
+	if service.pathExpr == nil {
+		service.Path("") // lazy initialize path
+	}
 	// If registered on root then no additional specific mapping is needed
 	if !isRegisteredOnRoot {
 		pattern := fixedPrefixPath(service.RootPath())

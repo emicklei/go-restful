@@ -10,7 +10,7 @@ var rootdir = "/tmp"
 
 func main() {
 
-	ws := new(restful.WebService).Path("")
+	ws := new(restful.WebService)
 	ws.Route(ws.GET("/static/{resource}").To(staticFromPathParam))
 	ws.Route(ws.GET("/static").To(staticFromQueryParam))
 	restful.Add(ws)

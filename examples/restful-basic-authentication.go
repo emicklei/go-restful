@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	ws := new(restful.WebService).Route("")
+	ws := new(restful.WebService)
 	ws.Route(ws.GET("/secret").Filter(basicAuthenticate).To(secret))
 	restful.Add(ws)
 	http.ListenAndServe(":8080", nil)

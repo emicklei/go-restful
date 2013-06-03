@@ -23,88 +23,88 @@ type Response struct {
 }
 
 // InternalServerError is a shortcut for .WriteHeader(http.StatusInternalServerError)
-func (self Response) InternalServerError() Response {
-	self.WriteHeader(http.StatusInternalServerError)
-	return self
+func (r Response) InternalServerError() Response {
+	r.WriteHeader(http.StatusInternalServerError)
+	return r
 }
 
 // AddHeader is a shortcut for .Header().Add(header,value)
-func (self Response) AddHeader(header string, value string) Response {
-	self.Header().Add(header, value)
-	return self
+func (r Response) AddHeader(header string, value string) Response {
+	r.Header().Add(header, value)
+	return r
 }
 
 // WriteEntity marshals the value using the representation denoted by the Accept Header (XML or JSON)
 // If no Accept header is specified (or */*) then return the Content-Type as specified by the first in the Route.Produces.
 // If an Accept header is specified then return the Content-Type as specified by the first in the Route.Produces that is matched with the Accept header.
 // Current implementation ignores any q-parameters in the Accept Header.
-func (self Response) WriteEntity(value interface{}) Response {
-	if "" == self.accept || "*/*" == self.accept {
-		for _, each := range self.produces {
+func (r Response) WriteEntity(value interface{}) Response {
+	if "" == r.accept || "*/*" == r.accept {
+		for _, each := range r.produces {
 			if MIME_JSON == each {
-				self.WriteAsJson(value)
-				return self
+				r.WriteAsJson(value)
+				return r
 			}
 			if MIME_XML == each {
-				self.WriteAsXml(value)
-				return self
+				r.WriteAsXml(value)
+				return r
 			}
 		}
 	} else { // Accept header specified ; scan for each element in Route.Produces
-		for _, each := range self.produces {
-			if strings.Index(self.accept, each) != -1 {
+		for _, each := range r.produces {
+			if strings.Index(r.accept, each) != -1 {
 				if MIME_JSON == each {
-					self.WriteAsJson(value)
-					return self
+					r.WriteAsJson(value)
+					return r
 				}
 				if MIME_XML == each {
-					self.WriteAsXml(value)
-					return self
+					r.WriteAsXml(value)
+					return r
 				}
 			}
 		}
 	}
 	if DefaultResponseMimeType == MIME_JSON {
-		self.WriteAsJson(value)
+		r.WriteAsJson(value)
 	} else if DefaultResponseMimeType == MIME_XML {
-		self.WriteAsXml(value)
+		r.WriteAsXml(value)
 	} else {
-		self.WriteHeader(http.StatusNotAcceptable)
-		self.Write([]byte("406: Not Acceptable"))
+		r.WriteHeader(http.StatusNotAcceptable)
+		r.Write([]byte("406: Not Acceptable"))
 	}
-	return self
+	return r
 }
 
 // WriteAsXml is a convenience method for writing a value in xml (requires Xml tags on the value)
-func (self Response) WriteAsXml(value interface{}) Response {
+func (r Response) WriteAsXml(value interface{}) Response {
 	output, err := xml.MarshalIndent(value, " ", " ")
 	if err != nil {
-		self.WriteError(http.StatusInternalServerError, err)
+		r.WriteError(http.StatusInternalServerError, err)
 	} else {
-		self.Header().Set(HEADER_ContentType, MIME_XML)
-		self.Write([]byte(xml.Header))
-		self.Write(output)
+		r.Header().Set(HEADER_ContentType, MIME_XML)
+		r.Write([]byte(xml.Header))
+		r.Write(output)
 	}
-	return self
+	return r
 }
 
 // WriteAsJson is a convenience method for writing a value in json
-func (self Response) WriteAsJson(value interface{}) Response {
+func (r Response) WriteAsJson(value interface{}) Response {
 	output, err := json.MarshalIndent(value, " ", " ")
 	if err != nil {
-		self.WriteError(http.StatusInternalServerError, err)
+		r.WriteError(http.StatusInternalServerError, err)
 	} else {
-		self.Header().Set(HEADER_ContentType, MIME_JSON)
-		self.Write(output)
+		r.Header().Set(HEADER_ContentType, MIME_JSON)
+		r.Write(output)
 	}
-	return self
+	return r
 }
 
 // WriteError is a convenience method for an error status with the actual error
-func (self Response) WriteError(status int, err error) Response {
-	self.WriteHeader(status)
+func (r Response) WriteError(status int, err error) Response {
+	r.WriteHeader(status)
 	if err != nil {
-		self.WriteEntity(err.Error())
+		r.WriteEntity(err.Error())
 	}
-	return self
+	return r
 }
