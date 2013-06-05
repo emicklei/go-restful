@@ -25,16 +25,25 @@ func (p ProductResource) postOne(req *restful.Request, resp *restful.Response) {
 	err := req.ReadEntity(updatedProduct)
 	if err != nil { // bad request
 		resp.WriteError(http.StatusBadRequest, err)
+		return
 	}
 	log.Println("updating product with id:" + updatedProduct.Id)
 }
 
 func (p ProductResource) Register() {
-	ws := new(restful.WebService).Path("/products")
+	ws := new(restful.WebService)
+	ws.Path("/products")
 	ws.Consumes(restful.MIME_XML)
 	ws.Produces(restful.MIME_XML)
-	ws.Route(ws.GET("/{id}").To(p.getOne))
-	ws.Route(ws.POST("").To(p.postOne))
+
+	ws.Route(ws.GET("/{id}").To(p.getOne).
+		Doc("get the product by its id").
+		Param(ws.PathParameter("id", "identifier of the product").DataType("string")))
+
+	ws.Route(ws.POST("").To(p.postOne).
+		Doc("update or create a product").
+		Param(ws.BodyParameter("Product", "a Product (XML)").DataType("main.Product")))
+
 	restful.Add(ws)
 }
 
