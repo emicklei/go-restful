@@ -100,11 +100,18 @@ func (r Response) WriteAsJson(value interface{}) Response {
 	return r
 }
 
-// WriteError is a convenience method for an error status with the actual error
-func (r Response) WriteError(status int, err error) Response {
-	r.WriteHeader(status)
+// WriteError is a convenience method for an error HTTP status with the actual error
+func (r Response) WriteError(httpStatus int, err error) Response {
+	r.WriteHeader(httpStatus)
 	if err != nil {
 		r.WriteEntity(err.Error())
 	}
+	return r
+}
+
+// WriteServiceError is a convenience method for a responding with a ServiceError and a status
+func (r Response) WriteServiceError(httpStatus int, err ServiceError) Response {
+	r.WriteHeader(httpStatus)
+	r.WriteEntity(err)
 	return r
 }
