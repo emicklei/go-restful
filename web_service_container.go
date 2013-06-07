@@ -18,6 +18,9 @@ import (
 //	}
 var Dispatch http.HandlerFunc
 
+// The Router is responsible for selecting the best matching Route given the input (request,response)
+var Router RouteSelector
+
 // Collection of registered Dispatchers that can handle Http requests
 var webServices = []*WebService{}
 var isRegisteredOnRoot = false
