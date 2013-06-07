@@ -26,6 +26,9 @@ var Dispatch http.HandlerFunc
 // Default value is false = recover from panics. This has performance implications.
 var DoNotRecover = false
 
+// The Router is responsible for selecting the best matching Route given the input (request,response)
+var Router RouteSelector
+
 // Collection of registered WebServices that can handle Http requests
 var webServices = []*WebService{}
 
