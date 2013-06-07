@@ -21,7 +21,7 @@ See Godoc for [automatically generated API documentation](http://godoc.org/githu
 ## Status
 
 [![Build Status](https://drone.io/github.com/emicklei/go-restful/status.png)](https://drone.io/github.com/emicklei/go-restful/latest)
-[![Coverage Status](https://coveralls.io/repos/jmcvetta/go-restful/badge.png?branch=master)](https://coveralls.io/r/jmcvetta/go-restful?branch=master)
+[![Coverage Status](https://coveralls.io/repos/emicklei/go-restful/badge.png?branch=master)](https://coveralls.io/r/emicklei/go-restful?branch=master)
 
 
 ## Resources
