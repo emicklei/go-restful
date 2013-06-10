@@ -41,6 +41,9 @@ func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *ht
 	// accept
 	outputMediaOk := []Route{}
 	accept := httpRequest.Header.Get(HEADER_Accept)
+	if accept == "" {
+		accept = "*/*"
+	}
 	for _, each := range inputMediaOk {
 		if each.matchesAccept(accept) {
 			outputMediaOk = append(outputMediaOk, each)
