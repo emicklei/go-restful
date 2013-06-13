@@ -111,16 +111,16 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 	if detected {
 		// pass through filters (if any)
 		filters := dispatcher.filters
+		wrappedRequest, wrappedResponse := route.wrapRequestResponse(httpWriter, httpRequest)
 		if len(filters) > 0 {
-			wrappedRequest, wrappedResponse := newBasicRequestResponse(httpWriter, httpRequest)
 			chain := FilterChain{Filters: filters, Target: func(req *Request, resp *Response) {
 				// handle request by route
-				route.dispatch(resp, req.Request)
+				route.dispatch(wrappedRequest, wrappedResponse)
 			}}
 			chain.ProcessFilter(wrappedRequest, wrappedResponse)
 		} else {
 			// handle request by route
-			route.dispatch(httpWriter, httpRequest)
+			route.dispatch(wrappedRequest, wrappedResponse)
 		}
 	}
 	// else a non-200 response has already been written
