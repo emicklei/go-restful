@@ -37,12 +37,17 @@ func (self *Route) postBuild() {
 	self.pathParts = tokenizePath(self.Path)
 }
 
-// Extract any path parameters from the the request URL path and call the function
-func (self *Route) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
+// Create Request and Response from their http versions
+func (self *Route) wrapRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {
 	params := self.extractParameters(httpRequest.URL.Path)
 	accept := httpRequest.Header.Get(HEADER_Accept)
 	wrappedRequest := &Request{httpRequest, params}
 	wrappedResponse := &Response{httpWriter, accept, self.Produces}
+	return wrappedRequest, wrappedResponse
+}
+
+// Extract any path parameters from the the request URL path and call the function
+func (self *Route) dispatch(wrappedRequest *Request, wrappedResponse *Response) {
 	if len(self.Filters) > 0 {
 		chain := FilterChain{Filters: self.Filters, Target: self.Function}
 		chain.ProcessFilter(wrappedRequest, wrappedResponse)
