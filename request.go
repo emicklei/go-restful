@@ -26,13 +26,16 @@ func (r *Request) QueryParameter(name string) string {
 // ReadEntity checks the Accept header and reads the content into the entityReference
 // Closes the request body.
 func (r *Request) ReadEntity(entityReference interface{}) error {
+	var isXML, isJSON bool
 	contentType := r.Request.Header.Get(HEADER_ContentType)
 	defer r.Request.Body.Close()
 	buffer, err := ioutil.ReadAll(r.Request.Body)
-	if err == nil && MIME_XML == contentType {
+	isXML, err = regexp.MatchString(MIME_XML, contentType)
+	isJSON, err = regexp.MatchString(MIME_JSON, contentType)
+	if err == nil && isXML {
 		err = xml.Unmarshal(buffer, entityReference)
 	} else {
-		if err == nil && MIME_JSON == contentType {
+		if err == nil && isJSON {
 			err = json.Unmarshal(buffer, entityReference)
 		}
 	}
