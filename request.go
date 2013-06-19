@@ -23,7 +23,8 @@ func (r *Request) QueryParameter(name string) string {
 	return r.Request.FormValue(name)
 }
 
-// ReadEntity check the Accept header and reads the content into the entityReference
+// ReadEntity checks the Accept header and reads the content into the entityReference
+// Closes the request body.
 func (r *Request) ReadEntity(entityReference interface{}) error {
 	contentType := r.Request.Header.Get(HEADER_ContentType)
 	defer r.Request.Body.Close()
