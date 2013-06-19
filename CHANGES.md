@@ -1,6 +1,10 @@
 Change history of go-restful
 =
 
+2013-06-19
+
+ - (improve) DoNotRecover option, moved request body closer, improved ReadEntity
+
 2013-06-03
 
  - (api change) removed Dispatcher interface, hide PathExpression

@@ -46,6 +46,18 @@ Example main:
 		log.Fatal(http.ListenAndServe(":8080", nil))
 	}
 
+
+WebServices
+
+A WebService has a collection of Route objects that dispatch incoming Http Requests to a function calls.
+
+	type RouteFunction func(*Request, *Response)
+
+A Route is defined by a HTTP method, an URL path and (optionally) the MIME types it consumes (Content-Type) and produces (Accept).
+This package has the logic to find the best matching Route and if found, call its Function.
+The (*Request, *Response) arguments provide functions for reading information from the request and writing information back to the response.
+
+
 Filters
 
 A filter dynamically intercepts requests and responses to transform or use the information contained in the requests or responses.
@@ -148,11 +160,11 @@ Resources
 
 [project]: https://github.com/emicklei/go-restful
 
-[example]: http://ernestmicklei.com/2012/11/24/go-restful-first-working-example/
+[example]: https://github.com/emicklei/go-restful/blob/master/examples/restful-user-service.go
 
 [design]:  http://ernestmicklei.com/2012/11/11/go-restful-api-design/
 
-[1st use]: https://github.com/emicklei/landskape
+[showcase]: https://github.com/emicklei/landskape
 
 (c) 2012,2013, http://ernestmicklei.com. MIT License
 */
