@@ -2,6 +2,7 @@ package restful
 
 import (
 	"log"
+	"reflect"
 	"strings"
 )
 
@@ -60,6 +61,11 @@ func (b *RouteBuilder) Doc(documentation string) *RouteBuilder {
 // Reads tells what resource type will be read from the request payload. Optional.
 func (b *RouteBuilder) Reads(sample interface{}) *RouteBuilder {
 	b.readSample = sample
+	typeAsName := reflect.TypeOf(sample).Name()
+	bodyParameter := &Parameter{&ParameterData{Name: typeAsName}}
+	bodyParameter.beBody()
+	bodyParameter.DataType(typeAsName)
+	b.Param(bodyParameter)
 	return b
 }
 
