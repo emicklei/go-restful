@@ -9,21 +9,33 @@ import (
 )
 
 // The Dispatch function is responsible to delegating to the appropriate WebService that has been registered via Add.
-// The default implementation is DefaultDispatch which also does some basic panic handling.
+// The default implementation is DefaultDispatch which also does some basic panic handling and closes the request body.
 //
 // Example of overriding it to add basic request logging:
 //	restful.Dispatch = func(w http.ResponseWriter, r *http.Request) {
 //		fmt.Println(r.Method, r.URL)
 //		restful.DefaultDispatch(w, r)
 //	}
+//
+//  Deprecated: Use filters instead.
+//
 var Dispatch http.HandlerFunc
 
 // The Router is responsible for selecting the best matching Route given the input (request,response)
 var Router RouteSelector
 
-// Collection of registered Dispatchers that can handle Http requests
+// If set the true then panics will not be caught to return HTTP 500.
+// In that case, Route functions are responsible for handling any error situation.
+// Default value is false = recover from panics. This has performance implications.
+var DoNotRecover = false
+
+// Collection of registered WebServices that can handle Http requests
 var webServices = []*WebService{}
+
+// Remember if any WebService is mapped on root /
 var isRegisteredOnRoot = false
+
+// Collection of Filter functions that apply to all requests.
 var globalFilters = []FilterFunction{}
 
 // Add registers a new WebService add it to the http listeners.
@@ -80,14 +92,23 @@ func fixedPrefixPath(pathspec string) string {
 // Dispatch the incoming Http Request to a matching WebService.
 // Matching algorithm is conform http://jsr311.java.net/nonav/releases/1.1/spec/spec.html, see jsr311.go
 func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
-	// catch all for 500 response
+	// Instal panic recovery unless told otherwise
+	if !DoNotRecover { // catch all for 500 response
+		defer func() {
+			if r := recover(); r != nil {
+				log.Println("[restful] recover from panic situation:", r)
+				httpWriter.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}()
+	}
+	// Install closing the request body (if any)
 	defer func() {
-		if r := recover(); r != nil {
-			log.Println("[restful] recover from panic situation:", r)
-			httpWriter.WriteHeader(http.StatusInternalServerError)
-			return
+		if nil != httpRequest.Body {
+			httpRequest.Body.Close()
 		}
 	}()
+
 	// step 0. Process any global filters
 	if len(globalFilters) > 0 {
 		wrappedRequest, wrappedResponse := newBasicRequestResponse(httpWriter, httpRequest)
@@ -114,16 +135,16 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 	if detected {
 		// pass through filters (if any)
 		filters := dispatcher.filters
+		wrappedRequest, wrappedResponse := route.wrapRequestResponse(httpWriter, httpRequest)
 		if len(filters) > 0 {
-			wrappedRequest, wrappedResponse := newBasicRequestResponse(httpWriter, httpRequest)
 			chain := FilterChain{Filters: filters, Target: func(req *Request, resp *Response) {
 				// handle request by route
-				route.dispatch(resp, req.Request)
+				route.dispatch(wrappedRequest, wrappedResponse)
 			}}
 			chain.ProcessFilter(wrappedRequest, wrappedResponse)
 		} else {
 			// handle request by route
-			route.dispatch(httpWriter, httpRequest)
+			route.dispatch(wrappedRequest, wrappedResponse)
 		}
 	}
 	// else a non-200 response has already been written

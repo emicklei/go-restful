@@ -66,7 +66,7 @@ func getDeclarations(req *restful.Request, resp *restful.Response) {
 			for path, routes := range pathToRoutes {
 				api := Api{Path: path, Models: map[string]Model{}}
 				for _, route := range routes {
-					operation := Operation{HttpMethod: route.Method, Summary: route.Doc, ResponseClass: "void"}
+					operation := Operation{HttpMethod: route.Method, Summary: route.Doc, ResponseClass: asDataType(route.WriteSample)}
 
 					// share root params if any
 					for _, swparam := range rootParams {
@@ -151,4 +151,11 @@ func asParamType(kind int) string {
 		return "body"
 	}
 	return ""
+}
+
+func asDataType(any interface{}) string {
+	if any == nil {
+		return "void"
+	}
+	return reflect.TypeOf(any).Name()
 }
