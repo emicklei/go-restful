@@ -1,0 +1,5 @@
+http://godoc.org/code.google.com/p/go.talks/pkg/present
+
+go get code.google.com/p/go.talks/pkg/present
+
+run present in the talks folder
