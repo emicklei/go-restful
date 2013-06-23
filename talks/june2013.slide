@@ -48,18 +48,28 @@ A Route is a combination of URL path, Http method and MIME types.
 	
 A collection of Routes for the same resource type is modelled by a WebService.
 
-
 * Routes in go-restful
 
 .code orderresource_1.go
+
+* Route function , the magic way
+
+.code function_magic.go
+
+- Route needs to determine parameter values (query?, path?)
+- Route needs to marshall the return value (errors?)
+- No way to access Http Headers (get from request? set for response?)
+- No control over Http status (BadRequest, NoContent, Conflict...)
+- => too much magic, too few control
+
 
 * Route functions in go-restful
  
 .code orderresource_2.go
 
-In general, functions in a Route must be of type:
+In general, functions in a Route must be of:
 
- type RouteFunction func(*Request, *Response)
+ type RouteFunction func(*restful.Request, *restful.Response)
 
 * Request in go-restful
 
@@ -91,3 +101,16 @@ ReadEntity uses standard Unmarshalling (XML, JSON) depending on Accept HTTP head
 WriteEntity uses standard Marshalling (XML, JSON) depending on the Content-Type defined by the Route.
 
  resp.WriteEntity(order)
+
+* Documenting the API
+
+.code orderresource_3.go
+
+- Webservice without API documentation is useless
+- Document each operation, each parameter (path,query,body), each return value
+- Source comment is not enough
+- Expose API document by the service itself
+
+* Swagger support
+
+demo
