@@ -89,27 +89,36 @@ func getDeclarations(req *restful.Request, resp *restful.Response) {
 // addModelsFromRoute takes any read or write sample from the Route and creates a Swagger model from it.
 func addModelsFromRoute(api *Api, operation *Operation, route restful.Route) {
 	if route.ReadSample != nil {
-		addModelFromSample(api, operation, true, route.ReadSample)
+		addModelFromSample(api, operation, false, route.ReadSample)
 	}
 	if route.WriteSample != nil {
-		addModelFromSample(api, operation, false, route.WriteSample)
+		addModelFromSample(api, operation, true, route.WriteSample)
 	}
 }
 
 // addModelFromSample creates and adds (or overwrites) a Model from a sample resource
 func addModelFromSample(api *Api, operation *Operation, isResponse bool, sample interface{}) {
 	st := reflect.TypeOf(sample)
-	if isResponse {
-		operation.ResponseClass = st.String()
+	isCollection := false
+	if st.Kind() == reflect.Slice || st.Kind() == reflect.Array {
+		st = st.Elem()
+		isCollection = true
 	}
-	sm := Model{st.String(), map[string]ModelProperty{}}
+	modelName := st.String()
+	if isResponse {
+		if isCollection {
+			modelName = "Array[" + modelName + "]"
+		}
+		operation.ResponseClass = modelName
+	}
+	sm := Model{modelName, map[string]ModelProperty{}}
 	// TODO handle recursive structures, hidden and array fields
 	for i := 0; i < st.NumField(); i++ {
 		sf := st.Field(i)
 		sp := ModelProperty{Type: sf.Type.Name()}
 		sm.Properties[sf.Name] = sp
 	}
-	api.Models[st.String()] = sm
+	api.Models[modelName] = sm
 }
 
 func asSwaggerParameter(param restful.ParameterData) Parameter {

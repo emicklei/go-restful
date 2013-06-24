@@ -60,12 +60,16 @@ A collection of Routes for the same resource type is modelled by a WebService.
 - Route needs to marshall the return value (errors?)
 - No way to access Http Headers (get from request? set for response?)
 - No control over Http status (BadRequest, NoContent, Conflict...)
-- => too much magic, too few control
+
+too much magic
+much less control
 
 
 * Route functions in go-restful
  
 .code orderresource_2.go
+
+* RouteFunction
 
 In general, functions in a Route must be of:
 
@@ -81,6 +85,8 @@ In general, functions in a Route must be of:
  QueryParameter(name string) string
 
  ReadEntity(entityReference interface{}) error
+
+* ReadEntity
 
 ReadEntity uses standard Unmarshalling (XML, JSON) depending on Accept HTTP header.
 
@@ -98,19 +104,31 @@ ReadEntity uses standard Unmarshalling (XML, JSON) depending on Accept HTTP head
 
  WriteEntity(value interface{}) Response
 
+* WriteEntity
+
 WriteEntity uses standard Marshalling (XML, JSON) depending on the Content-Type defined by the Route.
 
  resp.WriteEntity(order)
 
 * Documenting the API
 
-.code orderresource_3.go
-
 - Webservice without API documentation is useless
 - Document each operation, each parameter (path,query,body), each return value
 - Source comment is not enough
 - Expose API document by the service itself
 
-* Swagger support
+* API for documenting the API
 
-demo
+.code orderresource_3.go
+
+* Using Swagger
+
+.image order_api_swagger.png
+
+* Landskape
+
+.code landskape.go
+
+* Landskape API (Swagger)
+
+.image landskape-api-swagger.png
