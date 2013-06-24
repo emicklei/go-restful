@@ -31,7 +31,9 @@ using HTTP methods
 
 - "/bar" cannot be a regular expression (or parameterized)
 
-- need to inspect *http.Request for HTTP Method
+- need to inspect request for HTTP Method
+
+- ... for URL path and query
 
 - no content negotiation (Accept, Content-Type)
 
@@ -61,8 +63,7 @@ A collection of Routes for the same resource type is modelled by a WebService.
 - No way to access Http Headers (get from request? set for response?)
 - No control over Http status (BadRequest, NoContent, Conflict...)
 
-too much magic
-much less control
+too much magic, much less control
 
 
 * Route functions in go-restful
@@ -86,12 +87,16 @@ In general, functions in a Route must be of:
 
  ReadEntity(entityReference interface{}) error
 
+Use embedded Request for Header access
+
+ req.Request.Header.Get("Date")
+
 * ReadEntity
 
 ReadEntity uses standard Unmarshalling (XML, JSON) depending on Accept HTTP header.
 
  order := new(Order)
- req.ReadEntity(order)
+ err := req.ReadEntity(order)
 
 * Response in go-restful
 
@@ -109,6 +114,8 @@ ReadEntity uses standard Unmarshalling (XML, JSON) depending on Accept HTTP head
 WriteEntity uses standard Marshalling (XML, JSON) depending on the Content-Type defined by the Route.
 
  resp.WriteEntity(order)
+
+If the Write fails then status 500 is written instead
 
 * Filters
 
@@ -171,6 +178,13 @@ Filters can be chained
 
 .image order_api_swagger.png
 
+* Landskape
+
+.code landskape.go
+
+* Landskape API (Swagger)
+
+.image landskape-api-swagger.png
 
 * go-restful
 
@@ -179,5 +193,5 @@ Filters can be chained
 - *WebService* is logical composition of Routes sharing e.g. a common root path
 - *ReadEntity* and *WriteEntity* are convenience methods to transport resources
 - *Filters* intercept Http Request to perform cross concern behavior
-- Route can be fully documented such that it can expose a API document
+- Route can be fully documented such that it can expose an API document
 - Subpackage "swagger" provides a WebService to use the *Swagger* *UI*

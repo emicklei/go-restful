@@ -6,22 +6,22 @@
 	idParam := ws.PathParameter("id", "identifier of the system").DataType("string")
 	ws.Route(ws.GET("").To(s.getAll).
 		Doc("list all known systems").
-		Writes(model.System{})) // to the response ,TODO must be slice
+		Writes([]model.System{}))
 
 	ws.Route(ws.GET("/{id}").To(s.get).
 		Doc("get the system using its id").
 		Param(idParam).
-		Writes(model.System{})) // to the response
+		Writes(model.System{}))
 
 	ws.Route(ws.PUT("/{id}").To(s.put).
 		Doc("create the system using its id").
 		Param(idParam).
-		Reads(model.System{})) // from the request
+		Reads(model.System{}))
 
 	ws.Route(ws.POST("").To(s.post).
 		Doc("update the system using its id").
 		Param(idParam).
-		Reads(model.System{})) // from the request
+		Reads(model.System{}))
 
 	ws.Route(ws.DELETE("/{id}").To(s.delete).
 		Doc("delete the system using its id").
