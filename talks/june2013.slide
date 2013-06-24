@@ -110,6 +110,52 @@ WriteEntity uses standard Marshalling (XML, JSON) depending on the Content-Type 
 
  resp.WriteEntity(order)
 
+* Filters
+
+Intercept a request or response to add cross concern behavior
+
+- logging
+- authorization
+- metrics
+- headers (e.g. caching)
+
+* Filter types
+
+- Global
+
+- WebService
+
+- Route
+
+Filters must have signature
+
+ type FilterFunction func(*Request, *Response, *FilterChain)
+
+* Global filters in go-restful
+
+ func logMethodAndUrl(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
+ 	log.Printf("%s,%s\n", req.Request.Method, req.Request.URL)
+ 	chain.ProcessFilter(req, resp)
+ }
+
+To install
+
+ restful.Filter(logMethodAndUrl)
+
+* WebService filters in go-restful
+
+To install
+
+ myOrderService.Filter(logMethodAndUrl)
+
+* Route filters in go-restful
+
+ myOrderService.Route(ws.GET("/customers/{customer_id}/orders").Filter(logMethodAndUrl)
+
+Filters can be chained
+
+ .Filter(logMethodAndUrl).Filter(countHits).Filter(basicAuthorize).Filter(measureTime)
+
 * Documenting the API
 
 - Webservice without API documentation is useless
@@ -125,10 +171,13 @@ WriteEntity uses standard Marshalling (XML, JSON) depending on the Content-Type 
 
 .image order_api_swagger.png
 
-* Landskape
 
-.code landskape.go
+* go-restful
 
-* Landskape API (Swagger)
-
-.image landskape-api-swagger.png
+- Dispatches incoming Http Requests to functions using Routes
+- *Route* encapsulates Http Method, URL template and MIME type
+- *WebService* is logical composition of Routes sharing e.g. a common root path
+- *ReadEntity* and *WriteEntity* are convenience methods to transport resources
+- *Filters* intercept Http Request to perform cross concern behavior
+- Route can be fully documented such that it can expose a API document
+- Subpackage "swagger" provides a WebService to use the *Swagger* *UI*
