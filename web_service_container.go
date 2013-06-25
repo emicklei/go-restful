@@ -89,6 +89,8 @@ func fixedPrefixPath(pathspec string) string {
 	return pathspec[:varBegin]
 }
 
+var DefaultRouter = RouterJSR311{}
+
 // Dispatch the incoming Http Request to a matching WebService.
 // Matching algorithm is conform http://jsr311.java.net/nonav/releases/1.1/spec/spec.html, see jsr311.go
 func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
@@ -109,7 +111,7 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 		}
 	}()
 
-	// step 0. Process any global filters
+	// Process any global filters
 	if len(globalFilters) > 0 {
 		wrappedRequest, wrappedResponse := newBasicRequestResponse(httpWriter, httpRequest)
 		proceed := false
@@ -122,16 +124,12 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 			return
 		}
 	}
-	// step 1. Identify the root resource class (WebService)
-	dispatcher, finalMatch, err := detectDispatcher(httpRequest.URL.Path, webServices)
-	if err != nil {
-		httpWriter.WriteHeader(http.StatusNotFound)
-		return
-	}
-	// step 2. Obtain the set of candidate methods (Routes)
-	routes := selectRoutes(dispatcher, finalMatch)
-	// step 3. Identify the method (Route) that will handle the request
-	route, detected := detectRoute(routes, httpWriter, httpRequest)
+	// Find best match Route ; detected is false if no match was found
+	dispatcher, route, detected := DefaultRouter.SelectRoute(
+		httpRequest.URL.Path,
+		webServices,
+		httpWriter,
+		httpRequest)
 	if detected {
 		// pass through filters (if any)
 		filters := dispatcher.filters

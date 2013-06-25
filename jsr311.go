@@ -9,8 +9,29 @@ import (
 	"sort"
 )
 
+type RouterJSR311 struct{}
+
+func (r RouterJSR311) SelectRoute(
+	path string,
+	webServices []*WebService,
+	httpWriter http.ResponseWriter,
+	httpRequest *http.Request) (selected Route, ok bool) {
+
+	// Identify the root resource class (WebService)
+	dispatcher, finalMatch, err := r.detectDispatcher(path, webServices)
+	if err != nil {
+		httpWriter.WriteHeader(http.StatusNotFound)
+		return Route{}, false
+	}
+	// Obtain the set of candidate methods (Routes)
+	routes := r.selectRoutes(dispatcher, finalMatch)
+
+	// Identify the method (Route) that will handle the request
+	return dispatcher, r.detectRoute(routes, httpWriter, httpRequest)
+}
+
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
-func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *http.Request) (Route, bool) {
+func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *http.Request) (Route, bool) {
 	// http method
 	methodOk := []Route{}
 	for _, each := range routes {
@@ -54,17 +75,17 @@ func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *ht
 		httpWriter.Write([]byte("406: Not Acceptable"))
 		return Route{}, false
 	}
-	return bestMatchByMedia(outputMediaOk, contentType, accept), true
+	return r.bestMatchByMedia(outputMediaOk, contentType, accept), true
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
-func bestMatchByMedia(routes []Route, contentType string, accept string) Route {
+func (r RouterJSR311) bestMatchByMedia(routes []Route, contentType string, accept string) Route {
 	// TODO
 	return routes[0]
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2  (step 2)
-func selectRoutes(dispatcher *WebService, pathRemainder string) []Route {
+func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string) []Route {
 	if pathRemainder == "" || pathRemainder == "/" {
 		return dispatcher.Routes()
 	}
@@ -97,7 +118,7 @@ func selectRoutes(dispatcher *WebService, pathRemainder string) []Route {
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
-func detectDispatcher(requestPath string, dispatchers []*WebService) (*WebService, string, error) {
+func (r RouterJSR311) detectDispatcher(requestPath string, dispatchers []*WebService) (*WebService, string, error) {
 	filtered := sortableDispatcherCandidates{}
 	for _, each := range dispatchers {
 		pathExpr := each.pathExpr
