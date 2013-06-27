@@ -28,12 +28,12 @@ Example WebService:
 			Reads(Application{})) // from the request
 		return ws
 	}
-	func getApplication(request *Request, response *Response) {
+	func getApplication(request *restful.Request, response *restful.Response) {
 			id := request.PathParameter("id")
 			env := request.QueryParameter("environment")
 			...
 	}
-	func saveApplication(request *Request, response *Response) {
+	func saveApplication(request *restful.Request, response *restful.Response) {
 		// response.AddHeader("X-Something","other")
 		// response.WriteEntity(anApp) , uses Accept header to detect XML/JSON
 		// response.WriterError(http.StatusInternalServerError,err)
@@ -51,7 +51,7 @@ WebServices
 
 A WebService has a collection of Route objects that dispatch incoming Http Requests to a function calls.
 
-	type RouteFunction func(*Request, *Response)
+	type RouteFunction func(*restful.Request, *restful.Response)
 
 A Route is defined by a HTTP method, an URL path and (optionally) the MIME types it consumes (Content-Type) and produces (Accept).
 This package has the logic to find the best matching Route and if found, call its Function.
