@@ -83,6 +83,10 @@ In general, functions in a Route must be of:
 
  type RouteFunction func(*restful.Request, *restful.Response)
 
+* Hello world
+
+.play ../examples/restful-hello-world.go
+
 * Request in go-restful
 
 - A wrapper on the standard http.Request
