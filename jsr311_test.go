@@ -32,9 +32,11 @@ func TestDetectDispatcher(t *testing.T) {
 	ws7 := new(WebService).Path("/{p}/q")
 	var dispatchers = []*WebService{ws1, ws2, ws3, ws4, ws5, ws6, ws7}
 
+	router := RouterJSR311{}
+
 	ok := true
 	for i, fixture := range paths {
-		who, final, err := detectDispatcher(fixture.path, dispatchers)
+		who, final, err := router.detectDispatcher(fixture.path, dispatchers)
 		if err != nil {
 			t.Logf("error in detection:%v", err)
 			ok = false
@@ -65,7 +67,7 @@ func TestSelectRoutesSlash(t *testing.T) {
 	ws1.Route(ws1.POST("/u/v"))
 	ws1.Route(ws1.POST("/u/{w}"))
 	ws1.Route(ws1.POST("/u/{w}/z"))
-	routes := selectRoutes(ws1, "/u")
+	routes := RouterJSR311{}.selectRoutes(ws1, "/u")
 	checkRoutesContains(routes, "/u", t)
 }
 func TestSelectRoutesU(t *testing.T) {
@@ -74,8 +76,8 @@ func TestSelectRoutesU(t *testing.T) {
 	ws1.Route(ws1.GET("/"))
 	ws1.Route(ws1.GET("/v"))
 	ws1.Route(ws1.POST("/{w}"))
-	ws1.Route(ws1.POST("/{w}/z"))     // so full path = /u/{w}/z
-	routes := selectRoutes(ws1, "/v") // test against /u/v
+	ws1.Route(ws1.POST("/{w}/z"))                    // so full path = /u/{w}/z
+	routes := RouterJSR311{}.selectRoutes(ws1, "/v") // test against /u/v
 	checkRoutesContains(routes, "/u/{w}", t)
 }
 
@@ -84,7 +86,7 @@ func TestSelectRoutesUsers1(t *testing.T) {
 	ws1.Route(ws1.POST(""))
 	ws1.Route(ws1.POST("/"))
 	ws1.Route(ws1.PUT("/{id}"))
-	routes := selectRoutes(ws1, "/1")
+	routes := RouterJSR311{}.selectRoutes(ws1, "/1")
 	checkRoutesContains(routes, "/users/{id}", t)
 }
 func checkRoutesContains(routes []Route, path string, t *testing.T) {

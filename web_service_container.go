@@ -125,7 +125,7 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 		}
 	}
 	// Find best match Route ; detected is false if no match was found
-	dispatcher, route, detected := DefaultRouter.SelectRoute(
+	dispatcher, route, detected := Router.SelectRoute(
 		httpRequest.URL.Path,
 		webServices,
 		httpWriter,
@@ -156,6 +156,8 @@ func newBasicRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.R
 		&Response{httpWriter, accept, []string{}} // empty content-types
 }
 
+// init does go-restful package initialization
 func init() {
 	Dispatch = DefaultDispatch
+	Router = RouterJSR311{}
 }

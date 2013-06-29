@@ -15,19 +15,20 @@ func (r RouterJSR311) SelectRoute(
 	path string,
 	webServices []*WebService,
 	httpWriter http.ResponseWriter,
-	httpRequest *http.Request) (selected Route, ok bool) {
+	httpRequest *http.Request) (selectedService *WebService, selectedRoute Route, ok bool) {
 
 	// Identify the root resource class (WebService)
 	dispatcher, finalMatch, err := r.detectDispatcher(path, webServices)
 	if err != nil {
 		httpWriter.WriteHeader(http.StatusNotFound)
-		return Route{}, false
+		return nil, Route{}, false
 	}
 	// Obtain the set of candidate methods (Routes)
 	routes := r.selectRoutes(dispatcher, finalMatch)
 
 	// Identify the method (Route) that will handle the request
-	return dispatcher, r.detectRoute(routes, httpWriter, httpRequest)
+	route, ok := r.detectRoute(routes, httpWriter, httpRequest)
+	return dispatcher, route, ok
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
