@@ -25,18 +25,18 @@ func (r *Request) QueryParameter(name string) string {
 	return r.Request.FormValue(name)
 }
 
-// ReadEntity checks the Accept header and reads the content into the entityReference
-func (r *Request) ReadEntity(entityReference interface{}) error {
+// ReadEntity checks the Accept header and reads the content into the entityPointer
+func (r *Request) ReadEntity(entityPointer interface{}) error {
 	contentType := r.Request.Header.Get(HEADER_ContentType)
 	buffer, err := ioutil.ReadAll(r.Request.Body)
 	if err != nil {
 		return err
 	}
 	if strings.Contains(contentType, MIME_XML) {
-		err = xml.Unmarshal(buffer, entityReference)
+		err = xml.Unmarshal(buffer, entityPointer)
 	} else {
 		if strings.Contains(contentType, MIME_JSON) {
-			err = json.Unmarshal(buffer, entityReference)
+			err = json.Unmarshal(buffer, entityPointer)
 		} else {
 			err = errors.New("[restful] Unable to unmarshal content of type:" + contentType)
 		}

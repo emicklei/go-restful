@@ -1,5 +1,3 @@
-//   GET /customers/{customer_id}/orders
-//
 func getOrdersForCustomer(req *restful.Request, resp *restful.Response) {
 
 	orders, err := selectOrdersByCustomerId(req.PathParam("customer_id"))

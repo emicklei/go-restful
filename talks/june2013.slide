@@ -24,6 +24,9 @@ using HTTP methods
 		
 	GET,POST,PUT,DELETE,HEAD
 
+* Wanted 
+
+.image landskape-api-swagger.png
 
 * Request handling in net/http
 
@@ -50,11 +53,13 @@ A Route is a combination of URL path, Http method and MIME types.
 	
 A collection of Routes for the same resource type is modelled by a WebService.
 
+.image service_route_func.png
+
 * Routes in go-restful
 
 .code orderresource_1.go
 
-* Route function , the magic way
+* Route function , a magical way
 
 .code function_magic.go
 
@@ -68,6 +73,8 @@ too much magic, much less control
 
 * Route functions in go-restful
  
+ GET /customers/{customer_id}/orders
+
 .code orderresource_2.go
 
 * RouteFunction
@@ -75,6 +82,10 @@ too much magic, much less control
 In general, functions in a Route must be of:
 
  type RouteFunction func(*restful.Request, *restful.Response)
+
+* Hello world
+
+.play ../examples/restful-hello-world.go
 
 * Request in go-restful
 
@@ -117,14 +128,33 @@ WriteEntity uses standard Marshalling (XML, JSON) depending on the Content-Type 
 
 If the Write fails then status 500 is written instead
 
+* MIME types
+
+ Accept: application/xml ; application/json
+
+ Content-Type: application/json
+
+ Content-Type: application/xml
+
+* MIME types in go-restful
+
+ yourService.Consumes(restful.MIME_XML, restful.MIME_JSON)
+ yourService.Produces(restful.MIME_JSON, restful.MIME_XML)
+
+You can specify this per Route as well.
+
+You can add your own, e.g application/octet-stream for Google Protocol Buffers and use
+
+ func ReadRequest(b *bufio.Reader) (req *Request, err error)
+
 * Filters
 
 Intercept a request or response to add cross concern behavior
 
 - logging
-- authorization
+- authorization, authentication
 - metrics
-- headers (e.g. caching)
+- HTTP headers
 
 * Filter types
 
@@ -174,7 +204,7 @@ Filters can be chained
 
 .code orderresource_3.go
 
-* Using Swagger
+* Using Swagger UI
 
 .image order_api_swagger.png
 
@@ -182,9 +212,42 @@ Filters can be chained
 
 .code landskape.go
 
-* Landskape API (Swagger)
+* Landskape API
 
 .image landskape-api-swagger.png
+
+* Go get some
+
+.play landskape_client.go 
+
+* Program structure
+
+ /webservice
+   connection_resource.go
+   system_resource.go
+   diagram_service.go
+
+ /application
+   logic.go
+
+ /model
+   connection.go
+   system.go  
+
+ /dao
+   connection_dao.go
+   system_dao.go 
+
+* Inject the components
+
+ appDao := dao.SystemDao{session.DB(props["mongo.database"]).C("systems")}
+ conDao := dao.ConnectionDao{session.DB(props["mongo.database"]).C("connections")}
+ 
+ logic := application.Logic{appDao, conDao}
+ 
+ webservice.SystemResource{logic}.Register()
+ webservice.ConnectionResource{logic}.Register()
+
 
 * go-restful
 
