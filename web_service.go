@@ -27,7 +27,7 @@ func (w *WebService) Path(root string) *WebService {
 	return w
 }
 
-// AddParameter adds a PathParameter to document parameters used in the root path.
+// Param adds a PathParameter to document parameters used in the root path.
 func (w *WebService) Param(parameter *Parameter) *WebService {
 	if w.pathParameters == nil {
 		w.pathParameters = []*Parameter{}
