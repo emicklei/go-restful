@@ -11,47 +11,50 @@ type User struct {
 	Id, Name string
 }
 
-var users = map[string]User{}
+type UserService struct {
+	// normally one would use DAO (data access object)
+	users map[string]User
+}
 
-func NewUserService() *restful.WebService {
+func (u UserService) Register() {
 	ws := new(restful.WebService)
 	ws.
 		Path("/users").
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_JSON, restful.MIME_XML) // you can specify this per route as well
 
-	ws.Route(ws.GET("/{user-id}").To(findUser).
+	ws.Route(ws.GET("/{user-id}").To(u.findUser).
 		// docs
 		Doc("get a user").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
 		Writes(User{})) // on the response
 
-	ws.Route(ws.POST("").To(updateUser).
+	ws.Route(ws.POST("").To(u.updateUser).
 		// docs
 		Doc("update a user").
 		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
 		Reads(User{})) // from the request
 
-	ws.Route(ws.PUT("/{user-id}").To(createUser).
+	ws.Route(ws.PUT("/{user-id}").To(u.createUser).
 		// docs
 		Doc("create a user").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
 		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
 		Reads(User{})) // from the request
 
-	ws.Route(ws.DELETE("/{user-id}").To(removeUser).
+	ws.Route(ws.DELETE("/{user-id}").To(u.removeUser).
 		// docs
 		Doc("delete a user").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")))
 
-	return ws
+	restful.Add(ws)
 }
 
 // GET http://localhost:8080/users/1
 //
-func findUser(request *restful.Request, response *restful.Response) {
+func (u UserService) findUser(request *restful.Request, response *restful.Response) {
 	id := request.PathParameter("user-id")
-	usr := users[id]
+	usr := u.users[id]
 	if len(usr.Id) == 0 {
 		response.WriteError(http.StatusNotFound, nil)
 	} else {
@@ -62,11 +65,11 @@ func findUser(request *restful.Request, response *restful.Response) {
 // POST http://localhost:8080/users/1
 // <User><Id>1</Id><Name>Melissa Raspberry</Name></User>
 //
-func updateUser(request *restful.Request, response *restful.Response) {
+func (u *UserService) updateUser(request *restful.Request, response *restful.Response) {
 	usr := new(User)
 	err := request.ReadEntity(&usr)
 	if err == nil {
-		users[usr.Id] = *usr
+		u.users[usr.Id] = *usr
 		response.WriteEntity(usr)
 	} else {
 		response.WriteError(http.StatusInternalServerError, err)
@@ -76,11 +79,11 @@ func updateUser(request *restful.Request, response *restful.Response) {
 // PUT http://localhost:8080/users/1
 // <User><Id>1</Id><Name>Melissa</Name></User>
 //
-func createUser(request *restful.Request, response *restful.Response) {
+func (u *UserService) createUser(request *restful.Request, response *restful.Response) {
 	usr := User{Id: request.PathParameter("user-id")}
 	err := request.ReadEntity(&usr)
 	if err == nil {
-		users[usr.Id] = usr
+		u.users[usr.Id] = usr
 		response.WriteHeader(http.StatusCreated)
 		response.WriteEntity(usr)
 	} else {
@@ -90,13 +93,14 @@ func createUser(request *restful.Request, response *restful.Response) {
 
 // DELETE http://localhost:8080/users/1
 //
-func removeUser(request *restful.Request, response *restful.Response) {
+func (u *UserService) removeUser(request *restful.Request, response *restful.Response) {
 	id := request.PathParameter("user-id")
-	delete(users, id)
+	delete(u.users, id)
 }
 
 func main() {
-	restful.Add(NewUserService())
+	u := UserService{map[string]User{}}
+	u.Register()
 
 	// Optionally, you can install the Swagger Service which provides a nice Web UI on your REST API
 	// You need to download the Swagger HTML5 assets and change the FilePath location in the config below.
