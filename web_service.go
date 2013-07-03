@@ -121,6 +121,11 @@ func (w *WebService) PUT(subPath string) *RouteBuilder {
 	return new(RouteBuilder).servicePath(w.rootPath).Method("PUT").Path(subPath)
 }
 
+// PATCH is a shortcut for .Method("PATCH").Path(subPath)
+func (w *WebService) PATCH(subPath string) *RouteBuilder {
+	return new(RouteBuilder).servicePath(w.rootPath).Method("PATCH").Path(subPath)
+}
+
 // DELETE is a shortcut for .Method("DELETE").Path(subPath)
 func (w *WebService) DELETE(subPath string) *RouteBuilder {
 	return new(RouteBuilder).servicePath(w.rootPath).Method("DELETE").Path(subPath)
