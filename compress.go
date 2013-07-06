@@ -11,8 +11,11 @@ import (
 	"strings"
 )
 
+// If EnableContentEncoding is true then the Accept-Encoding HTTP Header is inspected
+// and a CompressingResponseWriter is used to write the response.
 var EnableContentEncoding = false
 
+// CompressingResponseWriter is a http.ResponseWriter that can perform content encoding (gzip and zlib)
 type CompressingResponseWriter struct {
 	writer     http.ResponseWriter
 	compressor io.WriteCloser
@@ -46,22 +49,22 @@ func WantsCompressedResponse(httpRequest *http.Request) (bool, string) {
 	}
 	header := httpRequest.Header.Get(HEADER_AcceptEncoding)
 	gi := strings.Index(header, ENCODING_GZIP)
-	zi := strings.Index(header, ENCODING_ZLIB)
+	zi := strings.Index(header, ENCODING_DEFLATE)
 	// use in order of appearance
 	if gi == -1 {
-		return zi != -1, ENCODING_ZLIB
+		return zi != -1, ENCODING_DEFLATE
 	} else if zi == -1 {
 		return gi != -1, ENCODING_GZIP
 	} else {
 		if gi < zi {
 			return true, ENCODING_GZIP
 		} else {
-			return true, ENCODING_ZLIB
+			return true, ENCODING_DEFLATE
 		}
 	}
 }
 
-// encoding = {gzip,deflate}
+// NewCompressingResponseWriter create a CompressingResponseWriter for a known encoding = {gzip,deflate}
 func NewCompressingResponseWriter(httpWriter http.ResponseWriter, encoding string) (*CompressingResponseWriter, error) {
 	httpWriter.Header().Set(HEADER_ContentEncoding, encoding)
 	c := new(CompressingResponseWriter)
@@ -72,7 +75,7 @@ func NewCompressingResponseWriter(httpWriter http.ResponseWriter, encoding strin
 		if err != nil {
 			return nil, err
 		}
-	} else if ENCODING_ZLIB == encoding {
+	} else if ENCODING_DEFLATE == encoding {
 		c.compressor, err = zlib.NewWriterLevel(httpWriter, zlib.BestSpeed)
 		if err != nil {
 			return nil, err
