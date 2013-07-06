@@ -5,12 +5,13 @@ package for building REST-style Web Services using Google Go
 
 REST asks developers to use HTTP methods explicitly and in a way that's consistent with the protocol definition. This basic REST design principle establishes a one-to-one mapping between create, read, update, and delete (CRUD) operations and HTTP methods. According to this mapping:
 
-- Create = PUT iff you are sending the full content of the specified resource (URL).
-- Create = POST if you are sending a command to the server to create a subordinate of the specified resource, using some server-side algorithm.
-- Retrieve = GET.
-- Update = PUT iff you are updating the full content of the specified resource.
-- Update = POST if you are requesting the server to update one or more subordinates of the specified resource.
-- Delete = DELETE if you are requesting the server to delete the resource
+- GET = Retrieve
+- POST = Create if you are sending a command to the server to create a subordinate of the specified resource, using some server-side algorithm.
+- POST = Update if you are requesting the server to update one or more subordinates of the specified resource.
+- PUT = Create iff you are sending the full content of the specified resource (URL).
+- PUT = Update iff you are updating the full content of the specified resource.
+- DELETE = Delete if you are requesting the server to delete the resource
+- PATCH = Update partial content of a resource
     
 ### Resources
 

@@ -1,6 +1,10 @@
 Change history of go-restful
 =
 
+2013-07-06
+
+ - (api add) Added support for response encoding (gzip and deflate(zlib)). This feature is disabled on default (for backwards compatibility). Use restful.EnableContentEncoding = true in your initialization to enable this feature.
+
 2013-06-19
 
  - (improve) DoNotRecover option, moved request body closer, improved ReadEntity

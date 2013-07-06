@@ -106,9 +106,28 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 		}
 	}()
 
+	// Detect if compression is needed
+	doCompress, encoding := WantsCompressedResponse(httpRequest)
+	var writer http.ResponseWriter
+	if doCompress {
+		var err error
+		writer, err = NewCompressingResponseWriter(httpWriter, encoding)
+		if err != nil {
+			log.Println("[restful] unable to install compressor:", err)
+			httpWriter.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		defer func() {
+			writer.(*CompressingResponseWriter).Close()
+		}()
+	} else {
+		// without compression
+		writer = httpWriter
+	}
+
 	// step 0. Process any global filters
 	if len(globalFilters) > 0 {
-		wrappedRequest, wrappedResponse := newBasicRequestResponse(httpWriter, httpRequest)
+		wrappedRequest, wrappedResponse := newBasicRequestResponse(writer, httpRequest)
 		proceed := false
 		chain := FilterChain{Filters: globalFilters, Target: func(req *Request, resp *Response) {
 			// we passed all filters
@@ -128,11 +147,11 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 	// step 2. Obtain the set of candidate methods (Routes)
 	routes := selectRoutes(dispatcher, finalMatch)
 	// step 3. Identify the method (Route) that will handle the request
-	route, detected := detectRoute(routes, httpWriter, httpRequest)
+	route, detected := detectRoute(routes, writer, httpRequest)
 	if detected {
 		// pass through filters (if any)
 		filters := dispatcher.filters
-		wrappedRequest, wrappedResponse := route.wrapRequestResponse(httpWriter, httpRequest)
+		wrappedRequest, wrappedResponse := route.wrapRequestResponse(writer, httpRequest)
 		if len(filters) > 0 {
 			chain := FilterChain{Filters: filters, Target: func(req *Request, resp *Response) {
 				// handle request by route
