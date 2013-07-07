@@ -28,3 +28,17 @@ restful.html
 tmp.prof
 
 go-restful.test
+
+examples/restful-basic-authentication
+
+examples/restful-encoding-filter
+
+examples/restful-filters
+
+examples/restful-hello-world
+
+examples/restful-resource-functions
+
+examples/restful-serve-static
+
+examples/restful-user-service

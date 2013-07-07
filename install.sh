@@ -1,3 +1,6 @@
+cd examples
+	ls *.go | xargs -I {} go build {}
+	cd ..
 go fmt ...swagger && \
 go test -test.v ...swagger && \
 go install ...swagger && \
