@@ -114,6 +114,18 @@ Use the Go standard http.ServeFile function to serve file system assets.
 
 See the example https://github.com/emicklei/go-restful/blob/master/examples/restful-serve-static.go with full implementations.
 
+Response Encoding
+
+Two encodings are supported: gzip and deflate. To enable this for all responses:
+
+	restful.EnableContentEncoding = true
+
+If a Http request includes the Accept-Encoding header then the response content will be compressed using the specified encoding.
+
+Alternatively, you can create a Filter that performs the encoding and install it per WebService or Route.
+See the example https://github.com/emicklei/go-restful/blob/master/examples/restful-encoding-filter.go
+
+
 Error Handling
 
 Unexpected things happen. If a request cannot be processed because of a failure, your service needs to tell the response what happened and why.
@@ -166,6 +178,6 @@ Resources
 
 [showcase]: https://github.com/emicklei/landskape
 
-(c) 2012,2013, http://ernestmicklei.com. MIT License
+(c) 2013, http://ernestmicklei.com. MIT License
 */
 package restful
