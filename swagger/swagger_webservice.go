@@ -126,7 +126,12 @@ func addModelToApi(api *Api, st reflect.Type) {
 	sm := Model{modelName, map[string]ModelProperty{}}
 	for i := 0; i < st.NumField(); i++ {
 		sf := st.Field(i)
-		sm.Properties[sf.Name] = asModelProperty(sf, api)
+		jsonName := sf.Name
+		// see if a tag overrides this
+		if override := st.Field(i).Tag.Get("json"); override != "" {
+			jsonName = override
+		}
+		sm.Properties[jsonName] = asModelProperty(sf, api)
 	}
 	api.Models[modelName] = sm
 }
@@ -136,11 +141,11 @@ func asModelProperty(sf reflect.StructField, api *Api) ModelProperty {
 	st := sf.Type
 	if st.Kind() == reflect.Slice || st.Kind() == reflect.Array {
 		prop.Type = "List"
-		prop.Items = map[string]string{"$ref": st.Elem().Name()}
+		prop.Items = map[string]string{"$ref": st.Elem().String()}
 		// add|overwrite mode for element type
 		addModelToApi(api, st.Elem())
 	} else {
-		prop.Type = st.Name()
+		prop.Type = st.String() // inclue pkg path
 	}
 	return prop
 }

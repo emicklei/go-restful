@@ -13,8 +13,9 @@ func TestApi(t *testing.T) {
 }
 
 type sample struct {
-	id    string
-	items []item
+	id       string
+	items    []item
+	rootItem item `json:"root"`
 }
 
 type item struct {
