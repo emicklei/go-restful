@@ -106,11 +106,13 @@ func main() {
 	// You need to download the Swagger HTML5 assets and change the FilePath location in the config below.
 	// Open http://localhost:8080/apidocs and enter http://localhost:8080/apidocs.json in the api input field.
 	config := swagger.Config{
-		WebServicesUrl:  "http://localhost:8080",
-		ApiPath:         "/apidocs.json",
+		WebServices:    restful.RegisteredWebServices(), // you control what services are visible
+		WebServicesUrl: "http://localhost:8080",
+		ApiPath:        "/apidocs.json",
+
+		// Optionally, specifiy where the UI is located
 		SwaggerPath:     "/apidocs/",
-		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7",
-		WebServices:     restful.RegisteredWebServices()} // you control what services are visible
+		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7"}
 	swagger.InstallSwaggerService(config)
 
 	log.Printf("start listening on localhost:8080")
