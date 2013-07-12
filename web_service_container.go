@@ -89,6 +89,7 @@ func fixedPrefixPath(pathspec string) string {
 	return pathspec[:varBegin]
 }
 
+// See jsr311.go
 var DefaultRouter = RouterJSR311{}
 
 // Dispatch the incoming Http Request to a matching WebService.
@@ -130,7 +131,6 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 		writer = httpWriter
 	}
 
-	// step 0. Process any global filters
 	// Process any global filters
 	if len(globalFilters) > 0 {
 		wrappedRequest, wrappedResponse := newBasicRequestResponse(writer, httpRequest)
@@ -145,7 +145,7 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 		}
 	}
 	// Find best match Route ; detected is false if no match was found
-	dispatcher, route, detected := Router.SelectRoute(
+	dispatcher, route, detected := DefaultRouter.SelectRoute(
 		httpRequest.URL.Path,
 		webServices,
 		httpWriter,
@@ -156,7 +156,7 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 		wrappedRequest, wrappedResponse := route.wrapRequestResponse(writer, httpRequest)
 		if len(filters) > 0 {
 			chain := FilterChain{Filters: filters, Target: func(req *Request, resp *Response) {
-				// handle request by route
+				// handle request by route after passed all filters
 				route.dispatch(wrappedRequest, wrappedResponse)
 			}}
 			chain.ProcessFilter(wrappedRequest, wrappedResponse)
@@ -176,8 +176,6 @@ func newBasicRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.R
 		&Response{httpWriter, accept, []string{}} // empty content-types
 }
 
-// init does go-restful package initialization
 func init() {
 	Dispatch = DefaultDispatch
-	Router = RouterJSR311{}
 }
