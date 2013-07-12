@@ -35,6 +35,7 @@ func detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *ht
 		}
 		if len(inputMediaOk) == 0 {
 			httpWriter.WriteHeader(http.StatusUnsupportedMediaType)
+			httpWriter.Write([]byte("415: Unsupported Media Type"))
 			return Route{}, false
 		}
 	}
