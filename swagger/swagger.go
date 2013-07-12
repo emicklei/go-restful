@@ -39,7 +39,7 @@ type Parameter struct {
 	Description     string            `json:"description"`
 	DataType        string            `json:"dataType"`
 	Required        bool              `json:"required"`
-	AllowableValues map[string]string `json:"allowableValues"`
+	AllowableValues map[string]string `json:"allowableValues,omitempty"`
 	AllowMultiple   bool              `json:"allowMultiple"`
 }
 
@@ -54,6 +54,7 @@ type Model struct {
 }
 
 type ModelProperty struct {
-	Type        string `json:"type"`
-	Description string `json:"description"`
+	Type        string            `json:"type"`
+	Description string            `json:"description"`
+	Items       map[string]string `json:"items,omitempty"`
 }

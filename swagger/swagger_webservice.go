@@ -22,13 +22,20 @@ func InstallSwaggerService(aSwaggerConfig Config) {
 	ws.Route(ws.GET("/{a}").To(getDeclarations))
 	ws.Route(ws.GET("/{a}/{b}").To(getDeclarations))
 	ws.Route(ws.GET("/{a}/{b}/{c}").To(getDeclarations))
-	ws.Route(ws.GET("/{a}/{b}/{c}/{d}").To(getDeclarations)) // TODO maybe support * in the path spec?
+	ws.Route(ws.GET("/{a}/{b}/{c}/{d}").To(getDeclarations))
+	ws.Route(ws.GET("/{a}/{b}/{c}/{d}/{e}").To(getDeclarations))
+	ws.Route(ws.GET("/{a}/{b}/{c}/{d}/{e}/{f}").To(getDeclarations))
+	ws.Route(ws.GET("/{a}/{b}/{c}/{d}/{e}/{f}/{g}").To(getDeclarations))
 	log.Printf("[restful/swagger] listing is available at %v%v", config.WebServicesUrl, config.ApiPath)
 	restful.Add(ws)
 
-	// Install FileServer
-	log.Printf("[restful/swagger] %v%v is mapped to folder %v", config.WebServicesUrl, config.SwaggerPath, config.SwaggerFilePath)
-	http.Handle(config.SwaggerPath, http.StripPrefix(config.SwaggerPath, http.FileServer(http.Dir(config.SwaggerFilePath))))
+	// Check paths for UI serving
+	if config.SwaggerFilePath != "" && config.SwaggerFilePath != "" {
+		log.Printf("[restful/swagger] %v%v is mapped to folder %v", config.WebServicesUrl, config.SwaggerPath, config.SwaggerFilePath)
+		http.Handle(config.SwaggerPath, http.StripPrefix(config.SwaggerPath, http.FileServer(http.Dir(config.SwaggerFilePath))))
+	} else {
+		log.Printf("[restful/swagger] Swagger(File)Path is empty ; no UI is served")
+	}
 }
 
 func getListing(req *restful.Request, resp *restful.Response) {
@@ -104,21 +111,43 @@ func addModelFromSample(api *Api, operation *Operation, isResponse bool, sample 
 		st = st.Elem()
 		isCollection = true
 	}
-	modelName := st.String()
 	if isResponse {
+		modelName := st.String()
 		if isCollection {
 			modelName = "Array[" + modelName + "]"
 		}
 		operation.ResponseClass = modelName
 	}
+	addModelToApi(api, reflect.TypeOf(sample))
+}
+
+func addModelToApi(api *Api, st reflect.Type) {
+	modelName := st.String()
 	sm := Model{modelName, map[string]ModelProperty{}}
-	// TODO handle recursive structures, hidden and array fields
 	for i := 0; i < st.NumField(); i++ {
 		sf := st.Field(i)
-		sp := ModelProperty{Type: sf.Type.Name()}
-		sm.Properties[sf.Name] = sp
+		jsonName := sf.Name
+		// see if a tag overrides this
+		if override := st.Field(i).Tag.Get("json"); override != "" {
+			jsonName = override
+		}
+		sm.Properties[jsonName] = asModelProperty(sf, api)
 	}
 	api.Models[modelName] = sm
+}
+
+func asModelProperty(sf reflect.StructField, api *Api) ModelProperty {
+	prop := ModelProperty{}
+	st := sf.Type
+	if st.Kind() == reflect.Slice || st.Kind() == reflect.Array {
+		prop.Type = "List"
+		prop.Items = map[string]string{"$ref": st.Elem().String()}
+		// add|overwrite mode for element type
+		addModelToApi(api, st.Elem())
+	} else {
+		prop.Type = st.String() // inclue pkg path
+	}
+	return prop
 }
 
 func asSwaggerParameter(param restful.ParameterData) Parameter {
@@ -130,7 +159,7 @@ func asSwaggerParameter(param restful.ParameterData) Parameter {
 		Required:    param.Required}
 }
 
-// Between 1..4 path parameters supported
+// Between 1..7 path parameters supported
 func composeRootPath(req *restful.Request) string {
 	path := "/" + req.PathParameter("a")
 	b := req.PathParameter("b")
@@ -147,7 +176,22 @@ func composeRootPath(req *restful.Request) string {
 	if d == "" {
 		return path
 	}
-	return path + "/" + d
+	path = path + "/" + d
+	e := req.PathParameter("e")
+	if e == "" {
+		return path
+	}
+	path = path + "/" + e
+	f := req.PathParameter("f")
+	if f == "" {
+		return path
+	}
+	path = path + "/" + f
+	g := req.PathParameter("g")
+	if g == "" {
+		return path
+	}
+	return path + "/" + g
 }
 
 func asParamType(kind int) string {
