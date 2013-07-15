@@ -23,6 +23,7 @@ type Response struct {
 }
 
 // InternalServerError is a shortcut for .WriteHeader(http.StatusInternalServerError)
+// DEPRECATED, use the long version
 func (r Response) InternalServerError() Response {
 	r.WriteHeader(http.StatusInternalServerError)
 	return r
@@ -104,7 +105,7 @@ func (r Response) WriteAsJson(value interface{}) Response {
 func (r Response) WriteError(httpStatus int, err error) Response {
 	r.WriteHeader(httpStatus)
 	if err != nil {
-		r.WriteEntity(err.Error())
+		r.Write([]byte(err.Error()))
 	}
 	return r
 }
