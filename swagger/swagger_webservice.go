@@ -124,14 +124,17 @@ func addModelFromSample(api *Api, operation *Operation, isResponse bool, sample 
 func addModelToApi(api *Api, st reflect.Type) {
 	modelName := st.String()
 	sm := Model{modelName, map[string]ModelProperty{}}
-	for i := 0; i < st.NumField(); i++ {
-		sf := st.Field(i)
-		jsonName := sf.Name
-		// see if a tag overrides this
-		if override := st.Field(i).Tag.Get("json"); override != "" {
-			jsonName = override
+	// check for structure or primitive type
+	if st.Kind() == reflect.Struct {
+		for i := 0; i < st.NumField(); i++ {
+			sf := st.Field(i)
+			jsonName := sf.Name
+			// see if a tag overrides this
+			if override := st.Field(i).Tag.Get("json"); override != "" {
+				jsonName = override
+			}
+			sm.Properties[jsonName] = asModelProperty(sf, api)
 		}
-		sm.Properties[jsonName] = asModelProperty(sf, api)
 	}
 	api.Models[modelName] = sm
 }
