@@ -85,6 +85,7 @@ func (b *RouteBuilder) Param(parameter *Parameter) *RouteBuilder {
 	return b
 }
 
+// Operation allows you to document what the acutal method/function call is of the Route.
 func (b *RouteBuilder) Operation(name string) *RouteBuilder {
 	b.operation = name
 	return b

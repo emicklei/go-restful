@@ -18,6 +18,7 @@ Example WebService:
 		ws.Route(ws.GET("/{id}").To(getApplication).
 			// for documentation
 			Doc("Get the Application node by its id").
+			Operation("getApplication").
 			Param(ws.PathParameter("id" , "the identifier for an application node")).
 			Param(ws.QueryParameter("environment" , "the scope in which the application node lives")).
 			Writes(Application{})) // to the response
@@ -25,6 +26,7 @@ Example WebService:
 		ws.Route(ws.POST("/").To(saveApplication).
 			// for documentation
 			Doc("Create or update the Application node").
+			Operation("saveApplication").
 			Reads(Application{})) // from the request
 		return ws
 	}
@@ -34,9 +36,10 @@ Example WebService:
 			...
 	}
 	func saveApplication(request *restful.Request, response *restful.Response) {
-		// response.AddHeader("X-Something","other")
-		// response.WriteEntity(anApp) , uses Accept header to detect XML/JSON
-		// response.WriterError(http.StatusInternalServerError,err)
+		   response.AddHeader("X-Something","other")
+		   ...
+		   response.WriteEntity(anApp) // uses Accept header to detect XML/JSON
+
 	}
 
 Example main:
