@@ -28,6 +28,7 @@ type Route struct {
 
 	// documentation
 	Doc                     string
+	Operation               string
 	ParameterDocs           []*Parameter
 	ReadSample, WriteSample interface{} // structs that model an example request or response payload
 }

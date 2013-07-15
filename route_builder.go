@@ -17,6 +17,7 @@ type RouteBuilder struct {
 	filters     []FilterFunction
 	// documentation
 	doc                     string
+	operation               string
 	readSample, writeSample interface{}
 	parameters              []*Parameter
 }
@@ -84,6 +85,11 @@ func (b *RouteBuilder) Param(parameter *Parameter) *RouteBuilder {
 	return b
 }
 
+func (b *RouteBuilder) Operation(name string) *RouteBuilder {
+	b.operation = name
+	return b
+}
+
 func (b *RouteBuilder) servicePath(path string) *RouteBuilder {
 	b.rootPath = path
 	return b
@@ -123,6 +129,7 @@ func (b *RouteBuilder) Build() Route {
 		relativePath:  b.currentPath,
 		pathExpr:      pathExpr,
 		Doc:           b.doc,
+		Operation:     b.operation,
 		ParameterDocs: b.parameters,
 		ReadSample:    b.readSample,
 		WriteSample:   b.writeSample}

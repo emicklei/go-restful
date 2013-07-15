@@ -26,6 +26,7 @@ func TestModelToJsonSchema(t *testing.T) {
 	api := new(Api)
 	api.Models = map[string]Model{}
 	op := new(Operation)
+	op.Nickname = "getSome"
 	addModelFromSample(api, op, true, sample{items: []item{}})
 	output, _ := json.MarshalIndent(api, " ", " ")
 	os.Stdout.Write(output)
