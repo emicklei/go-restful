@@ -27,7 +27,8 @@ var Dispatch http.HandlerFunc
 var DoNotRecover = false
 
 // The Router is responsible for selecting the best matching Route given the input (request,response)
-var Router RouteSelector
+// See jsr311.go
+var Router = RouterJSR311{}
 
 // Collection of registered WebServices that can handle Http requests
 var webServices = []*WebService{}
@@ -89,9 +90,6 @@ func fixedPrefixPath(pathspec string) string {
 	return pathspec[:varBegin]
 }
 
-// See jsr311.go
-var DefaultRouter = RouterJSR311{}
-
 // Dispatch the incoming Http Request to a matching WebService.
 // Matching algorithm is conform http://jsr311.java.net/nonav/releases/1.1/spec/spec.html, see jsr311.go
 func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
@@ -145,14 +143,14 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 		}
 	}
 	// Find best match Route ; detected is false if no match was found
-	dispatcher, route, detected := DefaultRouter.SelectRoute(
+	webService, route, detected := Router.SelectRoute(
 		httpRequest.URL.Path,
 		webServices,
 		httpWriter,
 		httpRequest)
 	if detected {
 		// pass through filters (if any)
-		filters := dispatcher.filters
+		filters := webService.filters
 		wrappedRequest, wrappedResponse := route.wrapRequestResponse(writer, httpRequest)
 		if len(filters) > 0 {
 			chain := FilterChain{Filters: filters, Target: func(req *Request, resp *Response) {
