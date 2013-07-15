@@ -38,14 +38,14 @@ func (w *WebService) Param(parameter *Parameter) *WebService {
 
 // PathParameter creates a new Parameter of kind Path for documentation purposes.
 func (w *WebService) PathParameter(name, description string) *Parameter {
-	p := &Parameter{&ParameterData{Name: name, Description: description, Required: true}}
+	p := &Parameter{&ParameterData{Name: name, Description: description, Required: true, DataType: "string"}}
 	p.bePath()
 	return p
 }
 
 // QueryParameter creates a new Parameter of kind Query for documentation purposes.
 func (w *WebService) QueryParameter(name, description string) *Parameter {
-	p := &Parameter{&ParameterData{Name: name, Description: description, Required: false}}
+	p := &Parameter{&ParameterData{Name: name, Description: description, Required: false, DataType: "string"}}
 	p.beQuery()
 	return p
 }
