@@ -30,7 +30,7 @@ func InstallSwaggerService(aSwaggerConfig Config) {
 	restful.Add(ws)
 
 	// Check paths for UI serving
-	if config.SwaggerFilePath != "" && config.SwaggerFilePath != "" {
+	if config.SwaggerPath != "" && config.SwaggerFilePath != "" {
 		log.Printf("[restful/swagger] %v%v is mapped to folder %v", config.WebServicesUrl, config.SwaggerPath, config.SwaggerFilePath)
 		http.Handle(config.SwaggerPath, http.StripPrefix(config.SwaggerPath, http.FileServer(http.Dir(config.SwaggerFilePath))))
 	} else {
