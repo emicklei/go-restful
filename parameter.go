@@ -4,6 +4,7 @@ const (
 	PATH_PARAMETER = iota
 	QUERY_PARAMETER
 	BODY_PARAMETER
+	HEADER_PARAMETER
 )
 
 // Parameter is for documententing the parameter used in a Http Request
@@ -38,6 +39,11 @@ func (p *Parameter) beQuery() *Parameter {
 }
 func (p *Parameter) beBody() *Parameter {
 	p.data.Kind = BODY_PARAMETER
+	return p
+}
+
+func (p *Parameter) beHeader() *Parameter {
+	p.data.Kind = HEADER_PARAMETER
 	return p
 }
 

@@ -151,7 +151,7 @@ func asModelProperty(sf reflect.StructField, api *Api) ModelProperty {
 		// add|overwrite mode for element type
 		addModelToApi(api, st.Elem())
 	} else {
-		prop.Type = st.String() // inclue pkg path
+		prop.Type = st.String() // include pkg path
 	}
 	return prop
 }
@@ -165,7 +165,7 @@ func asSwaggerParameter(param restful.ParameterData) Parameter {
 		Required:    param.Required}
 }
 
-// Between 1..7 path parameters supported
+// Between 1..7 path parameters is supported
 func composeRootPath(req *restful.Request) string {
 	path := "/" + req.PathParameter("a")
 	b := req.PathParameter("b")
@@ -208,6 +208,8 @@ func asParamType(kind int) string {
 		return "query"
 	case kind == restful.BODY_PARAMETER:
 		return "body"
+	case kind == restful.HEADER_PARAMETER:
+		return "header"
 	}
 	return ""
 }
