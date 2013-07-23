@@ -25,6 +25,11 @@ func (r *Request) QueryParameter(name string) string {
 	return r.Request.FormValue(name)
 }
 
+// HeaderParameter returns the HTTP Header value of a Header name or empty if missing
+func (r *Request) HeaderParameter(name string) string {
+	return r.Request.Header.Get(name)
+}
+
 // ReadEntity checks the Accept header and reads the content into the entityPointer
 func (r *Request) ReadEntity(entityPointer interface{}) error {
 	contentType := r.Request.Header.Get(HEADER_ContentType)
