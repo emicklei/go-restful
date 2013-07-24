@@ -109,12 +109,13 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 	}
 	sort.Sort(filtered)
 
-	matchingRoutes := []Route{filtered.candidates[0].route}
-
 	// select other routes from candidates whoes expression matches rmatch
+	matchingRoutes := []Route{filtered.candidates[0].route}
 	for c := 1; c < len(filtered.candidates); c++ {
 		each := filtered.candidates[c]
-		matchingRoutes = append(matchingRoutes, each.route)
+		if each.route.pathExpr.Matcher.MatchString(pathRemainder) {
+			matchingRoutes = append(matchingRoutes, each.route)
+		}
 	}
 	return matchingRoutes
 }

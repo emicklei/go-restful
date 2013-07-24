@@ -68,7 +68,7 @@ func TestISSUE_30(t *testing.T) {
 	if len(routes) != 2 {
 		t.Fatal("expected 2 routes")
 	}
-	t.Logf("routes:%v", routes)
+	//t.Logf("routes:%v", routes)
 }
 
 func TestSelectRoutesSlash(t *testing.T) {
