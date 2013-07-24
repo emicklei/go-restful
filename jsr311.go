@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"sort"
+	//"strconv"
 )
 
 type RouterJSR311 struct{}
@@ -107,14 +108,13 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 		return []Route{}
 	}
 	sort.Sort(filtered)
-	rmatch := filtered.candidates[0].expressionToMatch()
+
 	matchingRoutes := []Route{filtered.candidates[0].route}
+
 	// select other routes from candidates whoes expression matches rmatch
 	for c := 1; c < len(filtered.candidates); c++ {
 		each := filtered.candidates[c]
-		if each.expressionToMatch() == rmatch {
-			matchingRoutes = append(matchingRoutes, each.route)
-		}
+		matchingRoutes = append(matchingRoutes, each.route)
 	}
 	return matchingRoutes
 }
