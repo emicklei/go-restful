@@ -55,13 +55,10 @@ func WantsCompressedResponse(httpRequest *http.Request) (bool, string) {
 		return zi != -1, ENCODING_DEFLATE
 	} else if zi == -1 {
 		return gi != -1, ENCODING_GZIP
-	} else {
-		if gi < zi {
+	} else if gi < zi {
 			return true, ENCODING_GZIP
-		} else {
-			return true, ENCODING_DEFLATE
-		}
 	}
+	return true, ENCODING_DEFLATE
 }
 
 // NewCompressingResponseWriter create a CompressingResponseWriter for a known encoding = {gzip,deflate}
