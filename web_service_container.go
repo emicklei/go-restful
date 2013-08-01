@@ -3,8 +3,11 @@
 package restful
 
 import (
+	"bytes"
+	"fmt"
 	"log"
 	"net/http"
+	"runtime"
 	"strings"
 )
 
@@ -97,8 +100,19 @@ func DefaultDispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) 
 	if !DoNotRecover { // catch all for 500 response
 		defer func() {
 			if r := recover(); r != nil {
-				log.Println("[restful] recover from panic situation:", r)
+				var buffer bytes.Buffer
+				buffer.WriteString(fmt.Sprintf("[restful] recover from panic situation: - %v\r\n", r))
+				for i := 1; ; i += 1 {
+					_, file, line, ok := runtime.Caller(i)
+					if !ok {
+						break
+					}
+					buffer.WriteString(fmt.Sprintf("    %s:%d\r\n", file, line))
+				}
+
+				log.Println(buffer.String())
 				httpWriter.WriteHeader(http.StatusInternalServerError)
+				httpWriter.Write(buffer.Bytes())
 				return
 			}
 		}()
