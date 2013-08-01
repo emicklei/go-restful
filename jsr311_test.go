@@ -71,6 +71,20 @@ func TestISSUE_30(t *testing.T) {
 	//t.Logf("routes:%v", routes)
 }
 
+// go test -v -test.run TestISSUE_34 ...restful
+func TestISSUE_34(t *testing.T) {
+	ws1 := new(WebService).Path("/")
+	ws1.Route(ws1.GET("/{type}/{id}"))
+	ws1.Route(ws1.GET("/network/{id}"))
+	routes := RouterJSR311{}.selectRoutes(ws1, "/network/12")
+	if len(routes) != 2 {
+		t.Fatal("expected 2 routes")
+	}
+	if routes[0].Path != "/network/{id}" {
+		t.Error("first is", routes[0].Path)
+	}
+}
+
 func TestSelectRoutesSlash(t *testing.T) {
 	ws1 := new(WebService).Path("/")
 	ws1.Route(ws1.GET(""))
