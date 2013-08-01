@@ -3,6 +3,7 @@ package restful
 import (
 	"encoding/json"
 	"encoding/xml"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -105,7 +106,7 @@ func (r Response) WriteAsJson(value interface{}) Response {
 func (r Response) WriteError(httpStatus int, err error) Response {
 	r.WriteHeader(httpStatus)
 	if err != nil {
-		r.Write([]byte(err.Error()))
+		io.WriteString(r, err.Error())
 	}
 	return r
 }
@@ -114,5 +115,12 @@ func (r Response) WriteError(httpStatus int, err error) Response {
 func (r Response) WriteServiceError(httpStatus int, err ServiceError) Response {
 	r.WriteHeader(httpStatus)
 	r.WriteEntity(err)
+	return r
+}
+
+// WriteError is a convenience method for an error status with the actual error
+func (r Response) WriteErrorString(status int, err string) Response {
+	r.WriteHeader(status)
+	io.WriteString(r, err)
 	return r
 }
