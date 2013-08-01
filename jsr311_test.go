@@ -68,6 +68,9 @@ func TestISSUE_30(t *testing.T) {
 	if len(routes) != 2 {
 		t.Fatal("expected 2 routes")
 	}
+	if routes[0].Path != "/users/login" {
+		t.Error("first is", routes[0].Path)
+	}
 	//t.Logf("routes:%v", routes)
 }
 
