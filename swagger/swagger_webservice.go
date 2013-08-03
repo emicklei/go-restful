@@ -12,7 +12,14 @@ var config Config
 
 // InstallSwaggerService add the WebService that provides the API documentation of all services
 // conform the Swagger documentation specifcation. (https://github.com/wordnik/swagger-core/wiki).
+// DEPRECATED , use RegisterSwaggerService(...)
 func InstallSwaggerService(aSwaggerConfig Config) {
+	RegisterSwaggerService(aSwaggerConfig, restful.DefaultContainer)
+}
+
+// RegisterSwaggerService add the WebService that provides the API documentation of all services
+// conform the Swagger documentation specifcation. (https://github.com/wordnik/swagger-core/wiki).
+func RegisterSwaggerService(aSwaggerConfig Config, wsContainer *restful.Container) {
 	config = aSwaggerConfig
 
 	ws := new(restful.WebService)
@@ -27,12 +34,12 @@ func InstallSwaggerService(aSwaggerConfig Config) {
 	ws.Route(ws.GET("/{a}/{b}/{c}/{d}/{e}/{f}").To(getDeclarations))
 	ws.Route(ws.GET("/{a}/{b}/{c}/{d}/{e}/{f}/{g}").To(getDeclarations))
 	log.Printf("[restful/swagger] listing is available at %v%v", config.WebServicesUrl, config.ApiPath)
-	restful.Add(ws)
+	wsContainer.Add(ws)
 
 	// Check paths for UI serving
 	if config.SwaggerPath != "" && config.SwaggerFilePath != "" {
 		log.Printf("[restful/swagger] %v%v is mapped to folder %v", config.WebServicesUrl, config.SwaggerPath, config.SwaggerFilePath)
-		http.Handle(config.SwaggerPath, http.StripPrefix(config.SwaggerPath, http.FileServer(http.Dir(config.SwaggerFilePath))))
+		wsContainer.Handle(config.SwaggerPath, http.StripPrefix(config.SwaggerPath, http.FileServer(http.Dir(config.SwaggerFilePath))))
 	} else {
 		log.Printf("[restful/swagger] Swagger(File)Path is empty ; no UI is served")
 	}

@@ -42,3 +42,5 @@ examples/restful-resource-functions
 examples/restful-serve-static
 
 examples/restful-user-service
+
+*.DS_Store
