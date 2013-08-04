@@ -72,7 +72,7 @@ func (r Response) WriteEntity(value interface{}) Response {
 		r.WriteAsXml(value)
 	} else {
 		r.WriteHeader(http.StatusNotAcceptable)
-		r.Write([]byte("406: Not Acceptable"))
+		io.WriteString(r, "406: Not Acceptable")
 	}
 	return r
 }
@@ -84,7 +84,7 @@ func (r Response) WriteAsXml(value interface{}) Response {
 		r.WriteError(http.StatusInternalServerError, err)
 	} else {
 		r.Header().Set(HEADER_ContentType, MIME_XML)
-		r.Write([]byte(xml.Header))
+		io.WriteString(r, xml.Header)
 		r.Write(output)
 	}
 	return r
@@ -103,12 +103,9 @@ func (r Response) WriteAsJson(value interface{}) Response {
 }
 
 // WriteError is a convenience method for an error HTTP status with the actual error
+// DEPRECATED; use WriteErrorString
 func (r Response) WriteError(httpStatus int, err error) Response {
-	r.WriteHeader(httpStatus)
-	if err != nil {
-		io.WriteString(r, err.Error())
-	}
-	return r
+	return r.WriteErrorString(httpStatus, err.Error())
 }
 
 // WriteServiceError is a convenience method for a responding with a ServiceError and a status

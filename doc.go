@@ -122,12 +122,25 @@ Response Encoding
 
 Two encodings are supported: gzip and deflate. To enable this for all responses:
 
-	restful.EnableContentEncoding = true
+	restful.DefaultContainer.EnableContentEncoding(true)
 
 If a Http request includes the Accept-Encoding header then the response content will be compressed using the specified encoding.
 
 Alternatively, you can create a Filter that performs the encoding and install it per WebService or Route.
 See the example https://github.com/emicklei/go-restful/blob/master/examples/restful-encoding-filter.go
+
+
+Containers
+
+A Container holds a collection of WebServices, Filters and a http.ServeMux for multiplexing http requests.
+Using the statements "restful.Add(...) and restful.Filter(...)" will register WebServices and Filters to the Default Container.
+The Default container of go-restful uses the http.DefaultServeMux.
+You can create your own Container using restful.NewContainer() and create a new http.Server for that particular container
+
+	wsContainer := restful.NewContainer()
+	wsContainer.Add(yourService)
+	server := &http.Server{Addr: ":8080", Handler: wsContainer}
+	server.ListenAndServe()
 
 
 Error Handling
@@ -180,7 +193,7 @@ Resources
 
 [design]:  http://ernestmicklei.com/2012/11/11/go-restful-api-design/
 
-[showcase]: https://github.com/emicklei/mora, https://github.com/emicklei/landskape
+[showcases]: https://github.com/emicklei/mora, https://github.com/emicklei/landskape
 
 (c) 2013, http://ernestmicklei.com. MIT License
 */
