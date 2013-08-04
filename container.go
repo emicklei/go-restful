@@ -14,23 +14,25 @@ import (
 // Container holds a collection of WebServices and a http.ServeMux to dispatch http requests
 // The requests are further dispatched to routes of WebServices using a RouteSelector
 type Container struct {
-	webServices        []*WebService
-	serveMux           *http.ServeMux
-	isRegisteredOnRoot bool
-	containerFilters   []FilterFunction
-	doNotRecover       bool          // default is false
-	router             RouteSelector // default is a RouterJSR311
+	webServices            []*WebService
+	serveMux               *http.ServeMux
+	isRegisteredOnRoot     bool
+	containerFilters       []FilterFunction
+	doNotRecover           bool          // default is false
+	router                 RouteSelector // default is a RouterJSR311
+	contentEncodingEnabled bool          // default is false
 }
 
 // NewContainer creates a new Container using a new ServeMux and default router (RouterJSR311)
 func NewContainer() *Container {
 	return &Container{
-		webServices:        []*WebService{},
-		serveMux:           http.NewServeMux(),
-		isRegisteredOnRoot: false,
-		containerFilters:   []FilterFunction{},
-		doNotRecover:       false,
-		router:             RouterJSR311{}}
+		webServices:            []*WebService{},
+		serveMux:               http.NewServeMux(),
+		isRegisteredOnRoot:     false,
+		containerFilters:       []FilterFunction{},
+		doNotRecover:           false,
+		router:                 RouterJSR311{},
+		contentEncodingEnabled: false}
 }
 
 // If DoNotRecover then panics will not be caught to return HTTP 500.
@@ -43,6 +45,11 @@ func (c *Container) DoNotRecover(doNot bool) {
 // Router changes the default Router (currently RouterJSR311)
 func (c *Container) Router(aRouter RouteSelector) {
 	c.router = aRouter
+}
+
+//EnableContentEncoding
+func (c *Container) EnableContentEncoding(enabled bool) {
+	c.contentEncodingEnabled = enabled
 }
 
 func (c *Container) Add(service *WebService) *Container {
@@ -109,22 +116,22 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 	}()
 
 	// Detect if compression is needed
-	doCompress, encoding := WantsCompressedResponse(httpRequest)
-	var writer http.ResponseWriter
-	if doCompress {
-		var err error
-		writer, err = NewCompressingResponseWriter(httpWriter, encoding)
-		if err != nil {
-			log.Println("[restful] unable to install compressor:", err)
-			httpWriter.WriteHeader(http.StatusInternalServerError)
-			return
+	// assume without compression, test for overwrite
+	writer := httpWriter
+	if c.contentEncodingEnabled {
+		doCompress, encoding := wantsCompressedResponse(httpRequest)
+		if doCompress {
+			var err error
+			writer, err = NewCompressingResponseWriter(httpWriter, encoding)
+			if err != nil {
+				log.Println("[restful] unable to install compressor:", err)
+				httpWriter.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			defer func() {
+				writer.(*CompressingResponseWriter).Close()
+			}()
 		}
-		defer func() {
-			writer.(*CompressingResponseWriter).Close()
-		}()
-	} else {
-		// without compression
-		writer = httpWriter
 	}
 
 	// Process any container filters
