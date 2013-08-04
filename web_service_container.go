@@ -26,7 +26,7 @@ func Add(service *WebService) {
 }
 
 // Filter appends a container FilterFunction from the DefaultContainer.
-These are called before dispatch a http.Request to a WebService.
+// These are called before dispatching a http.Request to a WebService.
 func Filter(filter FilterFunction) {
 	DefaultContainer.Filter(filter)
 }
