@@ -20,17 +20,18 @@ func init() {
 // OBSOLETE ; use restful.DefaultContainer.DoNotRecover(true)
 var DoNotRecover = false
 
-// Add registers a new WebService add it to the http listeners.
+// Add registers a new WebService add it to the DefaultContainer.
 func Add(service *WebService) {
 	DefaultContainer.Add(service)
 }
 
-// Filter appends a global FilterFunction. These are called before dispatch a http.Request to a WebService.
+// Filter appends a container FilterFunction from the DefaultContainer.
+These are called before dispatch a http.Request to a WebService.
 func Filter(filter FilterFunction) {
 	DefaultContainer.Filter(filter)
 }
 
-// RegisteredWebServices returns the collections of WebServices
+// RegisteredWebServices returns the collections of WebServices from the DefaultContainer
 func RegisteredWebServices() []*WebService {
 	return DefaultContainer.RegisteredWebServices()
 }

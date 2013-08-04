@@ -12,7 +12,7 @@ import (
 )
 
 // Container holds a collection of WebServices and a http.ServeMux to dispatch http requests
-// The requests are further dispatches to routes of WebServices using a RouteSelector
+// The requests are further dispatched to routes of WebServices using a RouteSelector
 type Container struct {
 	webServices        []*WebService
 	serveMux           *http.ServeMux
@@ -38,6 +38,11 @@ func NewContainer() *Container {
 // Default value is false = recover from panics. This has performance implications.
 func (c *Container) DoNotRecover(doNot bool) {
 	c.doNotRecover = doNot
+}
+
+// Router changes the default Router (currently RouterJSR311)
+func (c *Container) Router(aRouter RouteSelector) {
+	c.router = aRouter
 }
 
 func (c *Container) Add(service *WebService) *Container {

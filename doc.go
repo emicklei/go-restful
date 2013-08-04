@@ -45,6 +45,7 @@ Example WebService:
 Example main:
 
 	func main() {
+		// register on the restful.DefaultContainer
 		restful.Add(landscapeservice.New())
 		log.Fatal(http.ListenAndServe(":8080", nil))
 	}
@@ -179,7 +180,7 @@ Resources
 
 [design]:  http://ernestmicklei.com/2012/11/11/go-restful-api-design/
 
-[showcase]: https://github.com/emicklei/landskape
+[showcase]: https://github.com/emicklei/mora, https://github.com/emicklei/landskape
 
 (c) 2013, http://ernestmicklei.com. MIT License
 */
