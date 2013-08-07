@@ -47,7 +47,7 @@ func (c *Container) Router(aRouter RouteSelector) {
 	c.router = aRouter
 }
 
-//EnableContentEncoding
+// EnableContentEncoding (default=false) allows for GZIP or DEFLATE encoding of responses.
 func (c *Container) EnableContentEncoding(enabled bool) {
 	c.contentEncodingEnabled = enabled
 }
@@ -116,7 +116,7 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 	}()
 
 	// Detect if compression is needed
-	// assume without compression, test for overwrite
+	// assume without compression, test for override
 	writer := httpWriter
 	if c.contentEncodingEnabled {
 		doCompress, encoding := wantsCompressedResponse(httpRequest)
@@ -180,7 +180,7 @@ func (c Container) fixedPrefixPath(pathspec string) string {
 	return pathspec[:varBegin]
 }
 
-// ServeHTTP implements net/http.Handler therefore,a Container can be a Handler in a http.Server
+// ServeHTTP implements net/http.Handler therefore a Container can be a Handler in a http.Server
 func (c Container) ServeHTTP(httpwriter http.ResponseWriter, httpRequest *http.Request) {
 	c.serveMux.ServeHTTP(httpwriter, httpRequest)
 }

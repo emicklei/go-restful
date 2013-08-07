@@ -17,7 +17,7 @@ type UserList struct {
 //
 // This example shows how to use the CompressingResponseWriter by a Filter
 // such that encoding can be enabled per WebService or per Route
-// Using restful.EnableContentEncoding = true will encoding all responses if requested for.
+// Using restful.DefaultContainer.EnableContentEncoding = true will encoding all responses if requested for.
 //
 func main() {
 	restful.Add(NewUserService())

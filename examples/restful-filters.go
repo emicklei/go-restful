@@ -16,7 +16,7 @@ type UserList struct {
 }
 
 func main() {
-	// install a global filter	 (processed before any webservice)
+	// install a global (=DefaultContainer) filter (processed before any webservice in the DefaultContainer)
 	restful.Filter(globalLogging)
 
 	restful.Add(NewUserService())

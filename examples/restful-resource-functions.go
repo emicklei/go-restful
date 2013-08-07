@@ -24,7 +24,7 @@ func (p ProductResource) postOne(req *restful.Request, resp *restful.Response) {
 	updatedProduct := new(Product)
 	err := req.ReadEntity(updatedProduct)
 	if err != nil { // bad request
-		resp.WriteError(http.StatusBadRequest, err)
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
 	}
 	log.Println("updating product with id:" + updatedProduct.Id)
