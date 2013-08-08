@@ -16,9 +16,13 @@ type UserList struct {
 
 //
 // This example shows how to use the CompressingResponseWriter by a Filter
-// such that encoding can be enabled per WebService or per Route
-// Using restful.DefaultContainer.EnableContentEncoding = true will encoding all responses if requested for.
+// such that encoding can be enabled per WebService or per Route (instead of per container)
+// Using restful.DefaultContainer.EnableContentEncoding(true) will encode all responses served by WebServices in the DefaultContainer.
 //
+// Set Accept-Encoding to gzip or deflate
+// GET http://localhost:8080/users/42
+// and look at the response headers
+
 func main() {
 	restful.Add(NewUserService())
 	log.Printf("start listening on localhost:8080")

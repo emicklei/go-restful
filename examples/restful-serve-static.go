@@ -6,6 +6,14 @@ import (
 	"path"
 )
 
+// This example shows how to define methods that serve static files
+// It uses the standard http.ServeFile method
+//
+// GET http://localhost:8080/static/test.xml
+// GET http://localhost:8080/static/
+//
+// GET http://localhost:8080/static?resource=subdir/test.xml
+
 var rootdir = "/tmp"
 
 func main() {
@@ -19,8 +27,6 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-// http://localhost:8080/static/test.xml
-// http://localhost:8080/static/
 func staticFromPathParam(req *restful.Request, resp *restful.Response) {
 	http.ServeFile(
 		resp.ResponseWriter,
@@ -28,7 +34,6 @@ func staticFromPathParam(req *restful.Request, resp *restful.Response) {
 		path.Join(rootdir, req.PathParameter("resource")))
 }
 
-// http://localhost:8080/static?resource=subdir/test.xml
 func staticFromQueryParam(req *restful.Request, resp *restful.Response) {
 	http.ServeFile(
 		resp.ResponseWriter,

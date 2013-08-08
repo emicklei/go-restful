@@ -2,8 +2,13 @@ package main
 
 import (
 	"github.com/emicklei/go-restful"
+	"io"
 	"net/http"
 )
+
+// This example shows the minimal code needed to get a restful.WebService working.
+//
+// GET http://localhost:8080/hello
 
 func main() {
 	ws := new(restful.WebService)
@@ -13,5 +18,5 @@ func main() {
 }
 
 func hello(req *restful.Request, resp *restful.Response) {
-	resp.Write([]byte("world"))
+	io.WriteString(resp, "world")
 }

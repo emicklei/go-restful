@@ -7,16 +7,34 @@ import (
 	"net/http"
 )
 
+// This example show a complete (GET,PUT,POST,DELETE) conventional example of
+// a REST Resource including documentation to be served by e.g. a Swagger UI
+// It is recommended to create a Resource struct (UserResource) that can encapsulate
+// an object that provide domain access (a DAO)
+// It has a Register method including the complete Route mapping to methods together
+// with all the appropriate documentation
+//
+// POST http://localhost:8080/users
+// <User><Id>1</Id><Name>Melissa Raspberry</Name></User>
+//
+// GET http://localhost:8080/users/1
+//
+// PUT http://localhost:8080/users/1
+// <User><Id>1</Id><Name>Melissa</Name></User>
+//
+// DELETE http://localhost:8080/users/1
+//
+
 type User struct {
 	Id, Name string
 }
 
-type UserService struct {
+type UserResource struct {
 	// normally one would use DAO (data access object)
 	users map[string]User
 }
 
-func (u UserService) Register(container *restful.Container) {
+func (u UserResource) Register(container *restful.Container) {
 	ws := new(restful.WebService)
 	ws.
 		Path("/users").
@@ -52,7 +70,7 @@ func (u UserService) Register(container *restful.Container) {
 
 // GET http://localhost:8080/users/1
 //
-func (u UserService) findUser(request *restful.Request, response *restful.Response) {
+func (u UserResource) findUser(request *restful.Request, response *restful.Response) {
 	id := request.PathParameter("user-id")
 	usr := u.users[id]
 	if len(usr.Id) == 0 {
@@ -65,7 +83,7 @@ func (u UserService) findUser(request *restful.Request, response *restful.Respon
 // POST http://localhost:8080/users/1
 // <User><Id>1</Id><Name>Melissa Raspberry</Name></User>
 //
-func (u *UserService) updateUser(request *restful.Request, response *restful.Response) {
+func (u *UserResource) updateUser(request *restful.Request, response *restful.Response) {
 	usr := new(User)
 	err := request.ReadEntity(&usr)
 	if err == nil {
@@ -79,7 +97,7 @@ func (u *UserService) updateUser(request *restful.Request, response *restful.Res
 // PUT http://localhost:8080/users/1
 // <User><Id>1</Id><Name>Melissa</Name></User>
 //
-func (u *UserService) createUser(request *restful.Request, response *restful.Response) {
+func (u *UserResource) createUser(request *restful.Request, response *restful.Response) {
 	usr := User{Id: request.PathParameter("user-id")}
 	err := request.ReadEntity(&usr)
 	if err == nil {
@@ -93,14 +111,14 @@ func (u *UserService) createUser(request *restful.Request, response *restful.Res
 
 // DELETE http://localhost:8080/users/1
 //
-func (u *UserService) removeUser(request *restful.Request, response *restful.Response) {
+func (u *UserResource) removeUser(request *restful.Request, response *restful.Response) {
 	id := request.PathParameter("user-id")
 	delete(u.users, id)
 }
 
 func main() {
 	wsContainer := restful.NewContainer()
-	u := UserService{map[string]User{}}
+	u := UserResource{map[string]User{}}
 	u.Register(wsContainer)
 
 	// Optionally, you can install the Swagger Service which provides a nice Web UI on your REST API

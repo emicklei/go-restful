@@ -7,6 +7,9 @@ import (
 	"testing"
 )
 
+// This example show how to test one particular RouteFunction (getIt)
+// It uses the httptest.ResponseRecorder to capture output
+
 func getIt(req *restful.Request, resp *restful.Response) {
 	resp.WriteHeader(404)
 }

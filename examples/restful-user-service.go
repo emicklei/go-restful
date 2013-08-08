@@ -7,6 +7,9 @@ import (
 	"net/http"
 )
 
+// This example is functionally the same as the example in restful-user-resource.go
+// with the only difference that is served using its the restful.DefaultContainer
+
 type User struct {
 	Id, Name string
 }
