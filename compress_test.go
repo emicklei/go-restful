@@ -11,7 +11,7 @@ func TestGzip(t *testing.T) {
 	httpRequest, _ := http.NewRequest("GET", "/test", nil)
 	httpRequest.Header.Set("Accept-Encoding", "gzip,deflate")
 	httpWriter := httptest.NewRecorder()
-	wanted, encoding := WantsCompressedResponse(httpRequest)
+	wanted, encoding := wantsCompressedResponse(httpRequest)
 	if !wanted {
 		t.Fatal("should accept gzip")
 	}
@@ -34,7 +34,7 @@ func TestDeflate(t *testing.T) {
 	httpRequest, _ := http.NewRequest("GET", "/test", nil)
 	httpRequest.Header.Set("Accept-Encoding", "deflate,gzip")
 	httpWriter := httptest.NewRecorder()
-	wanted, encoding := WantsCompressedResponse(httpRequest)
+	wanted, encoding := wantsCompressedResponse(httpRequest)
 	if !wanted {
 		t.Fatal("should accept deflate")
 	}
@@ -49,15 +49,5 @@ func TestDeflate(t *testing.T) {
 	c.Close()
 	if httpWriter.Header().Get("Content-Encoding") != "deflate" {
 		t.Fatal("Missing deflate header")
-	}
-}
-
-func TestNoCompress(t *testing.T) {
-	EnableContentEncoding = false
-	httpRequest, _ := http.NewRequest("GET", "/test", nil)
-	httpRequest.Header.Set("Accept-Encoding", "deflate,gzip")
-	wanted, _ := WantsCompressedResponse(httpRequest)
-	if wanted {
-		t.Fatal("should deny compression")
 	}
 }

@@ -15,9 +15,9 @@ func setupServices(addGlobalFilter bool, addServiceFilter bool, addRouteFilter b
 }
 
 func tearDown() {
-	webServices = []*WebService{}
-	isRegisteredOnRoot = true // this allows for setupServices multiple times
-	globalFilters = []FilterFunction{}
+	DefaultContainer.webServices = []*WebService{}
+	DefaultContainer.isRegisteredOnRoot = true // this allows for setupServices multiple times
+	DefaultContainer.containerFilters = []FilterFunction{}
 }
 
 func newTestService(addServiceFilter bool, addRouteFilter bool) *WebService {
@@ -128,6 +128,6 @@ func sendIt(address string) string {
 	httpRequest, _ := http.NewRequest("GET", address, nil)
 	httpRequest.Header.Set("Accept", "*/*")
 	httpWriter := httptest.NewRecorder()
-	DefaultDispatch(httpWriter, httpRequest)
+	DefaultContainer.dispatch(httpWriter, httpRequest)
 	return httpWriter.Body.String()
 }

@@ -6,6 +6,16 @@ import (
 	"net/http"
 )
 
+// This example shows how to use methods as RouteFunctions for WebServices.
+// The ProductResource has a Register() method that creates and initializes
+// a WebService to expose its methods as REST operations.
+// The WebService is added to the restful.DefaultContainer.
+// A ProductResource is typically created using some data access object.
+//
+// GET http://localhost:8080/products/1
+// POST http://localhost:8080/products
+// <Product><Id>1</Id><Title>The First</Title></Product>
+
 type Product struct {
 	Id, Title string
 }
@@ -24,7 +34,7 @@ func (p ProductResource) postOne(req *restful.Request, resp *restful.Response) {
 	updatedProduct := new(Product)
 	err := req.ReadEntity(updatedProduct)
 	if err != nil { // bad request
-		resp.WriteError(http.StatusBadRequest, err)
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
 	}
 	log.Println("updating product with id:" + updatedProduct.Id)

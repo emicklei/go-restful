@@ -40,7 +40,7 @@ func TestCapturePanic(t *testing.T) {
 	httpRequest, _ := http.NewRequest("GET", "http://here.com/fire", nil)
 	httpRequest.Header.Set("Accept", "*/*")
 	httpWriter := httptest.NewRecorder()
-	DefaultDispatch(httpWriter, httpRequest)
+	DefaultContainer.dispatch(httpWriter, httpRequest)
 	if 500 != httpWriter.Code {
 		t.Error("500 expected on fire")
 	}
@@ -51,7 +51,7 @@ func TestNotFound(t *testing.T) {
 	httpRequest, _ := http.NewRequest("GET", "http://here.com/missing", nil)
 	httpRequest.Header.Set("Accept", "*/*")
 	httpWriter := httptest.NewRecorder()
-	DefaultDispatch(httpWriter, httpRequest)
+	DefaultContainer.dispatch(httpWriter, httpRequest)
 	if 404 != httpWriter.Code {
 		t.Error("404 expected on missing")
 	}
@@ -63,7 +63,7 @@ func TestMethodNotAllowed(t *testing.T) {
 	httpRequest, _ := http.NewRequest("POST", "http://here.com/get", nil)
 	httpRequest.Header.Set("Accept", "*/*")
 	httpWriter := httptest.NewRecorder()
-	DefaultDispatch(httpWriter, httpRequest)
+	DefaultContainer.dispatch(httpWriter, httpRequest)
 	if 405 != httpWriter.Code {
 		t.Error("405 expected method not allowed")
 	}

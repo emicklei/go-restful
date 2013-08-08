@@ -1,6 +1,18 @@
 Change history of go-restful
 =
 
+2013-08-08
+ - (api add) Added implementation Container: a WebServices collection with its own http.ServeMux allowing multiple endpoints per program. Existing uses of go-restful will register their services to the DefaultContainer.
+ - (api add) the swagger package has be extended to have a UI per container.
+ - if panic is detected then a small stack trace is printed (thanks to runner-mei)
+ - (api add) WriteErrorString to Response
+
+Important API changes:
+
+ - (api remove) package variable DoNotRecover no longer works ; use restful.DefaultContainer.DoNotRecover(true) instead.
+ - (api remove) package variable EnableContentEncoding no longer works ; use restful.DefaultContainer.EnableContentEncoding(true) instead.
+ 
+ 
 2013-07-06
 
  - (api add) Added support for response encoding (gzip and deflate(zlib)). This feature is disabled on default (for backwards compatibility). Use restful.EnableContentEncoding = true in your initialization to enable this feature.

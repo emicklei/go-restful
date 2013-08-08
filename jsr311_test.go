@@ -58,6 +58,36 @@ func TestDetectDispatcher(t *testing.T) {
 //
 // Step 2 tests
 //
+
+// go test -v -test.run TestISSUE_30 ...restful
+func TestISSUE_30(t *testing.T) {
+	ws1 := new(WebService).Path("/users")
+	ws1.Route(ws1.GET("/{id}"))
+	ws1.Route(ws1.POST("/login"))
+	routes := RouterJSR311{}.selectRoutes(ws1, "/login")
+	if len(routes) != 2 {
+		t.Fatal("expected 2 routes")
+	}
+	if routes[0].Path != "/users/login" {
+		t.Error("first is", routes[0].Path)
+	}
+	//t.Logf("routes:%v", routes)
+}
+
+// go test -v -test.run TestISSUE_34 ...restful
+func TestISSUE_34(t *testing.T) {
+	ws1 := new(WebService).Path("/")
+	ws1.Route(ws1.GET("/{type}/{id}"))
+	ws1.Route(ws1.GET("/network/{id}"))
+	routes := RouterJSR311{}.selectRoutes(ws1, "/network/12")
+	if len(routes) != 2 {
+		t.Fatal("expected 2 routes")
+	}
+	if routes[0].Path != "/network/{id}" {
+		t.Error("first is", routes[0].Path)
+	}
+}
+
 func TestSelectRoutesSlash(t *testing.T) {
 	ws1 := new(WebService).Path("/")
 	ws1.Route(ws1.GET(""))

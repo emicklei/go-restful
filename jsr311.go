@@ -7,6 +7,8 @@ import (
 	"errors"
 	"net/http"
 	"sort"
+	//"strconv"
+	//"github.com/emicklei/hopwatch"
 )
 
 type RouterJSR311 struct{}
@@ -107,12 +109,13 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 		return []Route{}
 	}
 	sort.Sort(filtered)
-	rmatch := filtered.candidates[0].expressionToMatch()
-	matchingRoutes := []Route{filtered.candidates[0].route}
+	//hopwatch.Dump(filtered)
+
 	// select other routes from candidates whoes expression matches rmatch
+	matchingRoutes := []Route{filtered.candidates[0].route}
 	for c := 1; c < len(filtered.candidates); c++ {
 		each := filtered.candidates[c]
-		if each.expressionToMatch() == rmatch {
+		if each.route.pathExpr.Matcher.MatchString(pathRemainder) {
 			matchingRoutes = append(matchingRoutes, each.route)
 		}
 	}
@@ -164,18 +167,12 @@ func (self sortableRouteCandidates) Less(j, i int) bool { // Do reverse so the i
 	ci := self.candidates[i]
 	cj := self.candidates[j]
 	// primary key
-	if ci.matchesCount < cj.matchesCount {
-		return true
-	}
-	if ci.matchesCount > cj.matchesCount {
-		return false
-	}
-	// secundary key
 	if ci.literalCount < cj.literalCount {
 		return true
 	}
-	if ci.literalCount > cj.literalCount {
-		return false
+	// secundary key
+	if ci.matchesCount < cj.matchesCount {
+		return true
 	}
 	// tertiary key
 	return ci.nonDefaultCount < cj.nonDefaultCount
