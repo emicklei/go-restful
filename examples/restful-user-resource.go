@@ -74,7 +74,7 @@ func (u UserResource) findUser(request *restful.Request, response *restful.Respo
 	id := request.PathParameter("user-id")
 	usr := u.users[id]
 	if len(usr.Id) == 0 {
-		response.WriteError(http.StatusNotFound, nil)
+		response.WriteErrorString(http.StatusNotFound, "User could not be found.")
 	} else {
 		response.WriteEntity(usr)
 	}
