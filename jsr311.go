@@ -83,9 +83,24 @@ func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
+//  n/m > n/* > */*
 func (r RouterJSR311) bestMatchByMedia(routes []Route, contentType string, accept string) Route {
-	// TODO
-	return routes[0]
+	min := int(^uint(0) >> 1) // MaxInt
+	pos := 0
+
+	for i, path := range routes {
+		v := path.pathExpr.VarCount
+		if v == 0 {
+			return path
+		} else {
+			if v < min {
+				min = v
+				pos = i
+			}
+		}
+	}
+
+	return routes[pos]
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2  (step 2)
