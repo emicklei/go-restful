@@ -88,6 +88,28 @@ func TestISSUE_34(t *testing.T) {
 	}
 }
 
+func TestISSUE_39(t *testing.T) {
+	ws := new(WebService).Path("/users")
+	ws.Route(ws.GET("/login"))
+	ws.Route(ws.GET("/login2"))
+	ws.Route(ws.GET("/{user-id}"))
+
+	route := RouterJSR311{}.bestMatchByMedia(ws.Routes(), "", "")
+	if route.Path != "/users/login" {
+		t.Error("route is", route.Path)
+	}
+
+	ws = new(WebService).Path("/users")
+	ws.Route(ws.GET("/{user-id}"))
+	ws.Route(ws.GET("/{user-id2}"))
+	ws.Route(ws.GET("/{user-id}/{user-next}"))
+
+	route = RouterJSR311{}.bestMatchByMedia(ws.Routes(), "", "")
+	if route.Path != "/users/{user-id}" {
+		t.Error("route is", route.Path)
+	}
+}
+
 func TestSelectRoutesSlash(t *testing.T) {
 	ws1 := new(WebService).Path("/")
 	ws1.Route(ws1.GET(""))
@@ -100,6 +122,7 @@ func TestSelectRoutesSlash(t *testing.T) {
 	routes := RouterJSR311{}.selectRoutes(ws1, "/u")
 	checkRoutesContains(routes, "/u", t)
 }
+
 func TestSelectRoutesU(t *testing.T) {
 	ws1 := new(WebService).Path("/u")
 	ws1.Route(ws1.GET(""))
