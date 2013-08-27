@@ -23,8 +23,7 @@ type Response struct {
 	produces []string // content-types what the Route says it can produce
 }
 
-// InternalServerError is a shortcut for .WriteHeader(http.StatusInternalServerError)
-// DEPRECATED, use the long version
+// DEPRECATED, use r.WriteHeader(http.StatusInternalServerError)
 func (r Response) InternalServerError() Response {
 	r.WriteHeader(http.StatusInternalServerError)
 	return r
@@ -102,8 +101,7 @@ func (r Response) WriteAsJson(value interface{}) Response {
 	return r
 }
 
-// WriteError is a convenience method for an error HTTP status with the actual error
-// DEPRECATED; use WriteErrorString
+// DEPRECATED; use WriteErrorString(status,reason)
 func (r Response) WriteError(httpStatus int, err error) Response {
 	return r.WriteErrorString(httpStatus, err.Error())
 }
@@ -115,7 +113,7 @@ func (r Response) WriteServiceError(httpStatus int, err ServiceError) Response {
 	return r
 }
 
-// WriteError is a convenience method for an error status with the actual error
+// WriteErrorString is a convenience method for an error status with the actual error
 func (r Response) WriteErrorString(status int, err string) Response {
 	r.WriteHeader(status)
 	io.WriteString(r, err)

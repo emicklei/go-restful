@@ -74,6 +74,7 @@ func (u UserResource) findUser(request *restful.Request, response *restful.Respo
 	id := request.PathParameter("user-id")
 	usr := u.users[id]
 	if len(usr.Id) == 0 {
+		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(http.StatusNotFound, "User could not be found.")
 	} else {
 		response.WriteEntity(usr)
@@ -90,7 +91,8 @@ func (u *UserResource) updateUser(request *restful.Request, response *restful.Re
 		u.users[usr.Id] = *usr
 		response.WriteEntity(usr)
 	} else {
-		response.WriteError(http.StatusInternalServerError, err)
+		response.AddHeader("Content-Type", "text/plain")
+		response.WriteErrorString(http.StatusInternalServerError, err.Error())
 	}
 }
 
@@ -105,7 +107,8 @@ func (u *UserResource) createUser(request *restful.Request, response *restful.Re
 		response.WriteHeader(http.StatusCreated)
 		response.WriteEntity(usr)
 	} else {
-		response.WriteError(http.StatusInternalServerError, err)
+		response.AddHeader("Content-Type", "text/plain")
+		response.WriteErrorString(http.StatusInternalServerError, err.Error())
 	}
 }
 

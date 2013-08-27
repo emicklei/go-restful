@@ -1,6 +1,10 @@
 Change history of go-restful
 =
 
+2013-08-27
+ - fixed some reported issues (see github)
+ - (api change) deprecated use of WriteError; use WriteErrorString instead
+
 2013-08-08
  - (api add) Added implementation Container: a WebServices collection with its own http.ServeMux allowing multiple endpoints per program. Existing uses of go-restful will register their services to the DefaultContainer.
  - (api add) the swagger package has be extended to have a UI per container.

@@ -1,56 +1,6 @@
 /*
 Package go-restful, a lean package for creating REST-style WebServices without magic.
 
-Example WebService:
-
-	package landscapeservice
-
-	import (
-	    "github.com/emicklei/go-restful"
-	)
-
-	func New() *restful.WebService {
-		ws := new(restful.WebService)
-	   	ws.Path("/applications").
-			Consumes(restful.MIME_XML, restful.MIME_JSON).
-			Produces(restful.MIME_XML, restful.MIME_JSON)
-
-		ws.Route(ws.GET("/{id}").To(getApplication).
-			// for documentation
-			Doc("Get the Application node by its id").
-			Operation("getApplication").
-			Param(ws.PathParameter("id" , "the identifier for an application node")).
-			Param(ws.QueryParameter("environment" , "the scope in which the application node lives")).
-			Writes(Application{})) // to the response
-
-		ws.Route(ws.POST("/").To(saveApplication).
-			// for documentation
-			Doc("Create or update the Application node").
-			Operation("saveApplication").
-			Reads(Application{})) // from the request
-		return ws
-	}
-	func getApplication(request *restful.Request, response *restful.Response) {
-			id := request.PathParameter("id")
-			env := request.QueryParameter("environment")
-			...
-	}
-	func saveApplication(request *restful.Request, response *restful.Response) {
-		   response.AddHeader("X-Something","other")
-		   ...
-		   response.WriteEntity(anApp) // uses Accept header to detect XML/JSON
-
-	}
-
-Example main:
-
-	func main() {
-		// register on the restful.DefaultContainer
-		restful.Add(landscapeservice.New())
-		log.Fatal(http.ListenAndServe(":8080", nil))
-	}
-
-
 WebServices
 
 A WebService has a collection of Route objects that dispatch incoming Http Requests to a function calls.
@@ -75,13 +25,12 @@ Use the following statement to pass the request,response pair to the next filter
 
 	chain.ProcessFilter(req, resp)
 
-Global Filters
+Container Filters
 
 These are processed before any registered WebService.
 
-	// install a global filter (processed before any webservice)
+	// install a (global) filter for the default container (processed before any webservice)
 	restful.Filter(globalLogging)
-
 
 WebService Filters
 
@@ -175,6 +124,18 @@ If the application logic could not process the request (or write the response) t
 		return
 	}
 
+405: Method Not Allowed
+
+The request has a valid URL but the method (GET,PUT,POST,...) is not allowed.
+
+406: Not Acceptable
+
+The request does not have or has an unkwown Accept Header set for this operation.
+
+415: Unsupported Media Type
+
+The request does not have or has an unknwon Content-Type Header set for this operation.
+
 ServiceError
 
 In addition to setting the correct (error) Http status code, you can choose to write a ServiceError message on the response:
@@ -189,7 +150,7 @@ Resources
 
 [project]: https://github.com/emicklei/go-restful
 
-[example]: https://github.com/emicklei/go-restful/blob/master/examples/restful-user-service.go
+[example]: https://github.com/emicklei/go-restful/blob/master/examples/restful-user-resource.go
 
 [design]:  http://ernestmicklei.com/2012/11/11/go-restful-api-design/
 
