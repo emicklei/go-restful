@@ -45,3 +45,5 @@ examples/restful-user-service
 
 *.DS_Store
 examples/restful-user-resource
+
+examples/restful-multi-containers

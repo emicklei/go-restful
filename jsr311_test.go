@@ -1,6 +1,7 @@
 package restful
 
 import (
+	"sort"
 	"testing"
 )
 
@@ -70,8 +71,8 @@ func TestISSUE_30(t *testing.T) {
 	}
 	if routes[0].Path != "/users/login" {
 		t.Error("first is", routes[0].Path)
+		t.Logf("routes:%v", routes)
 	}
-	//t.Logf("routes:%v", routes)
 }
 
 // go test -v -test.run TestISSUE_34 ...restful
@@ -79,6 +80,22 @@ func TestISSUE_34(t *testing.T) {
 	ws1 := new(WebService).Path("/")
 	ws1.Route(ws1.GET("/{type}/{id}"))
 	ws1.Route(ws1.GET("/network/{id}"))
+	routes := RouterJSR311{}.selectRoutes(ws1, "/network/12")
+	if len(routes) != 2 {
+		t.Fatal("expected 2 routes")
+	}
+	if routes[0].Path != "/network/{id}" {
+		t.Error("first is", routes[0].Path)
+		t.Logf("routes:%v", routes)
+	}
+}
+
+// go test -v -test.run TestISSUE_34_2 ...restful
+func TestISSUE_34_2(t *testing.T) {
+	ws1 := new(WebService).Path("/")
+	// change the registration order
+	ws1.Route(ws1.GET("/network/{id}"))
+	ws1.Route(ws1.GET("/{type}/{id}"))
 	routes := RouterJSR311{}.selectRoutes(ws1, "/network/12")
 	if len(routes) != 2 {
 		t.Fatal("expected 2 routes")
@@ -143,7 +160,7 @@ var tempregexs = []struct {
 	{"", "^(/.*)?$", 0, 0},
 	{"/a/{b}/c/", "^/a/([^/]+?)/c(/.*)?$", 2, 1},
 	{"/{a}/{b}/{c-d-e}/", "^/([^/]+?)/([^/]+?)/([^/]+?)(/.*)?$", 0, 3},
-	{"/{p}/q", "^/([^/]+?)/q(/.*)?$", 1, 1},
+	{"/{p}/abcde", "^/([^/]+?)/abcde(/.*)?$", 5, 1},
 }
 
 func TestTemplateToRegularExpression(t *testing.T) {
@@ -165,5 +182,25 @@ func TestTemplateToRegularExpression(t *testing.T) {
 	}
 	if !ok {
 		t.Fatal("one or more expression did not match")
+	}
+}
+
+// go test -v -test.run TestSortableRouteCandidates ...restful
+func TestSortableRouteCandidates(t *testing.T) {
+	fixture := &sortableRouteCandidates{}
+	r1 := routeCandidate{matchesCount: 0, literalCount: 0, nonDefaultCount: 0}
+	r2 := routeCandidate{matchesCount: 0, literalCount: 0, nonDefaultCount: 1}
+	r3 := routeCandidate{matchesCount: 0, literalCount: 1, nonDefaultCount: 1}
+	r4 := routeCandidate{matchesCount: 1, literalCount: 1, nonDefaultCount: 0}
+	r5 := routeCandidate{matchesCount: 1, literalCount: 0, nonDefaultCount: 0}
+	fixture.candidates = append(fixture.candidates, r5, r4, r3, r2, r1)
+	sort.Sort(sort.Reverse(fixture))
+	first := fixture.candidates[0]
+	if first.matchesCount != 1 && first.literalCount != 1 && first.nonDefaultCount != 0 {
+		t.Fatal("expected r4")
+	}
+	last := fixture.candidates[len(fixture.candidates)-1]
+	if last.matchesCount != 0 && last.literalCount != 0 && last.nonDefaultCount != 0 {
+		t.Fatal("expected r1")
 	}
 }

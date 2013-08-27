@@ -9,6 +9,7 @@ import (
 	"sort"
 	//"strconv"
 	//"github.com/emicklei/hopwatch"
+	"fmt"
 )
 
 type RouterJSR311 struct{}
@@ -83,6 +84,7 @@ func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
+// n/m > n/* > */*
 func (r RouterJSR311) bestMatchByMedia(routes []Route, contentType string, accept string) Route {
 	// TODO
 	return routes[0]
@@ -93,7 +95,7 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 	if pathRemainder == "" || pathRemainder == "/" {
 		return dispatcher.Routes()
 	}
-	filtered := sortableRouteCandidates{}
+	filtered := &sortableRouteCandidates{}
 	for _, each := range dispatcher.Routes() {
 		pathExpr := each.pathExpr
 		matches := pathExpr.Matcher.FindStringSubmatch(pathRemainder)
@@ -101,14 +103,14 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 			lastMatch := matches[len(matches)-1]
 			if lastMatch == "" || lastMatch == "/" { // do not include if value is neither empty nor ‘/’.
 				filtered.candidates = append(filtered.candidates,
-					routeCandidate{each, len(matches), pathExpr.LiteralCount, pathExpr.VarCount})
+					routeCandidate{each, len(matches) - 1, pathExpr.LiteralCount, pathExpr.VarCount})
 			}
 		}
 	}
 	if len(filtered.candidates) == 0 {
 		return []Route{}
 	}
-	sort.Sort(filtered)
+	sort.Sort(sort.Reverse(filtered))
 	//hopwatch.Dump(filtered)
 
 	// select other routes from candidates whoes expression matches rmatch
@@ -124,7 +126,7 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
 func (r RouterJSR311) detectDispatcher(requestPath string, dispatchers []*WebService) (*WebService, string, error) {
-	filtered := sortableDispatcherCandidates{}
+	filtered := &sortableDispatcherCandidates{}
 	for _, each := range dispatchers {
 		pathExpr := each.pathExpr
 		matches := pathExpr.Matcher.FindStringSubmatch(requestPath)
@@ -136,7 +138,7 @@ func (r RouterJSR311) detectDispatcher(requestPath string, dispatchers []*WebSer
 	if len(filtered.candidates) == 0 {
 		return nil, "", errors.New("not found")
 	}
-	sort.Sort(filtered)
+	sort.Sort(sort.Reverse(filtered))
 	return filtered.candidates[0].dispatcher, filtered.candidates[0].finalMatch, nil
 }
 
@@ -144,38 +146,55 @@ func (r RouterJSR311) detectDispatcher(requestPath string, dispatchers []*WebSer
 
 type routeCandidate struct {
 	route           Route
-	matchesCount    int
-	literalCount    int
-	nonDefaultCount int
+	matchesCount    int // the number of capturing groups
+	literalCount    int // the number of literal characters (means those not resulting from template variable substitution)
+	nonDefaultCount int // the number of capturing groups with non-default regular expressions (i.e. not ‘([^  /]+?)’)
 }
 
 func (r routeCandidate) expressionToMatch() string {
 	return r.route.pathExpr.Source
 }
 
+func (r routeCandidate) String() string {
+	return fmt.Sprintf("(m=%d,l=%d,n=%d)", r.matchesCount, r.literalCount, r.nonDefaultCount)
+}
+
 type sortableRouteCandidates struct {
 	candidates []routeCandidate
 }
 
-func (self sortableRouteCandidates) Len() int {
+func (self *sortableRouteCandidates) Len() int {
 	return len(self.candidates)
 }
-func (self sortableRouteCandidates) Swap(i, j int) {
+func (self *sortableRouteCandidates) Swap(i, j int) {
 	self.candidates[i], self.candidates[j] = self.candidates[j], self.candidates[i]
 }
-func (self sortableRouteCandidates) Less(j, i int) bool { // Do reverse so the i and j are in this order
+func (self *sortableRouteCandidates) Less(i, j int) bool {
 	ci := self.candidates[i]
 	cj := self.candidates[j]
 	// primary key
 	if ci.literalCount < cj.literalCount {
 		return true
 	}
+	if ci.literalCount > cj.literalCount {
+		return false
+	}
 	// secundary key
 	if ci.matchesCount < cj.matchesCount {
 		return true
 	}
+	if ci.matchesCount > cj.matchesCount {
+		return false
+	}
 	// tertiary key
-	return ci.nonDefaultCount < cj.nonDefaultCount
+	if ci.nonDefaultCount < cj.nonDefaultCount {
+		return true
+	}
+	if ci.nonDefaultCount > cj.nonDefaultCount {
+		return false
+	}
+	// quaternary key ("source" is interpreted as Path)
+	return ci.route.Path < cj.route.Path
 }
 
 // Types and functions to support the sorting of Dispatchers
@@ -183,21 +202,21 @@ func (self sortableRouteCandidates) Less(j, i int) bool { // Do reverse so the i
 type dispatcherCandidate struct {
 	dispatcher      *WebService
 	finalMatch      string
-	matchesCount    int
-	literalCount    int
-	nonDefaultCount int
+	matchesCount    int // the number of capturing groups
+	literalCount    int // the number of literal characters (means those not resulting from template variable substitution)
+	nonDefaultCount int // the number of capturing groups with non-default regular expressions (i.e. not ‘([^  /]+?)’)
 }
 type sortableDispatcherCandidates struct {
 	candidates []dispatcherCandidate
 }
 
-func (self sortableDispatcherCandidates) Len() int {
+func (self *sortableDispatcherCandidates) Len() int {
 	return len(self.candidates)
 }
-func (self sortableDispatcherCandidates) Swap(i, j int) {
+func (self *sortableDispatcherCandidates) Swap(i, j int) {
 	self.candidates[i], self.candidates[j] = self.candidates[j], self.candidates[i]
 }
-func (self sortableDispatcherCandidates) Less(j, i int) bool { // Do reverse so the i and j are in this order
+func (self *sortableDispatcherCandidates) Less(i, j int) bool {
 	ci := self.candidates[i]
 	cj := self.candidates[j]
 	// primary key
