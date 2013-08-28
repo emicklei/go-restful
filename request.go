@@ -20,6 +20,11 @@ func (r *Request) PathParameter(name string) string {
 	return r.pathParameters[name]
 }
 
+// PathParameters accesses the Path parameter values
+func (r *Request) PathParameters() map[string]string {
+	return r.pathParameters
+}
+
 // QueryParameter returns the (first) Query parameter value by its name
 func (r *Request) QueryParameter(name string) string {
 	return r.Request.FormValue(name)
