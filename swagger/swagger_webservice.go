@@ -25,6 +25,7 @@ func RegisterSwaggerService(aSwaggerConfig Config, wsContainer *restful.Containe
 	ws := new(restful.WebService)
 	ws.Path(config.ApiPath)
 	ws.Produces(restful.MIME_JSON)
+	ws.Filter(enableCORS)
 	ws.Route(ws.GET("/").To(getListing))
 	ws.Route(ws.GET("/{a}").To(getDeclarations))
 	ws.Route(ws.GET("/{a}/{b}").To(getDeclarations))
@@ -43,6 +44,13 @@ func RegisterSwaggerService(aSwaggerConfig Config, wsContainer *restful.Containe
 	} else {
 		log.Printf("[restful/swagger] Swagger(File)Path is empty ; no UI is served")
 	}
+}
+
+func enableCORS(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
+    if origin := req.HeaderParameter("Origin"); origin != "" {
+        resp.AddHeader("Access-Control-Allow-Origin", origin)
+    }
+    chain.ProcessFilter(req, resp)
 }
 
 func getListing(req *restful.Request, resp *restful.Response) {
