@@ -1,3 +1,9 @@
+package main
+
+import (
+	"github.com/emicklei/go-restful"
+)
+
 // Cross-origin resource sharing (CORS) is a mechanism that allows JavaScript on a web page
 // to make XMLHttpRequests to another domain, not the domain the JavaScript originated from.
 //
@@ -16,3 +22,5 @@ func applyCORSFilter(req *restful.Request, resp *restful.Response, chain *restfu
 	resp.AddHeader("Access-Control-Allow-Headers", "Content-Type")
 	chain.ProcessFilter(req, resp)
 }
+
+func main() {}

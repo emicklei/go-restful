@@ -47,10 +47,10 @@ func RegisterSwaggerService(aSwaggerConfig Config, wsContainer *restful.Containe
 }
 
 func enableCORS(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
-    if origin := req.HeaderParameter("Origin"); origin != "" {
-        resp.AddHeader("Access-Control-Allow-Origin", origin)
-    }
-    chain.ProcessFilter(req, resp)
+	if origin := req.HeaderParameter("Origin"); origin != "" {
+		resp.AddHeader("Access-Control-Allow-Origin", origin)
+	}
+	chain.ProcessFilter(req, resp)
 }
 
 func getListing(req *restful.Request, resp *restful.Response) {

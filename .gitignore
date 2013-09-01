@@ -47,3 +47,7 @@ examples/restful-user-service
 examples/restful-user-resource
 
 examples/restful-multi-containers
+
+examples/restful-form-handling
+
+examples/restful-CORS-filter
