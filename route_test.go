@@ -34,6 +34,14 @@ func TestMatchesContentTypeXml(t *testing.T) {
 	}
 }
 
+// content type should match consumes
+func TestMatchesContentTypeCharsetInformation(t *testing.T) {
+	r := Route{Consumes: []string{"application/json"}}
+	if !r.matchesContentType("application/json; charset=UTF-8") {
+		t.Errorf("matchesContentType should ignore charset information")
+	}
+}
+
 func TestMatchesPath_OneParam(t *testing.T) {
 	params := doExtractParams("/from/{source}", 2, "/from/here", t)
 	if params["source"] != "here" {

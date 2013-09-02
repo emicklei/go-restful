@@ -44,6 +44,18 @@ func TestReadEntityJson(t *testing.T) {
 	}
 }
 
+func TestReadEntityJsonCharset(t *testing.T) {
+	bodyReader := strings.NewReader(`{"Value" : "42"}`)
+	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
+	httpRequest.Header.Set("Content-Type", "application/json; charset=UTF-8")
+	request := &Request{Request: httpRequest}
+	sam := new(Sample)
+	request.ReadEntity(sam)
+	if sam.Value != "42" {
+		t.Fatal("read failed")
+	}
+}
+
 func TestReadEntityUnkown(t *testing.T) {
 	bodyReader := strings.NewReader("?")
 	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
