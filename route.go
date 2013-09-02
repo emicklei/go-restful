@@ -79,8 +79,14 @@ func (self Route) matchesAccept(mimeTypesWithQuality string) bool {
 func (self Route) matchesContentType(mimeTypes string) bool {
 	parts := strings.Split(mimeTypes, ",")
 	for _, each := range parts {
+		var contentType string
+		if strings.Contains(each, ";") {
+			contentType = strings.Split(each, ";")[0]
+		} else {
+			contentType = each
+		}
 		for _, other := range self.Consumes {
-			if other == "*/*" || other == each {
+			if other == "*/*" || other == contentType {
 				return true
 			}
 		}
