@@ -1,7 +1,5 @@
 package restful
 
-import "bytes"
-
 // OPTIONSFilter is a filter function that inspects the Http Request for the OPTIONS method
 // and provides the response with a set of allowed methods for the request URL Path.
 // To install this filter on the Default Container use:

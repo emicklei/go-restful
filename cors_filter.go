@@ -5,56 +5,65 @@ import (
 	"strings"
 )
 
-// CORSFilter is a filter function that implements the CORS flow as documented on http://enable-cors.org/server.html
+type CrossOriginResourceSharing struct {
+	ExposeHeaders  bool
+	CookiesAllowed bool
+}
+
+// Filter is a filter function that implements the CORS flow as documented on http://enable-cors.org/server.html
 // To install this filter on the Default Container use:
 //
-// 		restful.Filter(restful.CORSFilter)
-func CORSFilter(req *Request, resp *Response, chain *FilterChain) {
+// 		restful.Filter(restful.CrossOriginResourceSharing{}.Filter)
+func (c CrossOriginResourceSharing) Filter(req *Request, resp *Response, chain *FilterChain) {
 	if origin := req.Request.Header.Get("Origin"); origin != "" {
 		chain.ProcessFilter(req, resp)
 		return
 	}
 	if "OPTIONS" != req.Request.Method {
-		doActualRequest(req, resp, chain)
+		c.doActualRequest(req, resp, chain)
 		return
 	}
 	if acrm := req.Request.Header.Get("Access-Control-Request-Method"); acrm != "" {
-		doPreflightRequest(req, resp, chain)
+		c.doPreflightRequest(req, resp, chain)
 		return
 	}
 }
 
-func doActualRequest(req *Request, resp *Response, chain *FilterChain) {
-	resp.AddHeader("Access-Control-Expose-Headers", "Content-Type", "Accept")
-	setAllowOriginHeader(req, resp)
+func (c CrossOriginResourceSharing) doActualRequest(req *Request, resp *Response, chain *FilterChain) {
+	resp.AddHeader("Access-Control-Expose-Headers", "Content-Type, Accept")
+	c.setAllowOriginHeader(req, resp)
 	// continue processing the response
 	chain.ProcessFilter(req, resp)
 }
 
-func doPreflightRequest(req *Request, resp *Response, chain *FilterChain) {
-	if !isValidAccesControlRequestMethod(req.Request.Method) {
+func (c CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Response, chain *FilterChain) {
+	if !c.isValidAccessControlRequestMethod(req.Request.Method) {
 		chain.ProcessFilter(req, resp)
 		return
 	}
 	if acrh := req.Request.Header.Get("Access-Control-Request-Header"); acrh != "" {
-		if !isValidAccessControlRequestHeader(arch) {
+		if !c.isValidAccessControlRequestHeader(acrh) {
 			chain.ProcessFilter(req, resp)
 			return
 		}
 	}
 	resp.AddHeader("Access-Control-Allow-Methods", computeAllowedMethods(req))
-	resp.AddHeader("Access-Control-Allow-Headers", "Content-Type", "Accept")
-	setAllowOriginHeader(req, resp)
+	resp.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept")
+	c.setAllowOriginHeader(req, resp)
 	// return http 200 response, no body
 }
 
-func setAllowOriginHeader(req *Request, resp *Response) {
+func (c CrossOriginResourceSharing) setAllowOriginHeader(req *Request, resp *Response) {
 	origin := req.Request.Header.Get("Origin")
 	resp.AddHeader("Access-Control-Allow-Origin", origin)
 }
 
-func isValidAccesControlRequestMethod(method string) bool {
+func (c CrossOriginResourceSharing) isValidAccessControlRequestMethod(method string) bool {
 	return strings.Contains("GET PUT POST DELETE HEAD OPTIONS PATCH", method)
+}
+
+func (c CrossOriginResourceSharing) isValidAccessControlRequestHeader(header string) bool {
+	return strings.Contains("accept content-type", strings.ToLower(header))
 }
 
 func computeAllowedMethods(req *Request) string {
