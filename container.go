@@ -201,6 +201,35 @@ func (c Container) RegisteredWebServices() []*WebService {
 	return c.webServices
 }
 
+// computeAllowedMethods returns a comma separated list of HTTP methods that are valid for a Request
+func (c Container) computeAllowedMethods(req *Request) string {
+	// Go through all RegisteredWebServices() and all its Routes to collect the options
+	methods := []string{}
+	requestPath := req.Request.URL.Path
+	for _, ws := range c.RegisteredWebServices() {
+		matches := ws.pathExpr.Matcher.FindStringSubmatch(requestPath)
+		if matches != nil {
+			finalMatch := matches[len(matches)-1]
+			for _, rt := range ws.Routes() {
+				matches := rt.pathExpr.Matcher.FindStringSubmatch(finalMatch)
+				if matches != nil {
+					lastMatch := matches[len(matches)-1]
+					if lastMatch == "" || lastMatch == "/" { // do not include if value is neither empty nor ‘/’.
+						methods = append(methods, rt.Method)
+					}
+				}
+			}
+		}
+	}
+	buf := new(bytes.Buffer)
+	buf.WriteString("OPTIONS")
+	for _, m := range methods {
+		buf.WriteString(",")
+		buf.WriteString(m)
+	}
+	return buf.String()
+}
+
 // newBasicRequestResponse creates a pair of Request,Response from its http versions.
 // It is basic because no parameter or (produces) content-type information is given.
 func newBasicRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {

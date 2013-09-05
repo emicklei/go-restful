@@ -2,6 +2,9 @@ package main
 
 import (
 	"github.com/emicklei/go-restful"
+	"io"
+	"log"
+	"net/http"
 )
 
 // Cross-origin resource sharing (CORS) is a mechanism that allows JavaScript on a web page
@@ -9,19 +12,51 @@ import (
 //
 // http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
 // http://enable-cors.org/server.html
+//
+// GET http://localhost:8080/users
+//
+// GET http://localhost:8080/users/1
+//
+// PUT http://localhost:8080/users/1
+//
+// DELETE http://localhost:8080/users/1
+//
+// OPTIONS http://localhost:8080/users/1  with Header "Origin" set to some domain and
 
-func applyCORSFilter(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
-	// If the origin Header was set then return it in the response
-	if origin := req.Request.Header.Get("Origin"); origin != "" {
-		resp.AddHeader("Access-Control-Allow-Origin", origin)
-	} else {
-		// Otherwise set to Allow All domains (see docs)
-		resp.AddHeader("Access-Control-Allow-Origin", "*")
-	}
+type UserResource struct{}
 
-	resp.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-	resp.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept")
-	chain.ProcessFilter(req, resp)
+func (u UserResource) Register(container *restful.Container) {
+	ws := new(restful.WebService)
+	ws.
+		Path("/users").
+		Consumes("*/*").
+		Produces("*/*")
+
+	ws.Route(ws.GET("/{user-id}").To(u.nop))
+	ws.Route(ws.POST("").To(u.nop))
+	ws.Route(ws.PUT("/{user-id}").To(u.nop))
+	ws.Route(ws.DELETE("/{user-id}").To(u.nop))
+
+	container.Add(ws)
 }
 
-func main() {}
+func (u UserResource) nop(request *restful.Request, response *restful.Response) {
+	io.WriteString(response.ResponseWriter, "this would be a normal response")
+}
+
+func main() {
+	wsContainer := restful.NewContainer()
+	u := UserResource{}
+	u.Register(wsContainer)
+
+	// Add container filter to enable CORS
+	cors := restful.CrossOriginResourceSharing{ExposeHeaders: "X-My-Header", CookiesAllowed: false, Container: wsContainer}
+	wsContainer.Filter(cors.Filter)
+
+	// Add container filter to respond to OPTIONS
+	wsContainer.Filter(wsContainer.OPTIONSFilter)
+
+	log.Printf("start listening on localhost:8080")
+	server := &http.Server{Addr: ":8080", Handler: wsContainer}
+	log.Fatal(server.ListenAndServe())
+}
