@@ -20,15 +20,15 @@ func TestOptionsFilter(t *testing.T) {
 	httpWriter := httptest.NewRecorder()
 	DefaultContainer.dispatch(httpWriter, httpRequest)
 	actual := httpWriter.Header().Get(HEADER_Allow)
-	if "GET,DELETE,OPTIONS" != actual {
-		t.Fatal("expected: GET,DELETE,OPTIONS but got:" + actual)
+	if "GET,DELETE" != actual {
+		t.Fatal("expected: GET,DELETE but got:" + actual)
 	}
 
 	httpRequest, _ = http.NewRequest("OPTIONS", "http://here.io/candies", nil)
 	httpWriter = httptest.NewRecorder()
 	DefaultContainer.dispatch(httpWriter, httpRequest)
 	actual = httpWriter.Header().Get(HEADER_Allow)
-	if "POST,OPTIONS" != actual {
-		t.Fatal("expected: POST,OPTIONS but got:" + actual)
+	if "POST" != actual {
+		t.Fatal("expected: POST but got:" + actual)
 	}
 }
