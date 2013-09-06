@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// Container holds a collection of WebServices and a http.ServeMux to dispatch http requests
+// Container holds a collection of WebServices and a http.ServeMux to dispatch http requests.
 // The requests are further dispatched to routes of WebServices using a RouteSelector
 type Container struct {
 	webServices            []*WebService
@@ -221,7 +221,8 @@ func (c Container) computeAllowedMethods(req *Request) []string {
 			}
 		}
 	}
-	return append(methods, "OPTIONS")
+	// methods = append(methods, "OPTIONS")  not sure about this
+	return methods
 }
 
 // newBasicRequestResponse creates a pair of Request,Response from its http versions.

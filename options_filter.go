@@ -8,7 +8,7 @@ func (c Container) OPTIONSFilter(req *Request, resp *Response, chain *FilterChai
 		chain.ProcessFilter(req, resp)
 		return
 	}
-	resp.AddHeader("Allow", toCommaSeparated(c.computeAllowedMethods(req)))
+	resp.AddHeader(HEADER_Allow, toCommaSeparated(c.computeAllowedMethods(req)))
 }
 
 // OPTIONSFilter is a filter function that inspects the Http Request for the OPTIONS method
