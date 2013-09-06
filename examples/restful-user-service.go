@@ -118,9 +118,6 @@ func main() {
 		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7"}
 	swagger.InstallSwaggerService(config)
 
-	// Optionally, you can enable the OPTIONS Http Method by adding a container filter
-	restful.Filter(restful.OPTIONSFilter())
-
 	log.Printf("start listening on localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

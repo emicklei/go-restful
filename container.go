@@ -201,8 +201,8 @@ func (c Container) RegisteredWebServices() []*WebService {
 	return c.webServices
 }
 
-// computeAllowedMethods returns a comma separated list of HTTP methods that are valid for a Request
-func (c Container) computeAllowedMethods(req *Request) string {
+// computeAllowedMethods returns a list of HTTP methods that are valid for a Request
+func (c Container) computeAllowedMethods(req *Request) []string {
 	// Go through all RegisteredWebServices() and all its Routes to collect the options
 	methods := []string{}
 	requestPath := req.Request.URL.Path
@@ -221,13 +221,7 @@ func (c Container) computeAllowedMethods(req *Request) string {
 			}
 		}
 	}
-	buf := new(bytes.Buffer)
-	buf.WriteString("OPTIONS")
-	for _, m := range methods {
-		buf.WriteString(",")
-		buf.WriteString(m)
-	}
-	return buf.String()
+	return append(methods, "OPTIONS")
 }
 
 // newBasicRequestResponse creates a pair of Request,Response from its http versions.

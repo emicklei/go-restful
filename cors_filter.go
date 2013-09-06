@@ -1,11 +1,16 @@
 package restful
 
-import (
-	"strings"
-)
-
+// Cross-origin resource sharing (CORS) is a mechanism that allows JavaScript on a web page
+// to make XMLHttpRequests to another domain, not the domain the JavaScript originated from.
+//
+// http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
+// http://enable-cors.org/server.html
+// http://www.html5rocks.com/en/tutorials/cors/#toc-handling-a-not-so-simple-request
+//
+// CrossOriginResourceSharing is used to create a Container Filter that implements CORS
 type CrossOriginResourceSharing struct {
-	ExposeHeaders  string // comma separated list of Header names
+	ExposeHeaders  []string // list of Header names
+	AllowdHeaders  []string // list of Header names
 	CookiesAllowed bool
 	Container      *Container
 }
@@ -34,7 +39,7 @@ func (c CrossOriginResourceSharing) Filter(req *Request, resp *Response, chain *
 }
 
 func (c CrossOriginResourceSharing) doActualRequest(req *Request, resp *Response, chain *FilterChain) {
-	resp.AddHeader("Access-Control-Expose-Headers", "Content-Type, Accept")
+	resp.AddHeader("Access-Control-Expose-Headers", toCommaSeparated(c.AllowdHeaders))
 	c.checkAndSetExposeHeaders(resp)
 	c.setAllowOriginHeader(req, resp)
 	c.checkAndSetAllowCredentials(resp)
@@ -43,18 +48,20 @@ func (c CrossOriginResourceSharing) doActualRequest(req *Request, resp *Response
 }
 
 func (c CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Response, chain *FilterChain) {
-	if !c.isValidAccessControlRequestMethod(req.Request.Method) {
+	allowedMethods := c.Container.computeAllowedMethods(req)
+	if !c.isValidAccessControlRequestMethod(req.Request.Method, allowedMethods) {
 		chain.ProcessFilter(req, resp)
 		return
 	}
-	if acrh := req.Request.Header.Get("Access-Control-Request-Header"); acrh != "" {
-		if !c.isValidAccessControlRequestHeader(acrh) {
+	acrhs := req.Request.Header.Get("Access-Control-Request-Headers")
+	if acrhs != "" {
+		if !c.isValidAccessControlRequestHeader(acrhs) {
 			chain.ProcessFilter(req, resp)
 			return
 		}
 	}
-	resp.AddHeader("Access-Control-Allow-Methods", c.Container.computeAllowedMethods(req))
-	resp.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept")
+	resp.AddHeader("Access-Control-Allow-Methods", toCommaSeparated(allowedMethods))
+	resp.AddHeader("Access-Control-Allow-Headers", acrhs)
 	c.setAllowOriginHeader(req, resp)
 	c.checkAndSetAllowCredentials(resp)
 	// return http 200 response, no body
@@ -67,7 +74,7 @@ func (c CrossOriginResourceSharing) setAllowOriginHeader(req *Request, resp *Res
 
 func (c CrossOriginResourceSharing) checkAndSetExposeHeaders(resp *Response) {
 	if len(c.ExposeHeaders) > 0 {
-		resp.AddHeader("Access-Control-Expose-Headers", c.ExposeHeaders)
+		resp.AddHeader("Access-Control-Expose-Headers", toCommaSeparated(c.ExposeHeaders))
 	}
 }
 
@@ -77,10 +84,20 @@ func (c CrossOriginResourceSharing) checkAndSetAllowCredentials(resp *Response) 
 	}
 }
 
-func (c CrossOriginResourceSharing) isValidAccessControlRequestMethod(method string) bool {
-	return strings.Contains("GET PUT POST DELETE HEAD OPTIONS PATCH", method) // I know there are more but my guess is that this is enough
+func (c CrossOriginResourceSharing) isValidAccessControlRequestMethod(method string, allowedMethods []string) bool {
+	for _, each := range allowedMethods {
+		if each == method {
+			return true
+		}
+	}
+	return false
 }
 
 func (c CrossOriginResourceSharing) isValidAccessControlRequestHeader(header string) bool {
-	return strings.Contains("accept content-type", strings.ToLower(header))
+	for _, each := range c.AllowdHeaders {
+		if each == header {
+			return true
+		}
+	}
+	return false
 }

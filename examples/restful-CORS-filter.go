@@ -25,7 +25,7 @@ import (
 
 type UserResource struct{}
 
-func (u UserResource) Register(container *restful.Container) {
+func (u UserResource) RegisterTo(container *restful.Container) {
 	ws := new(restful.WebService)
 	ws.
 		Path("/users").
@@ -47,10 +47,10 @@ func (u UserResource) nop(request *restful.Request, response *restful.Response) 
 func main() {
 	wsContainer := restful.NewContainer()
 	u := UserResource{}
-	u.Register(wsContainer)
+	u.RegisterTo(wsContainer)
 
 	// Add container filter to enable CORS
-	cors := restful.CrossOriginResourceSharing{ExposeHeaders: "X-My-Header", CookiesAllowed: false, Container: wsContainer}
+	cors := restful.CrossOriginResourceSharing{ExposeHeaders: []string{"X-My-Header"}, CookiesAllowed: false, Container: wsContainer}
 	wsContainer.Filter(cors.Filter)
 
 	// Add container filter to respond to OPTIONS
