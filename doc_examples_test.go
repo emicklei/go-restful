@@ -28,3 +28,8 @@ func ExampleCrossOriginResourceSharing() {
 	cors := CrossOriginResourceSharing{ExposeHeaders: []string{"X-My-Header"}, CookiesAllowed: false, Container: DefaultContainer}
 	Filter(cors.Filter)
 }
+
+func ExampleServiceError() {
+	resp := new(Response)
+	resp.WriteEntity(NewError(http.StatusBadRequest, "Non-integer {id} path parameter"))
+}

@@ -1,6 +1,10 @@
 Change history of go-restful
 =
 
+2013-08-05
+ - add OPTIONS support
+ - add CORS support
+
 2013-08-27
  - fixed some reported issues (see github)
  - (api change) deprecated use of WriteError; use WriteErrorString instead
