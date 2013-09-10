@@ -166,7 +166,7 @@ var tempregexs = []struct {
 func TestTemplateToRegularExpression(t *testing.T) {
 	ok := true
 	for i, fixture := range tempregexs {
-		actual, lCount, vCount := templateToRegularExpression(fixture.template)
+		actual, lCount, vCount, _ := templateToRegularExpression(fixture.template)
 		if actual != fixture.regex {
 			t.Logf("regex mismatch, expected:%v , actual:%v, line:%v\n", fixture.regex, actual, i) // 11 = where the data starts
 			ok = false

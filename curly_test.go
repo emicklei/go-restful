@@ -1,6 +1,7 @@
 package restful
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -19,7 +20,8 @@ var request_paths = []struct {
 	{"/a/b/c/q", "/", "/a/b/c/q"},
 }
 
-func _TestDetectWebService(t *testing.T) {
+// go test -v -test.run TestCurlyDetectWebService ...restful
+func TestCurlyDetectWebService(t *testing.T) {
 	ws1 := new(WebService).Path("/")
 	ws2 := new(WebService).Path("/p")
 	ws3 := new(WebService).Path("/q")
@@ -28,6 +30,10 @@ func _TestDetectWebService(t *testing.T) {
 	ws6 := new(WebService).Path("/p/{q}/")
 	ws7 := new(WebService).Path("/{p}/q")
 	var wss = []*WebService{ws1, ws2, ws3, ws4, ws5, ws6, ws7}
+
+	for _, each := range wss {
+		t.Logf("path=%s,toks=%v\n", each.pathExpr.Source, each.pathExpr.tokens)
+	}
 
 	router := CurlyRouter{}
 
@@ -49,5 +55,48 @@ func _TestDetectWebService(t *testing.T) {
 	}
 	if !ok {
 		t.Fail()
+	}
+}
+
+var serviceDetects = []struct {
+	path  string
+	found bool
+	root  string
+}{
+	{"/a/b", true, "/{p}/{q}/{r}"},
+	{"/p/q", true, "/p/q"},
+	{"/q/p", true, "/q"},
+	{"/", true, "/"},
+	{"/p/q/r", true, "/p/q"},
+}
+
+// go test -v -test.run Test_detectWebService ...restful
+func Test_detectWebService(t *testing.T) {
+	router := CurlyRouter{}
+	ws1 := new(WebService).Path("/")
+	ws2 := new(WebService).Path("/p")
+	ws3 := new(WebService).Path("/q")
+	ws4 := new(WebService).Path("/p/q")
+	ws5 := new(WebService).Path("/p/{q}")
+	ws6 := new(WebService).Path("/p/{q}/")
+	ws7 := new(WebService).Path("/{p}/q")
+	ws8 := new(WebService).Path("/{p}/{q}/{r}")
+	var wss = []*WebService{ws1, ws2, ws3, ws4, ws5, ws6, ws7, ws8}
+	for _, fix := range serviceDetects {
+		for _, ws := range wss {
+			requestPath := fix.path
+			requestTokens := strings.Split(requestPath, "/")
+			serviceTokens := ws.pathExpr.tokens
+			matches, score := router.computeWebserviceScore(requestTokens, serviceTokens)
+			t.Logf("req=%s,toks:%v,ws=%s,toks:%v,score=%d,matches=%v", requestPath, requestTokens, ws.RootPath(), serviceTokens, score, matches)
+		}
+		best, _, _ := router.detectWebService(fix.path, wss)
+		if best != nil {
+			if fix.found {
+				t.Logf("best=%s", best.RootPath())
+			} else {
+				t.Fatalf("should have found:%s", fix.root)
+			}
+		}
 	}
 }

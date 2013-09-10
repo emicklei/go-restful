@@ -1,6 +1,9 @@
 package restful
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
 // CurlyRouter expects Routes with paths that contain zero or more parameters in curly brackets.
 type CurlyRouter struct{}
@@ -18,6 +21,49 @@ func (c CurlyRouter) SelectRoute(
 }
 
 func (c CurlyRouter) detectWebService(requestPath string, webServices []*WebService) (*WebService, string, error) {
-	// TODO
-	return webServices[0], "", nil
+	if len(webServices) == 0 {
+		return nil, "", nil
+	}
+	requestTokens := strings.Split(requestPath, "/")
+	var best *WebService
+	score := -1
+	for _, each := range webServices {
+		matches, eachScore := c.computeWebserviceScore(requestTokens, each.pathExpr.tokens)
+		if matches && (eachScore > score) {
+			best = each
+			score = eachScore
+		}
+	}
+	return best, "", nil
+}
+
+func (c CurlyRouter) computeWebserviceScore(requestTokens []string, tokens []string) (bool, int) {
+	// return a weighted score of the longest matching consecutive tokens from the beginning
+	min := len(requestTokens)
+	if len(tokens) < min {
+		min = len(tokens)
+	}
+	score := 0
+	for i := 0; i < min; i++ {
+		each := requestTokens[i]
+		other := tokens[i]
+		if len(each) == 0 && len(other) == 0 {
+			score++
+			continue
+		}
+		if len(other) > 0 && strings.HasPrefix(other, "{") {
+			// no empty match
+			if len(each) == 0 {
+				return false, score
+			}
+			score += 1
+		} else {
+			// not a parameter
+			if each != other {
+				return false, score
+			}
+			score += (min - i) * 10 //fuzzy
+		}
+	}
+	return true, score
 }
