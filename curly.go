@@ -14,17 +14,47 @@ func (c CurlyRouter) SelectRoute(
 	path string,
 	webServices []*WebService,
 	httpWriter http.ResponseWriter,
-	httpRequest *http.Request) (selectedService *WebService, selected Route, ok bool) {
+	httpRequest *http.Request) (selectedService *WebService, selected *Route, ok bool) {
 
-	// TODO
-	return webServices[0], webServices[0].Routes()[0], true
+	requestTokens := strings.Split(httpRequest.URL.Path, "/")
+
+	detectedService := c.detectWebService(requestTokens, webServices)
+	if detectedService == nil {
+		return nil, nil, false
+	}
+	candidateRoutes := c.selectRoutes(detectedService, httpWriter, requestTokens)
+	if len(candidateRoutes) == 0 {
+		return detectedService, nil, false
+	}
+	selectedRoute := c.detectRoute(candidateRoutes, httpWriter, httpRequest)
+	if selectedRoute == nil {
+		return detectedService, nil, false
+	}
+	return detectedService, selectedRoute, true
 }
 
-func (c CurlyRouter) detectWebService(requestPath string, webServices []*WebService) *WebService {
+func (c CurlyRouter) selectRoutes(ws *WebService, httpWriter http.ResponseWriter, requestTokens []string) []Route {
+	candidates := []Route{}
+	for _, each := range ws.Routes() {
+		if c.matchesRouteByPathTokens(each.pathParts, requestTokens) {
+			candidates = append(candidates, each)
+		}
+	}
+	return candidates
+}
+
+func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []string) bool {
+	return true
+}
+
+func (c CurlyRouter) detectRoute(candidateRoutes []Route, httpWriter http.ResponseWriter, httpRequest *http.Request) *Route {
+	return nil
+}
+
+func (c CurlyRouter) detectWebService(requestTokens []string, webServices []*WebService) *WebService {
 	if len(webServices) == 0 {
 		return nil
 	}
-	requestTokens := strings.Split(requestPath, "/")
 	var best *WebService
 	score := -1
 	for _, each := range webServices {

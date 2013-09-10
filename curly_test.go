@@ -38,7 +38,8 @@ func TestCurlyDetectWebService(t *testing.T) {
 
 	ok := true
 	for i, fixture := range request_paths {
-		who := router.detectWebService(fixture.path, wss)
+		requestTokens := strings.Split(fixture.path, "/")
+		who := router.detectWebService(requestTokens, wss)
 		if who != nil && who.RootPath() != fixture.root {
 			t.Logf("[line:%v] Unexpected dispatcher, expected:%v, actual:%v", i, fixture.root, who.RootPath())
 			ok = false
@@ -74,20 +75,40 @@ func Test_detectWebService(t *testing.T) {
 	ws8 := new(WebService).Path("/{p}/{q}/{r}")
 	var wss = []*WebService{ws1, ws2, ws3, ws4, ws5, ws6, ws7, ws8}
 	for _, fix := range serviceDetects {
+		requestPath := fix.path
+		requestTokens := strings.Split(requestPath, "/")
 		for _, ws := range wss {
-			requestPath := fix.path
-			requestTokens := strings.Split(requestPath, "/")
 			serviceTokens := ws.pathExpr.tokens
 			matches, score := router.computeWebserviceScore(requestTokens, serviceTokens)
 			t.Logf("req=%s,toks:%v,ws=%s,toks:%v,score=%d,matches=%v", requestPath, requestTokens, ws.RootPath(), serviceTokens, score, matches)
 		}
-		best := router.detectWebService(fix.path, wss)
+		best := router.detectWebService(requestTokens, wss)
 		if best != nil {
 			if fix.found {
 				t.Logf("best=%s", best.RootPath())
 			} else {
 				t.Fatalf("should have found:%s", fix.root)
 			}
+		}
+	}
+}
+
+var routeMatchers = []struct {
+	route   string
+	path    string
+	matches bool
+}{
+	{"/a", "/a", true},
+}
+
+// go test -v -test.run Test_matchesRouteByPathTokens ...restful
+func Test_matchesRouteByPathTokens(t *testing.T) {
+	router := CurlyRouter{}
+	for _, each := range routeMatchers {
+		routeToks := tokenizePath(each.route)
+		reqToks := tokenizePath(each.path)
+		if each.matches != router.matchesRouteByPathTokens(routeToks, reqToks) {
+			t.Fatalf("unexpected matches outcome route:%s, path:%s, matches:%v", each.route, each, each.path, each.matches)
 		}
 	}
 }

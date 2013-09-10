@@ -149,7 +149,6 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 	}
 	// Find best match Route ; detected is false if no match was found
 	webService, route, detected := c.router.SelectRoute(
-		httpRequest.URL.Path,
 		c.webServices,
 		httpWriter,
 		httpRequest)

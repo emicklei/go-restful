@@ -15,16 +15,15 @@ import (
 type RouterJSR311 struct{}
 
 func (r RouterJSR311) SelectRoute(
-	path string,
 	webServices []*WebService,
 	httpWriter http.ResponseWriter,
-	httpRequest *http.Request) (selectedService *WebService, selectedRoute Route, ok bool) {
+	httpRequest *http.Request) (selectedService *WebService, selectedRoute *Route, ok bool) {
 
 	// Identify the root resource class (WebService)
-	dispatcher, finalMatch, err := r.detectDispatcher(path, webServices)
+	dispatcher, finalMatch, err := r.detectDispatcher(httpRequest.URL.Path, webServices)
 	if err != nil {
 		httpWriter.WriteHeader(http.StatusNotFound)
-		return nil, Route{}, false
+		return nil, nil, false
 	}
 	// Obtain the set of candidate methods (Routes)
 	routes := r.selectRoutes(dispatcher, finalMatch)
@@ -35,7 +34,7 @@ func (r RouterJSR311) SelectRoute(
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
-func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *http.Request) (Route, bool) {
+func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *http.Request) (*Route, bool) {
 	// http method
 	methodOk := []Route{}
 	for _, each := range routes {
@@ -46,7 +45,7 @@ func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter
 	if len(methodOk) == 0 {
 		httpWriter.WriteHeader(http.StatusMethodNotAllowed)
 		httpWriter.Write([]byte("405: Method Not Allowed"))
-		return Route{}, false
+		return nil, false
 	}
 	inputMediaOk := methodOk
 	// content-type
@@ -61,7 +60,7 @@ func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter
 		if len(inputMediaOk) == 0 {
 			httpWriter.WriteHeader(http.StatusUnsupportedMediaType)
 			httpWriter.Write([]byte("415: Unsupported Media Type"))
-			return Route{}, false
+			return nil, false
 		}
 	}
 	// accept
@@ -78,16 +77,16 @@ func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter
 	if len(outputMediaOk) == 0 {
 		httpWriter.WriteHeader(http.StatusNotAcceptable)
 		httpWriter.Write([]byte("406: Not Acceptable"))
-		return Route{}, false
+		return &Route{}, false
 	}
 	return r.bestMatchByMedia(outputMediaOk, contentType, accept), true
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
 // n/m > n/* > */*
-func (r RouterJSR311) bestMatchByMedia(routes []Route, contentType string, accept string) Route {
+func (r RouterJSR311) bestMatchByMedia(routes []Route, contentType string, accept string) *Route {
 	// TODO
-	return routes[0]
+	return &routes[0]
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2  (step 2)

@@ -17,7 +17,7 @@ type Route struct {
 	Method   string
 	Produces []string
 	Consumes []string
-	Path     string
+	Path     string // webservice root path + described path
 	Function RouteFunction
 	Filters  []FilterFunction
 
