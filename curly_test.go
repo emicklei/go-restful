@@ -7,17 +7,17 @@ import (
 
 var request_paths = []struct {
 	// url with path (1) is handled by service with root (2) and remainder has value final (3)
-	path, root, final string
+	path, root string
 }{
-	{"/", "/", "/"},
-	{"/p", "/p", ""},
-	{"/p/x", "/p/{q}", ""},
-	{"/q/x", "/q", "/x"},
-	{"/p/x/", "/p/{q}", "/"},
-	{"/p/x/y", "/p/{q}", "/y"},
-	{"/q/x/y", "/q", "/x/y"},
-	{"/z/q", "/{p}/q", ""},
-	{"/a/b/c/q", "/", "/a/b/c/q"},
+	{"/", "/"},
+	{"/p", "/p"},
+	{"/p/x", "/p/{q}"},
+	{"/q/x", "/q"},
+	{"/p/x/", "/p/{q}"},
+	{"/p/x/y", "/p/{q}"},
+	{"/q/x/y", "/q"},
+	{"/z/q", "/{p}/q"},
+	{"/a/b/c/q", "/"},
 }
 
 // go test -v -test.run TestCurlyDetectWebService ...restful
@@ -27,9 +27,8 @@ func TestCurlyDetectWebService(t *testing.T) {
 	ws3 := new(WebService).Path("/q")
 	ws4 := new(WebService).Path("/p/q")
 	ws5 := new(WebService).Path("/p/{q}")
-	ws6 := new(WebService).Path("/p/{q}/")
 	ws7 := new(WebService).Path("/{p}/q")
-	var wss = []*WebService{ws1, ws2, ws3, ws4, ws5, ws6, ws7}
+	var wss = []*WebService{ws1, ws2, ws3, ws4, ws5, ws7}
 
 	for _, each := range wss {
 		t.Logf("path=%s,toks=%v\n", each.pathExpr.Source, each.pathExpr.tokens)
@@ -39,17 +38,9 @@ func TestCurlyDetectWebService(t *testing.T) {
 
 	ok := true
 	for i, fixture := range request_paths {
-		who, final, err := router.detectWebService(fixture.path, wss)
-		if err != nil {
-			t.Logf("error in detection:%v", err)
-			ok = false
-		}
-		if who.RootPath() != fixture.root {
+		who := router.detectWebService(fixture.path, wss)
+		if who != nil && who.RootPath() != fixture.root {
 			t.Logf("[line:%v] Unexpected dispatcher, expected:%v, actual:%v", i, fixture.root, who.RootPath())
-			ok = false
-		}
-		if final != fixture.final {
-			t.Logf("[line:%v] Unexpected final, expected:%v, actual:%v", i, fixture.final, final)
 			ok = false
 		}
 	}
@@ -90,7 +81,7 @@ func Test_detectWebService(t *testing.T) {
 			matches, score := router.computeWebserviceScore(requestTokens, serviceTokens)
 			t.Logf("req=%s,toks:%v,ws=%s,toks:%v,score=%d,matches=%v", requestPath, requestTokens, ws.RootPath(), serviceTokens, score, matches)
 		}
-		best, _, _ := router.detectWebService(fix.path, wss)
+		best := router.detectWebService(fix.path, wss)
 		if best != nil {
 			if fix.found {
 				t.Logf("best=%s", best.RootPath())

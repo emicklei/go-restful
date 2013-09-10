@@ -20,9 +20,9 @@ func (c CurlyRouter) SelectRoute(
 	return webServices[0], webServices[0].Routes()[0], true
 }
 
-func (c CurlyRouter) detectWebService(requestPath string, webServices []*WebService) (*WebService, string, error) {
+func (c CurlyRouter) detectWebService(requestPath string, webServices []*WebService) *WebService {
 	if len(webServices) == 0 {
-		return nil, "", nil
+		return nil
 	}
 	requestTokens := strings.Split(requestPath, "/")
 	var best *WebService
@@ -34,7 +34,7 @@ func (c CurlyRouter) detectWebService(requestPath string, webServices []*WebServ
 			score = eachScore
 		}
 	}
-	return best, "", nil
+	return best
 }
 
 func (c CurlyRouter) computeWebserviceScore(requestTokens []string, tokens []string) (bool, int) {
