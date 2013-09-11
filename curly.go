@@ -1,7 +1,7 @@
 package restful
 
 import (
-	"log"
+	//	"log"
 	"net/http"
 	"sort"
 	"strings"
