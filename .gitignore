@@ -53,3 +53,5 @@ examples/restful-form-handling
 examples/restful-CORS-filter
 
 examples/restful-options-filter
+
+examples/restful-curly-router

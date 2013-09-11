@@ -2,17 +2,12 @@ package main
 
 import (
 	"github.com/emicklei/go-restful"
-	"github.com/emicklei/go-restful/swagger"
 	"log"
 	"net/http"
 )
 
-// This example show a complete (GET,PUT,POST,DELETE) conventional example of
-// a REST Resource including documentation to be served by e.g. a Swagger UI
-// It is recommended to create a Resource struct (UserResource) that can encapsulate
-// an object that provide domain access (a DAO)
-// It has a Register method including the complete Route mapping to methods together
-// with all the appropriate documentation
+// This example has the same service definition as restful-user-resource
+// but uses a different router (CurlyRouter) that does not use regular expressions
 //
 // POST http://localhost:8080/users
 // <User><Id>1</Id><Name>Melissa Raspberry</Name></User>
@@ -41,29 +36,10 @@ func (u UserResource) Register(container *restful.Container) {
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_JSON, restful.MIME_XML) // you can specify this per route as well
 
-	ws.Route(ws.GET("/{user-id}").To(u.findUser).
-		// docs
-		Doc("get a user").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-		Writes(User{})) // on the response
-
-	ws.Route(ws.POST("").To(u.updateUser).
-		// docs
-		Doc("update a user").
-		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
-		Reads(User{})) // from the request
-
-	ws.Route(ws.PUT("/{user-id}").To(u.createUser).
-		// docs
-		Doc("create a user").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
-		Reads(User{})) // from the request
-
-	ws.Route(ws.DELETE("/{user-id}").To(u.removeUser).
-		// docs
-		Doc("delete a user").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")))
+	ws.Route(ws.GET("/{user-id}").To(u.findUser))
+	ws.Route(ws.POST("").To(u.updateUser))
+	ws.Route(ws.PUT("/{user-id}").To(u.createUser))
+	ws.Route(ws.DELETE("/{user-id}").To(u.removeUser))
 
 	container.Add(ws)
 }
@@ -121,21 +97,9 @@ func (u *UserResource) removeUser(request *restful.Request, response *restful.Re
 
 func main() {
 	wsContainer := restful.NewContainer()
+	wsContainer.Router(restful.CurlyRouter{})
 	u := UserResource{map[string]User{}}
 	u.Register(wsContainer)
-
-	// Optionally, you can install the Swagger Service which provides a nice Web UI on your REST API
-	// You need to download the Swagger HTML5 assets and change the FilePath location in the config below.
-	// Open http://localhost:8080/apidocs and enter http://localhost:8080/apidocs.json in the api input field.
-	config := swagger.Config{
-		WebServices:    wsContainer.RegisteredWebServices(), // you control what services are visible
-		WebServicesUrl: "http://localhost:8080",
-		ApiPath:        "/apidocs.json",
-
-		// Optionally, specifiy where the UI is located
-		SwaggerPath:     "/apidocs/",
-		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7"}
-	swagger.RegisterSwaggerService(config, wsContainer)
 
 	log.Printf("start listening on localhost:8080")
 	server := &http.Server{Addr: ":8080", Handler: wsContainer}
