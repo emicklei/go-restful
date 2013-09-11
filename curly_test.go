@@ -1,7 +1,6 @@
 package restful
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -38,7 +37,7 @@ func TestCurlyDetectWebService(t *testing.T) {
 
 	ok := true
 	for i, fixture := range request_paths {
-		requestTokens := strings.Split(fixture.path, "/")
+		requestTokens := tokenizePath(fixture.path)
 		who := router.detectWebService(requestTokens, wss)
 		if who != nil && who.RootPath() != fixture.root {
 			t.Logf("[line:%v] Unexpected dispatcher, expected:%v, actual:%v", i, fixture.root, who.RootPath())
@@ -73,10 +72,10 @@ func Test_detectWebService(t *testing.T) {
 	ws6 := new(WebService).Path("/p/{q}/")
 	ws7 := new(WebService).Path("/{p}/q")
 	ws8 := new(WebService).Path("/{p}/{q}/{r}")
-	var wss = []*WebService{ws1, ws2, ws3, ws4, ws5, ws6, ws7, ws8}
+	var wss = []*WebService{ws8, ws7, ws6, ws5, ws4, ws3, ws2, ws1}
 	for _, fix := range serviceDetects {
 		requestPath := fix.path
-		requestTokens := strings.Split(requestPath, "/")
+		requestTokens := tokenizePath(requestPath)
 		for _, ws := range wss {
 			serviceTokens := ws.pathExpr.tokens
 			matches, score := router.computeWebserviceScore(requestTokens, serviceTokens)
@@ -94,21 +93,63 @@ func Test_detectWebService(t *testing.T) {
 }
 
 var routeMatchers = []struct {
-	route   string
-	path    string
-	matches bool
+	route       string
+	path        string
+	matches     bool
+	paramCount  int
+	staticCount int
 }{
-	{"/a", "/a", true},
+	// route, request-path
+	{"/a", "/a", true, 0, 1},
+	{"/a", "/b", false, 0, 0},
+	{"/a", "/b", false, 0, 0},
+	{"/a/{b}/c/", "/a/2/c", true, 1, 2},
+	{"/{a}/{b}/{c}/", "/a/b", false, 0, 0},
 }
 
-// go test -v -test.run Test_matchesRouteByPathTokens ...restful
+// clear && go test -v -test.run Test_matchesRouteByPathTokens ...restful
 func Test_matchesRouteByPathTokens(t *testing.T) {
 	router := CurlyRouter{}
 	for _, each := range routeMatchers {
 		routeToks := tokenizePath(each.route)
 		reqToks := tokenizePath(each.path)
-		if each.matches != router.matchesRouteByPathTokens(routeToks, reqToks) {
+		matches, pCount, sCount := router.matchesRouteByPathTokens(routeToks, reqToks)
+		if matches != each.matches {
 			t.Fatalf("unexpected matches outcome route:%s, path:%s, matches:%v", each.route, each, each.path, each.matches)
 		}
+		if pCount != each.paramCount {
+			t.Fatalf("unexpected paramCount got:%d want:%d ", pCount, each.paramCount)
+		}
+		if sCount != each.staticCount {
+			t.Fatalf("unexpected staticCount got:%d want:%d ", sCount, each.staticCount)
+		}
+	}
+}
+
+// clear && go test -v -test.run TestCurly_ISSUE_34 ...restful
+func TestCurly_ISSUE_34(t *testing.T) {
+	ws1 := new(WebService).Path("/")
+	ws1.Route(ws1.GET("/{type}/{id}"))
+	ws1.Route(ws1.GET("/network/{id}"))
+	routes := CurlyRouter{}.selectRoutes(ws1, nil, tokenizePath("/network/12"))
+	if len(routes) != 2 {
+		t.Fatal("expected 2 routes")
+	}
+	if routes[0].Path != "/network/{id}" {
+		t.Error("first is", routes[0].Path)
+	}
+}
+
+// clear && go test -v -test.run TestCurly_ISSUE_34_2 ...restful
+func TestCurly_ISSUE_34_2(t *testing.T) {
+	ws1 := new(WebService).Path("/")
+	ws1.Route(ws1.GET("/network/{id}"))
+	ws1.Route(ws1.GET("/{type}/{id}"))
+	routes := CurlyRouter{}.selectRoutes(ws1, nil, tokenizePath("/network/12"))
+	if len(routes) != 2 {
+		t.Fatal("expected 2 routes")
+	}
+	if routes[0].Path != "/network/{id}" {
+		t.Error("first is", routes[0].Path)
 	}
 }
