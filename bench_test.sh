@@ -2,4 +2,9 @@
 
 go test -c
 ./go-restful.test -test.run=none -test.cpuprofile=tmp.prof -test.bench=BenchmarkMany
-go tool pprof go-restful.test tmp.prof
+./go-restful.test -test.run=none -test.cpuprofile=curly.prof -test.bench=BenchmarkManyCurly
+
+#go tool pprof go-restful.test tmp.prof
+go tool pprof go-restful.test curly.prof
+
+

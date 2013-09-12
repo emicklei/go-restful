@@ -1,6 +1,10 @@
 Change history of go-restful
 =
 
+2013-09-12
+ - (api change) Router interface simplified
+ - Implemented CurlyRouter, a Router that does not use|allow regular expressions in paths
+
 2013-08-05
  - add OPTIONS support
  - add CORS support
