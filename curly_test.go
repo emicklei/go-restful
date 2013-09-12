@@ -79,7 +79,7 @@ func Test_detectWebService(t *testing.T) {
 		for _, ws := range wss {
 			serviceTokens := ws.pathExpr.tokens
 			matches, score := router.computeWebserviceScore(requestTokens, serviceTokens)
-			// t.Logf("req=%s,toks:%v,ws=%s,toks:%v,score=%d,matches=%v", requestPath, requestTokens, ws.RootPath(), serviceTokens, score, matches)
+			t.Logf("req=%s,toks:%v,ws=%s,toks:%v,score=%d,matches=%v", requestPath, requestTokens, ws.RootPath(), serviceTokens, score, matches)
 		}
 		best := router.detectWebService(requestTokens, wss)
 		if best != nil {
