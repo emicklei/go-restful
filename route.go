@@ -62,7 +62,12 @@ func (self *Route) dispatch(wrappedRequest *Request, wrappedResponse *Response) 
 func (self Route) matchesAccept(mimeTypesWithQuality string) bool {
 	parts := strings.Split(mimeTypesWithQuality, ",")
 	for _, each := range parts {
-		withoutQuality := strings.Split(each, ";")[0]
+		var withoutQuality string
+		if strings.Contains(each, ";") {
+			withoutQuality = strings.Trim(strings.Split(each, ";")[0], " ")
+		} else {
+			withoutQuality = each
+		}
 		if withoutQuality == "*/*" {
 			return true
 		}
@@ -81,7 +86,7 @@ func (self Route) matchesContentType(mimeTypes string) bool {
 	for _, each := range parts {
 		var contentType string
 		if strings.Contains(each, ";") {
-			contentType = strings.Split(each, ";")[0]
+			contentType = strings.Trim(strings.Split(each, ";")[0], " ")
 		} else {
 			contentType = each
 		}
