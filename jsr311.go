@@ -1,5 +1,9 @@
 package restful
 
+// Copyright 2013 Ernest Micklei. All rights reserved.
+// Use of this source code is governed by a license
+// that can be found in the LICENSE file.
+
 // This file implements the flow for matching Requests to Routes (and consequently Resource Functions)
 // as specified by the JSR311 http://jsr311.java.net/nonav/releases/1.1/spec/spec.html.
 // Concept of locators is not implemented.

@@ -1,5 +1,9 @@
 package restful
 
+// Copyright 2013 Ernest Micklei. All rights reserved.
+// Use of this source code is governed by a license
+// that can be found in the LICENSE file.
+
 import "fmt"
 
 // ServiceError is a transport object to pass information about a non-Http error occurred in a WebService while processing a request.

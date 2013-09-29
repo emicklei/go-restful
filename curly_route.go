@@ -1,5 +1,9 @@
 package restful
 
+// Copyright 2013 Ernest Micklei. All rights reserved.
+// Use of this source code is governed by a license
+// that can be found in the LICENSE file.
+
 // curlyRoute exits for sorting Routes by the CurlyRouter based on number of parameters and number of static path elements.
 type curlyRoute struct {
 	route       Route

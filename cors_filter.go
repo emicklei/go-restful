@@ -1,6 +1,8 @@
 package restful
 
-//import "log"
+// Copyright 2013 Ernest Micklei. All rights reserved.
+// Use of this source code is governed by a license
+// that can be found in the LICENSE file.
 
 // Cross-origin resource sharing (CORS) is a mechanism that allows JavaScript on a web page
 // to make XMLHttpRequests to another domain, not the domain the JavaScript originated from.
