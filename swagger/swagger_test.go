@@ -31,3 +31,18 @@ func TestModelToJsonSchema(t *testing.T) {
 	output, _ := json.MarshalIndent(api, " ", " ")
 	os.Stdout.Write(output)
 }
+
+type File struct {
+	History []File
+}
+
+// go test -v -test.run TestCreateModelFromRecursiveDataStructure ...swagger
+func TestCreateModelFromRecursiveDataStructure(t *testing.T) {
+	api := new(Api)
+	api.Models = map[string]Model{}
+	op := new(Operation)
+	op.Nickname = "getSome"
+	addModelFromSample(api, op, true, File{})
+	output, _ := json.MarshalIndent(api, " ", " ")
+	os.Stdout.Write(output)
+}

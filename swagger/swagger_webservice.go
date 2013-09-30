@@ -141,7 +141,13 @@ func addModelFromSample(api *Api, operation *Operation, isResponse bool, sample 
 
 func addModelToApi(api *Api, st reflect.Type) {
 	modelName := st.String()
+	// see if we already have visited this model
+	if _, ok := api.Models[modelName]; ok {
+		return
+	}
 	sm := Model{modelName, map[string]ModelProperty{}}
+	// store before further initializing
+	api.Models[modelName] = sm
 	// check for structure or primitive type
 	if st.Kind() == reflect.Struct {
 		for i := 0; i < st.NumField(); i++ {
@@ -154,7 +160,6 @@ func addModelToApi(api *Api, st reflect.Type) {
 			sm.Properties[jsonName] = asModelProperty(sf, api)
 		}
 	}
-	api.Models[modelName] = sm
 }
 
 func asModelProperty(sf reflect.StructField, api *Api) ModelProperty {
@@ -163,7 +168,7 @@ func asModelProperty(sf reflect.StructField, api *Api) ModelProperty {
 	if st.Kind() == reflect.Slice || st.Kind() == reflect.Array {
 		prop.Type = "List"
 		prop.Items = map[string]string{"$ref": st.Elem().String()}
-		// add|overwrite mode for element type
+		// add|overwrite model for element type
 		addModelToApi(api, st.Elem())
 	} else {
 		prop.Type = st.String() // include pkg path
