@@ -28,6 +28,10 @@ type Response struct {
 	statusCode int      // HTTP status code that has been written explicity (if zero then net/http has written 200)
 }
 
+func newResponse(httpWriter http.ResponseWriter) *Response {
+	return &Response{httpWriter, "", []string{}, http.StatusOK} // empty content-types
+}
+
 // DEPRECATED, use r.WriteHeader(http.StatusInternalServerError)
 func (r Response) InternalServerError() Response {
 	r.WriteHeader(http.StatusInternalServerError)

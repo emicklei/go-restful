@@ -48,7 +48,7 @@ func TestReadEntityJsonCharset(t *testing.T) {
 	bodyReader := strings.NewReader(`{"Value" : "42"}`)
 	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
 	httpRequest.Header.Set("Content-Type", "application/json; charset=UTF-8")
-	request := &Request{Request: httpRequest}
+	request := newRequest(httpRequest)
 	sam := new(Sample)
 	request.ReadEntity(sam)
 	if sam.Value != "42" {
@@ -60,10 +60,21 @@ func TestReadEntityUnkown(t *testing.T) {
 	bodyReader := strings.NewReader("?")
 	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
 	httpRequest.Header.Set("Content-Type", "application/rubbish")
-	request := &Request{Request: httpRequest}
+	request := newRequest(httpRequest)
 	sam := new(Sample)
 	err := request.ReadEntity(sam)
 	if err == nil {
 		t.Fatal("read should be in error")
+	}
+}
+
+func TestSetAttribute(t *testing.T) {
+	bodyReader := strings.NewReader("?")
+	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
+	request := newRequest(httpRequest)
+	request.SetAttribute("go", "there")
+	there := request.Attribute("go")
+	if there != "there" {
+		t.Fatalf("missing request attribute:%v", there)
 	}
 }

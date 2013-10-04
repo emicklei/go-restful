@@ -41,9 +41,11 @@ func (self *Route) postBuild() {
 // Create Request and Response from their http versions
 func (self *Route) wrapRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {
 	params := self.extractParameters(httpRequest.URL.Path)
-	accept := httpRequest.Header.Get(HEADER_Accept)
-	wrappedRequest := &Request{httpRequest, params}
-	wrappedResponse := &Response{httpWriter, accept, self.Produces, http.StatusOK}
+	wrappedRequest := newRequest(httpRequest)
+	wrappedRequest.pathParameters = params
+	wrappedResponse := newResponse(httpWriter)
+	wrappedResponse.accept = httpRequest.Header.Get(HEADER_Accept)
+	wrappedResponse.produces = self.Produces
 	return wrappedRequest, wrappedResponse
 }
 

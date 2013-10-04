@@ -230,7 +230,7 @@ func (c Container) computeAllowedMethods(req *Request) []string {
 // newBasicRequestResponse creates a pair of Request,Response from its http versions.
 // It is basic because no parameter or (produces) content-type information is given.
 func newBasicRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {
-	accept := httpRequest.Header.Get(HEADER_Accept)
-	return &Request{httpRequest, map[string]string{}}, // empty parameters
-		&Response{httpWriter, accept, []string{}, http.StatusOK} // empty content-types
+	resp := newResponse(httpWriter)
+	resp.accept = httpRequest.Header.Get(HEADER_Accept)
+	return newRequest(httpRequest), resp
 }

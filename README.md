@@ -43,6 +43,7 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 - Request API for reading structs from JSON/XML and accesing parameters (path,query,header)
 - Response API for writing structs to JSON/XML and setting headers
 - Filters for intercepting the request &rightarrow; response flow	 on Service or Route level
+- Request-scoped variables using attributes
 - Containers for WebServices on different HTTP endpoints
 - Content encoding (gzip,deflate) of responses
 - Automatic responses on OPTIONS (using a filter)

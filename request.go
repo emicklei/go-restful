@@ -17,6 +17,11 @@ import (
 type Request struct {
 	Request        *http.Request
 	pathParameters map[string]string
+	attributes     map[string]interface{} // for storing request-scoped values
+}
+
+func newRequest(httpRequest *http.Request) *Request {
+	return &Request{httpRequest, map[string]string{}, map[string]interface{}{}} // empty parameters, attributes
 }
 
 // PathParameter accesses the Path parameter value by its name
@@ -56,4 +61,14 @@ func (r *Request) ReadEntity(entityPointer interface{}) error {
 		}
 	}
 	return err
+}
+
+// SetAttribute adds or replaces the attribute with the given value.
+func (r *Request) SetAttribute(name string, value interface{}) {
+	r.attributes[name] = value
+}
+
+// Attribute returns the value associated to the given name. Returns nil if absent.
+func (r Request) Attribute(name string) interface{} {
+	return r.attributes[name]
 }

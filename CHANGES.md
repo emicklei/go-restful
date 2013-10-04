@@ -3,6 +3,7 @@ Change history of go-restful
 
 2013-10-04
  - (api add) Response knows what HTTP status has been written
+ - (api add) Request can have attributes (map of string->interface, also called request-scoped variables
 
 2013-09-12
  - (api change) Router interface simplified
