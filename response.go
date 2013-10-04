@@ -21,6 +21,7 @@ type Response struct {
 	http.ResponseWriter
 	accept   string   // content-types what the Http Request says it want to receive
 	produces []string // content-types what the Route says it can produce
+   statusCode  int   // Status Code assigned to the response
 }
 
 // DEPRECATED, use r.WriteHeader(http.StatusInternalServerError)
@@ -33,6 +34,18 @@ func (r Response) InternalServerError() Response {
 func (r Response) AddHeader(header string, value string) Response {
 	r.Header().Add(header, value)
 	return r
+}
+
+func (r Response) GetStatusCode() int {
+   if r.statusCode == 0 {
+      return 200
+   }
+   return r.statusCode
+}
+
+func (r Response) WriteHeader(statusCode int) {
+   r.StatusCode = int
+   ResponseWriter.WriteHeader(statusCode)
 }
 
 // WriteEntity marshals the value using the representation denoted by the Accept Header (XML or JSON)
