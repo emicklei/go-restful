@@ -132,5 +132,10 @@ func (r *Response) WriteHeader(httpStatus int) {
 }
 
 // StatusCode returns the code that has been written using WriteHeader.
-// If it returns 0 , no WriteHeader has been called and unless it is called later, net/http will write 200.
-func (r Response) StatusCode() int { return r.statusCode }
+func (r Response) StatusCode() int {
+	if 0 == r.statusCode {
+		// no status code has been written yet; assume OK
+		return http.StatusOK
+	}
+	return r.statusCode
+}
