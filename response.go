@@ -36,6 +36,7 @@ func (r Response) AddHeader(header string, value string) Response {
 	return r
 }
 
+// StatusCode return the HTTP Status Code of the response
 func (r Response) StatusCode() int {
    if r.statusCode == 0 {
       return http.StatusOK
@@ -43,6 +44,8 @@ func (r Response) StatusCode() int {
    return r.statusCode
 }
 
+// WriteHeader store the HTTP Status Code of the response in the Response structure and then
+// calls the http.ResponseWriter WriteHeader method
 func (r *Response) WriteHeader(statusCode int) {
    r.statusCode = statusCode
    r.ResponseWriter.WriteHeader(statusCode)
