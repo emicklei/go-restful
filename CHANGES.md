@@ -1,6 +1,9 @@
 Change history of go-restful
 =
 
+2013-10-04
+ - (api add) Response knows what HTTP status has been written
+
 2013-09-12
  - (api change) Router interface simplified
  - Implemented CurlyRouter, a Router that does not use|allow regular expressions in paths

@@ -23,8 +23,9 @@ var DefaultResponseMimeType string
 // It provides several convenience methods to prepare and write response content.
 type Response struct {
 	http.ResponseWriter
-	accept   string   // content-types what the Http Request says it want to receive
-	produces []string // content-types what the Route says it can produce
+	accept     string   // content-types what the Http Request says it want to receive
+	produces   []string // content-types what the Route says it can produce
+	statusCode int      // HTTP status code that has been written explicity (if zero then net/http has written 200)
 }
 
 // DEPRECATED, use r.WriteHeader(http.StatusInternalServerError)
@@ -123,3 +124,13 @@ func (r Response) WriteErrorString(status int, err string) Response {
 	io.WriteString(r, err)
 	return r
 }
+
+// WriteHeader is overridden to remember the Status Code that has been written.
+func (r *Response) WriteHeader(httpStatus int) {
+	r.statusCode = httpStatus
+	r.ResponseWriter.WriteHeader(httpStatus)
+}
+
+// StatusCode returns the code that has been written using WriteHeader.
+// If it returns 0 , no WriteHeader has been called and unless it is called later, net/http will write 200.
+func (r Response) StatusCode() int { return r.statusCode }
