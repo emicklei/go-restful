@@ -36,16 +36,16 @@ func (r Response) AddHeader(header string, value string) Response {
 	return r
 }
 
-func (r Response) GetStatusCode() int {
+func (r Response) StatusCode() int {
    if r.statusCode == 0 {
-      return 200
+      return http.StatusOK
    }
    return r.statusCode
 }
 
-func (r Response) WriteHeader(statusCode int) {
-   r.StatusCode = int
-   ResponseWriter.WriteHeader(statusCode)
+func (r *Response) WriteHeader(statusCode int) {
+   r.statusCode = statusCode
+   r.ResponseWriter.WriteHeader(statusCode)
 }
 
 // WriteEntity marshals the value using the representation denoted by the Accept Header (XML or JSON)

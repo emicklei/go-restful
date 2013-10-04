@@ -229,5 +229,5 @@ func (c Container) computeAllowedMethods(req *Request) []string {
 func newBasicRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {
 	accept := httpRequest.Header.Get(HEADER_Accept)
 	return &Request{httpRequest, map[string]string{}}, // empty parameters
-		&Response{httpWriter, accept, []string{}} // empty content-types
+		&Response{httpWriter, accept, []string{}, http.StatusOK} // empty content-types
 }

@@ -43,7 +43,7 @@ func (self *Route) wrapRequestResponse(httpWriter http.ResponseWriter, httpReque
 	params := self.extractParameters(httpRequest.URL.Path)
 	accept := httpRequest.Header.Get(HEADER_Accept)
 	wrappedRequest := &Request{httpRequest, params}
-	wrappedResponse := &Response{httpWriter, accept, self.Produces}
+	wrappedResponse := &Response{httpWriter, accept, self.Produces, http.StatusOK}
 	return wrappedRequest, wrappedResponse
 }
 
