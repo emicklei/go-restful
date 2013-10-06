@@ -1,6 +1,7 @@
 package restful
 
 import (
+	"io"
 	"testing"
 )
 
@@ -129,8 +130,8 @@ func Test_matchesRouteByPathTokens(t *testing.T) {
 // clear && go test -v -test.run TestCurly_ISSUE_34 ...restful
 func TestCurly_ISSUE_34(t *testing.T) {
 	ws1 := new(WebService).Path("/")
-	ws1.Route(ws1.GET("/{type}/{id}"))
-	ws1.Route(ws1.GET("/network/{id}"))
+	ws1.Route(ws1.GET("/{type}/{id}").To(curlyDummy))
+	ws1.Route(ws1.GET("/network/{id}").To(curlyDummy))
 	routes := CurlyRouter{}.selectRoutes(ws1, nil, tokenizePath("/network/12"))
 	if len(routes) != 2 {
 		t.Fatal("expected 2 routes")
@@ -143,8 +144,8 @@ func TestCurly_ISSUE_34(t *testing.T) {
 // clear && go test -v -test.run TestCurly_ISSUE_34_2 ...restful
 func TestCurly_ISSUE_34_2(t *testing.T) {
 	ws1 := new(WebService).Path("/")
-	ws1.Route(ws1.GET("/network/{id}"))
-	ws1.Route(ws1.GET("/{type}/{id}"))
+	ws1.Route(ws1.GET("/network/{id}").To(curlyDummy))
+	ws1.Route(ws1.GET("/{type}/{id}").To(curlyDummy))
 	routes := CurlyRouter{}.selectRoutes(ws1, nil, tokenizePath("/network/12"))
 	if len(routes) != 2 {
 		t.Fatal("expected 2 routes")
@@ -153,3 +154,5 @@ func TestCurly_ISSUE_34_2(t *testing.T) {
 		t.Error("first is", routes[0].Path)
 	}
 }
+
+func curlyDummy(req *Request, resp *Response) { io.WriteString(resp.ResponseWriter, "curlyDummy") }

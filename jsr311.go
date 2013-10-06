@@ -12,8 +12,8 @@ import (
 	"net/http"
 	"sort"
 	//"strconv"
-	//"github.com/emicklei/hopwatch"
 	"fmt"
+	//"github.com/emicklei/hopwatch"
 )
 
 type RouterJSR311 struct{}
@@ -114,7 +114,6 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 		return []Route{}
 	}
 	sort.Sort(sort.Reverse(filtered))
-	//hopwatch.Dump(filtered)
 
 	// select other routes from candidates whoes expression matches rmatch
 	matchingRoutes := []Route{filtered.candidates[0].route}

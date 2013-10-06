@@ -1,6 +1,7 @@
 package restful
 
 import (
+	"io"
 	"sort"
 	"testing"
 )
@@ -63,8 +64,8 @@ func TestDetectDispatcher(t *testing.T) {
 // go test -v -test.run TestISSUE_30 ...restful
 func TestISSUE_30(t *testing.T) {
 	ws1 := new(WebService).Path("/users")
-	ws1.Route(ws1.GET("/{id}"))
-	ws1.Route(ws1.POST("/login"))
+	ws1.Route(ws1.GET("/{id}").To(dummy))
+	ws1.Route(ws1.POST("/login").To(dummy))
 	routes := RouterJSR311{}.selectRoutes(ws1, "/login")
 	if len(routes) != 2 {
 		t.Fatal("expected 2 routes")
@@ -78,8 +79,8 @@ func TestISSUE_30(t *testing.T) {
 // go test -v -test.run TestISSUE_34 ...restful
 func TestISSUE_34(t *testing.T) {
 	ws1 := new(WebService).Path("/")
-	ws1.Route(ws1.GET("/{type}/{id}"))
-	ws1.Route(ws1.GET("/network/{id}"))
+	ws1.Route(ws1.GET("/{type}/{id}").To(dummy))
+	ws1.Route(ws1.GET("/network/{id}").To(dummy))
 	routes := RouterJSR311{}.selectRoutes(ws1, "/network/12")
 	if len(routes) != 2 {
 		t.Fatal("expected 2 routes")
@@ -94,8 +95,8 @@ func TestISSUE_34(t *testing.T) {
 func TestISSUE_34_2(t *testing.T) {
 	ws1 := new(WebService).Path("/")
 	// change the registration order
-	ws1.Route(ws1.GET("/network/{id}"))
-	ws1.Route(ws1.GET("/{type}/{id}"))
+	ws1.Route(ws1.GET("/network/{id}").To(dummy))
+	ws1.Route(ws1.GET("/{type}/{id}").To(dummy))
 	routes := RouterJSR311{}.selectRoutes(ws1, "/network/12")
 	if len(routes) != 2 {
 		t.Fatal("expected 2 routes")
@@ -107,32 +108,32 @@ func TestISSUE_34_2(t *testing.T) {
 
 func TestSelectRoutesSlash(t *testing.T) {
 	ws1 := new(WebService).Path("/")
-	ws1.Route(ws1.GET(""))
-	ws1.Route(ws1.GET("/"))
-	ws1.Route(ws1.GET("/u"))
-	ws1.Route(ws1.POST("/u"))
-	ws1.Route(ws1.POST("/u/v"))
-	ws1.Route(ws1.POST("/u/{w}"))
-	ws1.Route(ws1.POST("/u/{w}/z"))
+	ws1.Route(ws1.GET("").To(dummy))
+	ws1.Route(ws1.GET("/").To(dummy))
+	ws1.Route(ws1.GET("/u").To(dummy))
+	ws1.Route(ws1.POST("/u").To(dummy))
+	ws1.Route(ws1.POST("/u/v").To(dummy))
+	ws1.Route(ws1.POST("/u/{w}").To(dummy))
+	ws1.Route(ws1.POST("/u/{w}/z").To(dummy))
 	routes := RouterJSR311{}.selectRoutes(ws1, "/u")
 	checkRoutesContains(routes, "/u", t)
 }
 func TestSelectRoutesU(t *testing.T) {
 	ws1 := new(WebService).Path("/u")
-	ws1.Route(ws1.GET(""))
-	ws1.Route(ws1.GET("/"))
-	ws1.Route(ws1.GET("/v"))
-	ws1.Route(ws1.POST("/{w}"))
-	ws1.Route(ws1.POST("/{w}/z"))                    // so full path = /u/{w}/z
+	ws1.Route(ws1.GET("").To(dummy))
+	ws1.Route(ws1.GET("/").To(dummy))
+	ws1.Route(ws1.GET("/v").To(dummy))
+	ws1.Route(ws1.POST("/{w}").To(dummy))
+	ws1.Route(ws1.POST("/{w}/z").To(dummy))          // so full path = /u/{w}/z
 	routes := RouterJSR311{}.selectRoutes(ws1, "/v") // test against /u/v
 	checkRoutesContains(routes, "/u/{w}", t)
 }
 
 func TestSelectRoutesUsers1(t *testing.T) {
 	ws1 := new(WebService).Path("/users")
-	ws1.Route(ws1.POST(""))
-	ws1.Route(ws1.POST("/"))
-	ws1.Route(ws1.PUT("/{id}"))
+	ws1.Route(ws1.POST("").To(dummy))
+	ws1.Route(ws1.POST("/").To(dummy))
+	ws1.Route(ws1.PUT("/{id}").To(dummy))
 	routes := RouterJSR311{}.selectRoutes(ws1, "/1")
 	checkRoutesContains(routes, "/users/{id}", t)
 }
@@ -204,3 +205,5 @@ func TestSortableRouteCandidates(t *testing.T) {
 		t.Fatal("expected r1")
 	}
 }
+
+func dummy(req *Request, resp *Response) { io.WriteString(resp.ResponseWriter, "dummy") }

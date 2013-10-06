@@ -49,8 +49,8 @@ func (self *Route) wrapRequestResponse(httpWriter http.ResponseWriter, httpReque
 	return wrappedRequest, wrappedResponse
 }
 
-// Extract any path parameters from the the request URL path and call the function
-func (self *Route) dispatch(wrappedRequest *Request, wrappedResponse *Response) {
+// dispatchWithFilters call the function after passing through its own filters
+func (self *Route) dispatchWithFilters(wrappedRequest *Request, wrappedResponse *Response) {
 	if len(self.Filters) > 0 {
 		chain := FilterChain{Filters: self.Filters, Target: self.Function}
 		chain.ProcessFilter(wrappedRequest, wrappedResponse)

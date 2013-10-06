@@ -83,6 +83,12 @@ func (c *Container) Add(service *WebService) *Container {
 			}
 		}
 	}
+	// cannot have duplicate root paths
+	for _, each := range c.webServices {
+		if each.RootPath() == service.RootPath() {
+			log.Fatalf("[restful] WebService with duplicate root path detected:['%s']", each.RootPath())
+		}
+	}
 	c.webServices = append(c.webServices, service)
 	//hopwatch.Dump(c)
 	return c
@@ -136,41 +142,35 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 			}()
 		}
 	}
-
-	// Process any container filters
-	if len(c.containerFilters) > 0 {
-		wrappedRequest, wrappedResponse := newBasicRequestResponse(writer, httpRequest)
-		proceed := false
-		chain := FilterChain{Filters: c.containerFilters, Target: func(req *Request, resp *Response) {
-			// we passed all filters
-			proceed = true
-		}}
-		chain.ProcessFilter(wrappedRequest, wrappedResponse)
-		if !proceed {
-			return
-		}
-	}
 	// Find best match Route ; detected is false if no match was found
 	webService, route, detected := c.router.SelectRoute(
 		c.webServices,
 		httpWriter,
 		httpRequest)
-	if detected {
-		// pass through filters (if any)
-		filters := webService.filters
-		wrappedRequest, wrappedResponse := route.wrapRequestResponse(writer, httpRequest)
-		if len(filters) > 0 {
-			chain := FilterChain{Filters: filters, Target: func(req *Request, resp *Response) {
-				// handle request by route after passed all filters
-				route.dispatch(wrappedRequest, wrappedResponse)
-			}}
-			chain.ProcessFilter(wrappedRequest, wrappedResponse)
-		} else {
-			// handle request by route
-			route.dispatch(wrappedRequest, wrappedResponse)
-		}
+	if !detected {
+		// a non-200 response has already been written
+		// run container filters anyway ; they should not touch the response...
+		chain := FilterChain{Filters: c.containerFilters, Target: func(req *Request, resp *Response) {}} // nop
+		chain.ProcessFilter(newRequest(httpRequest), newResponse(writer))
+		return
 	}
-	// else a non-200 response has already been written
+	wrappedRequest, wrappedResponse := route.wrapRequestResponse(writer, httpRequest)
+	// pass through filters (if any)
+	if len(c.containerFilters)+len(webService.filters)+len(route.Filters) > 0 {
+		// compose filter chain
+		allFilters := []FilterFunction{}
+		allFilters = append(allFilters, c.containerFilters...)
+		allFilters = append(allFilters, webService.filters...)
+		allFilters = append(allFilters, route.Filters...)
+		chain := FilterChain{Filters: allFilters, Target: func(req *Request, resp *Response) {
+			// handle request by route after passing all filters
+			route.Function(wrappedRequest, wrappedResponse)
+		}}
+		chain.ProcessFilter(wrappedRequest, wrappedResponse)
+	} else {
+		// no filters, handle request by route
+		route.Function(wrappedRequest, wrappedResponse)
+	}
 }
 
 // fixedPrefixPath returns the fixed part of the partspec ; it may include template vars {}

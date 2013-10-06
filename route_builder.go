@@ -124,6 +124,9 @@ func (b *RouteBuilder) Build() Route {
 	if err != nil {
 		log.Fatalf("[restful] Invalid path:%s because:%v", b.currentPath, err)
 	}
+	if b.function == nil {
+		log.Fatalf("[restful] No function specified for route:" + b.currentPath)
+	}
 	route := Route{
 		Method:        b.httpMethod,
 		Path:          concatPath(b.rootPath, b.currentPath),

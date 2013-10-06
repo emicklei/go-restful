@@ -1,7 +1,6 @@
 package restful
 
 import (
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,7 +11,7 @@ import (
 func TestCORSFilter_Preflight(t *testing.T) {
 	tearDown()
 	ws := new(WebService)
-	ws.Route(ws.PUT("/cors"))
+	ws.Route(ws.PUT("/cors").To(dummy))
 	Add(ws)
 
 	cors := CrossOriginResourceSharing{
@@ -24,12 +23,14 @@ func TestCORSFilter_Preflight(t *testing.T) {
 
 	// Preflight
 	httpRequest, _ := http.NewRequest("OPTIONS", "http://api.alice.com/cors", nil)
+	httpRequest.Method = "OPTIONS"
 	httpRequest.Header.Set(HEADER_Origin, "http://api.bob.com")
 	httpRequest.Header.Set(HEADER_AccessControlRequestMethod, "PUT")
 	httpRequest.Header.Set(HEADER_AccessControlRequestHeaders, "X-Custom-Header")
 
 	httpWriter := httptest.NewRecorder()
 	DefaultContainer.dispatch(httpWriter, httpRequest)
+
 	actual := httpWriter.Header().Get(HEADER_AccessControlAllowOrigin)
 	if "http://api.bob.com" != actual {
 		t.Fatal("expected: http://api.bob.com but got:" + actual)
@@ -49,7 +50,7 @@ func TestCORSFilter_Preflight(t *testing.T) {
 func TestCORSFilter_Actual(t *testing.T) {
 	tearDown()
 	ws := new(WebService)
-	ws.Route(ws.PUT("/cors").To(handleActualPut))
+	ws.Route(ws.PUT("/cors").To(dummy))
 	Add(ws)
 
 	cors := CrossOriginResourceSharing{
@@ -70,9 +71,7 @@ func TestCORSFilter_Actual(t *testing.T) {
 	if "http://api.bob.com" != actual {
 		t.Fatal("expected: http://api.bob.com but got:" + actual)
 	}
-	if httpWriter.Body.String() != "putted" {
-		t.Fatal("expected: putted but got:" + actual)
+	if httpWriter.Body.String() != "dummy" {
+		t.Fatal("expected: dummy but got:" + httpWriter.Body.String())
 	}
 }
-
-func handleActualPut(req *Request, resp *Response) { io.WriteString(resp.ResponseWriter, "putted") }

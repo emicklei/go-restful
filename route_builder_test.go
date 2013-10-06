@@ -14,6 +14,7 @@ func TestRouteBuilder_PathParameter(t *testing.T) {
 	p.bePath()
 
 	b := new(RouteBuilder)
+	b.function = dummy
 	b.Param(p)
 	r := b.Build()
 	if !r.ParameterDocs[0].Data().AllowMultiple {
@@ -36,6 +37,7 @@ func TestRouteBuilder_PathParameter(t *testing.T) {
 func TestRouteBuilder(t *testing.T) {
 	json := "application/json"
 	b := new(RouteBuilder)
+	b.To(dummy)
 	b.Path("/routes").Method("HEAD").Consumes(json).Produces(json)
 	r := b.Build()
 	if r.Path != "/routes" {
