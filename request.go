@@ -39,6 +39,18 @@ func (r *Request) QueryParameter(name string) string {
 	return r.Request.FormValue(name)
 }
 
+func (r *Request) BodyParameter(name string) (string, error) {
+	attr := r.Attribute("x-restful-parse-form")
+	if attr == nil || (attr != nil && !attr.(bool)) {
+		err := r.Request.ParseForm()
+		if err != nil {
+			return "", err
+		}
+		r.SetAttribute("x-restful-parse-form", true)
+	}
+	return r.Request.PostFormValue(name), nil
+}
+
 // HeaderParameter returns the HTTP Header value of a Header name or empty if missing
 func (r *Request) HeaderParameter(name string) string {
 	return r.Request.Header.Get(name)
