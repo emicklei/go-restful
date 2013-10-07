@@ -57,3 +57,5 @@ examples/restful-options-filter
 examples/restful-curly-router
 
 examples/restful-cpuprofiler-service
+
+examples/restful-pre-post-filters
