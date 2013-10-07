@@ -40,13 +40,9 @@ func (r *Request) QueryParameter(name string) string {
 }
 
 func (r *Request) BodyParameter(name string) (string, error) {
-	attr := r.Attribute("x-restful-parse-form")
-	if attr == nil || (attr != nil && !attr.(bool)) {
-		err := r.Request.ParseForm()
-		if err != nil {
-			return "", err
-		}
-		r.SetAttribute("x-restful-parse-form", true)
+	err := r.Request.ParseForm()
+	if err != nil {
+		return "", err
 	}
 	return r.Request.PostFormValue(name), nil
 }
