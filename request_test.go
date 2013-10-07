@@ -56,6 +56,24 @@ func TestReadEntityJsonCharset(t *testing.T) {
 	}
 }
 
+func TestBodyParameter(t *testing.T) {
+	bodyReader := strings.NewReader(`value1=42&value2=43`)
+	httpRequest, _ := http.NewRequest("POST", "/test?value1=44", bodyReader) // POST and PUT body parameters take precedence over URL query string
+	httpRequest.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	request := newRequest(httpRequest)
+	v1, err := request.BodyParameter("value1")
+	if err != nil {
+		t.Error(err)
+	}
+	v2, err := request.BodyParameter("value2")
+	if err != nil {
+		t.Error(err)
+	}
+	if v1 != "42" || v2 != "43" {
+		t.Fatal("read failed")
+	}
+}
+
 func TestReadEntityUnkown(t *testing.T) {
 	bodyReader := strings.NewReader("?")
 	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
