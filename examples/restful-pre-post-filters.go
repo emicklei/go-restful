@@ -7,6 +7,12 @@ import (
 	"net/http"
 )
 
+// This example shows how the different types of filters are called in the request-response flow.
+// The call chain is logged on the console when sending an http request.
+//
+// GET http://localhost:8080/1
+// GET http://localhost:8080/2
+
 var indentLevel int
 
 func container_filter_A(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {

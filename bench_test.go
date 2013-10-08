@@ -8,7 +8,7 @@ import (
 
 var uris = []string{}
 
-func setup() {
+func setup(container *Container) {
 	wsCount := 26
 	rtCount := 26
 
@@ -19,7 +19,7 @@ func setup() {
 			sub := fmt.Sprintf("/%s2/{%s2}", string(j+97), string(j+97))
 			ws.Route(ws.GET(sub).To(echo))
 		}
-		Add(ws)
+		container.Add(ws)
 		for _, each := range ws.Routes() {
 			uris = append(uris, "http://bench.com"+each.Path)
 		}
@@ -31,12 +31,13 @@ func echo(req *Request, resp *Response) {
 }
 
 func BenchmarkMany(b *testing.B) {
-	setup()
+	container := NewContainer()
+	setup(container)
 	b.ResetTimer()
 	for t := 0; t < b.N; t++ {
 		for _, each := range uris {
 			// println(each)
-			sendIt(each)
+			sendItTo(each, container)
 		}
 	}
 }

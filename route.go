@@ -34,34 +34,34 @@ type Route struct {
 }
 
 // Initialize for Route
-func (self *Route) postBuild() {
-	self.pathParts = tokenizePath(self.Path)
+func (r *Route) postBuild() {
+	r.pathParts = tokenizePath(r.Path)
 }
 
 // Create Request and Response from their http versions
-func (self *Route) wrapRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {
-	params := self.extractParameters(httpRequest.URL.Path)
+func (r *Route) wrapRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {
+	params := r.extractParameters(httpRequest.URL.Path)
 	wrappedRequest := newRequest(httpRequest)
 	wrappedRequest.pathParameters = params
 	wrappedResponse := newResponse(httpWriter)
 	wrappedResponse.accept = httpRequest.Header.Get(HEADER_Accept)
-	wrappedResponse.produces = self.Produces
+	wrappedResponse.produces = r.Produces
 	return wrappedRequest, wrappedResponse
 }
 
 // dispatchWithFilters call the function after passing through its own filters
-func (self *Route) dispatchWithFilters(wrappedRequest *Request, wrappedResponse *Response) {
-	if len(self.Filters) > 0 {
-		chain := FilterChain{Filters: self.Filters, Target: self.Function}
+func (r *Route) dispatchWithFilters(wrappedRequest *Request, wrappedResponse *Response) {
+	if len(r.Filters) > 0 {
+		chain := FilterChain{Filters: r.Filters, Target: r.Function}
 		chain.ProcessFilter(wrappedRequest, wrappedResponse)
 	} else {
 		// unfiltered
-		self.Function(wrappedRequest, wrappedResponse)
+		r.Function(wrappedRequest, wrappedResponse)
 	}
 }
 
 // Return whether the mimeType matches to what this Route can produce.
-func (self Route) matchesAccept(mimeTypesWithQuality string) bool {
+func (r Route) matchesAccept(mimeTypesWithQuality string) bool {
 	parts := strings.Split(mimeTypesWithQuality, ",")
 	for _, each := range parts {
 		var withoutQuality string
@@ -73,7 +73,7 @@ func (self Route) matchesAccept(mimeTypesWithQuality string) bool {
 		if withoutQuality == "*/*" {
 			return true
 		}
-		for _, other := range self.Produces {
+		for _, other := range r.Produces {
 			if other == withoutQuality {
 				return true
 			}
@@ -83,7 +83,7 @@ func (self Route) matchesAccept(mimeTypesWithQuality string) bool {
 }
 
 // Return whether the mimeType matches to what this Route can consume.
-func (self Route) matchesContentType(mimeTypes string) bool {
+func (r Route) matchesContentType(mimeTypes string) bool {
 	parts := strings.Split(mimeTypes, ",")
 	for _, each := range parts {
 		var contentType string
@@ -92,7 +92,7 @@ func (self Route) matchesContentType(mimeTypes string) bool {
 		} else {
 			contentType = each
 		}
-		for _, other := range self.Consumes {
+		for _, other := range r.Consumes {
 			if other == "*/*" || other == contentType {
 				return true
 			}
@@ -102,10 +102,10 @@ func (self Route) matchesContentType(mimeTypes string) bool {
 }
 
 // Extract the parameters from the request url path
-func (self Route) extractParameters(urlPath string) map[string]string {
+func (r Route) extractParameters(urlPath string) map[string]string {
 	urlParts := tokenizePath(urlPath)
 	pathParameters := map[string]string{}
-	for i, key := range self.pathParts {
+	for i, key := range r.pathParts {
 		var value string
 		if i >= len(urlParts) {
 			value = ""

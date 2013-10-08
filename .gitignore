@@ -59,3 +59,5 @@ examples/restful-curly-router
 examples/restful-cpuprofiler-service
 
 examples/restful-pre-post-filters
+
+curly.prof

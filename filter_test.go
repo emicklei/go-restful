@@ -131,3 +131,11 @@ func sendIt(address string) string {
 	DefaultContainer.dispatch(httpWriter, httpRequest)
 	return httpWriter.Body.String()
 }
+
+func sendItTo(address string, container *Container) string {
+	httpRequest, _ := http.NewRequest("GET", address, nil)
+	httpRequest.Header.Set("Accept", "*/*")
+	httpWriter := httptest.NewRecorder()
+	container.dispatch(httpWriter, httpRequest)
+	return httpWriter.Body.String()
+}

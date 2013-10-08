@@ -8,11 +8,11 @@ import (
 
 var uris_curly = []string{}
 
-func setupCurly() {
+func setupCurly(container *Container) {
 	wsCount := 26
 	rtCount := 26
 
-	DefaultContainer.Router(CurlyRouter{})
+	container.Router(CurlyRouter{})
 	for i := 0; i < wsCount; i++ {
 		root := fmt.Sprintf("/%s/{%s}/", string(i+97), string(i+97))
 		ws := new(WebService).Path(root)
@@ -20,7 +20,7 @@ func setupCurly() {
 			sub := fmt.Sprintf("/%s2/{%s2}", string(j+97), string(j+97))
 			ws.Route(ws.GET(sub).To(echoCurly))
 		}
-		Add(ws)
+		container.Add(ws)
 		for _, each := range ws.Routes() {
 			uris = append(uris, "http://bench.com"+each.Path)
 		}
@@ -32,12 +32,13 @@ func echoCurly(req *Request, resp *Response) {
 }
 
 func BenchmarkManyCurly(b *testing.B) {
-	setupCurly()
+	container := NewContainer()
+	setupCurly(container)
 	b.ResetTimer()
 	for t := 0; t < b.N; t++ {
 		for _, each := range uris_curly {
 			// println(each)
-			sendIt(each)
+			sendItTo(each, container)
 		}
 	}
 }
