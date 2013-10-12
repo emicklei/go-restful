@@ -156,7 +156,6 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 				ser := err.(ServiceError)
 				httpWriter.WriteHeader(ser.Code)
 				httpWriter.Write([]byte(ser.Message))
-			default:
 			}
 
 			// err
