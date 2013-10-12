@@ -13,6 +13,5 @@ type RouteSelector interface {
 	// The HTTP writer is be used to directly communicate non-200 HTTP stati.
 	SelectRoute(
 		webServices []*WebService,
-		httpWriter http.ResponseWriter,
 		httpRequest *http.Request) (selectedService *WebService, selected *Route, err error)
 }

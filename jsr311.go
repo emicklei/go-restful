@@ -20,7 +20,6 @@ type RouterJSR311 struct{}
 
 func (r RouterJSR311) SelectRoute(
 	webServices []*WebService,
-	httpWriter http.ResponseWriter,
 	httpRequest *http.Request) (selectedService *WebService, selectedRoute *Route, err error) {
 
 	// Identify the root resource class (WebService)
@@ -33,12 +32,12 @@ func (r RouterJSR311) SelectRoute(
 	routes := r.selectRoutes(dispatcher, finalMatch)
 
 	// Identify the method (Route) that will handle the request
-	route, ok := r.detectRoute(routes, httpWriter, httpRequest)
+	route, ok := r.detectRoute(routes, httpRequest)
 	return dispatcher, route, ok
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
-func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *http.Request) (*Route, error) {
+func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*Route, error) {
 	// http method
 	methodOk := []Route{}
 	for _, each := range routes {
@@ -47,8 +46,6 @@ func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter
 		}
 	}
 	if len(methodOk) == 0 {
-		// httpWriter.WriteHeader(http.StatusMethodNotAllowed)
-		// httpWriter.Write([]byte())
 		return nil, NewError(http.StatusMethodNotAllowed, "405: Method Not Allowed")
 	}
 	inputMediaOk := methodOk
@@ -62,8 +59,6 @@ func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter
 			}
 		}
 		if len(inputMediaOk) == 0 {
-			// httpWriter.WriteHeader(http.StatusUnsupportedMediaType)
-			// httpWriter.Write([]byte("415: Unsupported Media Type"))
 			return nil, NewError(http.StatusUnsupportedMediaType, "415: Unsupported Media Type")
 		}
 	}
@@ -79,8 +74,6 @@ func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter
 		}
 	}
 	if len(outputMediaOk) == 0 {
-		// httpWriter.WriteHeader(http.StatusNotAcceptable)
-		// httpWriter.Write([]byte("406: Not Acceptable"))
 		return &Route{}, NewError(http.StatusNotAcceptable, "406: Not Acceptable")
 	}
 	return r.bestMatchByMedia(outputMediaOk, contentType, accept), nil

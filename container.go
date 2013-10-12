@@ -145,7 +145,6 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 	// Find best match Route ; err is non nil if no match was found
 	webService, route, err := c.router.SelectRoute(
 		c.webServices,
-		httpWriter,
 		httpRequest)
 	if err != nil {
 		// a non-200 response has already been written

@@ -19,7 +19,6 @@ type CurlyRouter struct{}
 // The HTTP writer is be used to directly communicate non-200 HTTP stati.
 func (c CurlyRouter) SelectRoute(
 	webServices []*WebService,
-	httpWriter http.ResponseWriter,
 	httpRequest *http.Request) (selectedService *WebService, selected *Route, err error) {
 
 	requestTokens := tokenizePath(httpRequest.URL.Path)
@@ -28,18 +27,18 @@ func (c CurlyRouter) SelectRoute(
 	if detectedService == nil {
 		return nil, nil, errors.New("no detected service")
 	}
-	candidateRoutes := c.selectRoutes(detectedService, httpWriter, requestTokens)
+	candidateRoutes := c.selectRoutes(detectedService, requestTokens)
 	if len(candidateRoutes) == 0 {
 		return detectedService, nil, errors.New("no candidate routes")
 	}
-	selectedRoute, err := c.detectRoute(candidateRoutes, httpWriter, httpRequest)
+	selectedRoute, err := c.detectRoute(candidateRoutes, httpRequest)
 	if selectedRoute == nil {
 		return detectedService, nil, err
 	}
 	return detectedService, selectedRoute, nil
 }
 
-func (c CurlyRouter) selectRoutes(ws *WebService, httpWriter http.ResponseWriter, requestTokens []string) []Route {
+func (c CurlyRouter) selectRoutes(ws *WebService, requestTokens []string) []Route {
 	candidates := &sortableCurlyRoutes{[]*curlyRoute{}}
 	for _, each := range ws.routes {
 		matches, paramCount, staticCount := c.matchesRouteByPathTokens(each.pathParts, requestTokens)
@@ -69,8 +68,8 @@ func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []strin
 	return true, paramCount, staticCount
 }
 
-func (c CurlyRouter) detectRoute(candidateRoutes []Route, httpWriter http.ResponseWriter, httpRequest *http.Request) (*Route, error) {
-	return RouterJSR311{}.detectRoute(candidateRoutes, httpWriter, httpRequest) // TODO change signature
+func (c CurlyRouter) detectRoute(candidateRoutes []Route, httpRequest *http.Request) (*Route, error) {
+	return RouterJSR311{}.detectRoute(candidateRoutes, httpRequest) // TODO change signature
 	// if found != nil{
 	// 	return route
 	// } else {
