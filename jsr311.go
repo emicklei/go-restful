@@ -21,13 +21,13 @@ type RouterJSR311 struct{}
 func (r RouterJSR311) SelectRoute(
 	webServices []*WebService,
 	httpWriter http.ResponseWriter,
-	httpRequest *http.Request) (selectedService *WebService, selectedRoute *Route, ok bool) {
+	httpRequest *http.Request) (selectedService *WebService, selectedRoute *Route, err error) {
 
 	// Identify the root resource class (WebService)
 	dispatcher, finalMatch, err := r.detectDispatcher(httpRequest.URL.Path, webServices)
 	if err != nil {
-		httpWriter.WriteHeader(http.StatusNotFound)
-		return nil, nil, false
+		// httpWriter.WriteHeader(http.StatusNotFound)
+		return nil, nil, NewError(http.StatusNotFound, "")
 	}
 	// Obtain the set of candidate methods (Routes)
 	routes := r.selectRoutes(dispatcher, finalMatch)
@@ -38,7 +38,7 @@ func (r RouterJSR311) SelectRoute(
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
-func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *http.Request) (*Route, bool) {
+func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter, httpRequest *http.Request) (*Route, error) {
 	// http method
 	methodOk := []Route{}
 	for _, each := range routes {
@@ -47,9 +47,9 @@ func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter
 		}
 	}
 	if len(methodOk) == 0 {
-		httpWriter.WriteHeader(http.StatusMethodNotAllowed)
-		httpWriter.Write([]byte("405: Method Not Allowed"))
-		return nil, false
+		// httpWriter.WriteHeader(http.StatusMethodNotAllowed)
+		// httpWriter.Write([]byte())
+		return nil, NewError(http.StatusMethodNotAllowed, "405: Method Not Allowed")
 	}
 	inputMediaOk := methodOk
 	// content-type
@@ -62,9 +62,9 @@ func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter
 			}
 		}
 		if len(inputMediaOk) == 0 {
-			httpWriter.WriteHeader(http.StatusUnsupportedMediaType)
-			httpWriter.Write([]byte("415: Unsupported Media Type"))
-			return nil, false
+			// httpWriter.WriteHeader(http.StatusUnsupportedMediaType)
+			// httpWriter.Write([]byte("415: Unsupported Media Type"))
+			return nil, NewError(http.StatusUnsupportedMediaType, "415: Unsupported Media Type")
 		}
 	}
 	// accept
@@ -79,11 +79,11 @@ func (r RouterJSR311) detectRoute(routes []Route, httpWriter http.ResponseWriter
 		}
 	}
 	if len(outputMediaOk) == 0 {
-		httpWriter.WriteHeader(http.StatusNotAcceptable)
-		httpWriter.Write([]byte("406: Not Acceptable"))
-		return &Route{}, false
+		// httpWriter.WriteHeader(http.StatusNotAcceptable)
+		// httpWriter.Write([]byte("406: Not Acceptable"))
+		return &Route{}, NewError(http.StatusNotAcceptable, "406: Not Acceptable")
 	}
-	return r.bestMatchByMedia(outputMediaOk, contentType, accept), true
+	return r.bestMatchByMedia(outputMediaOk, contentType, accept), nil
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2

@@ -14,5 +14,5 @@ type RouteSelector interface {
 	SelectRoute(
 		webServices []*WebService,
 		httpWriter http.ResponseWriter,
-		httpRequest *http.Request) (selectedService *WebService, selected *Route, ok bool)
+		httpRequest *http.Request) (selectedService *WebService, selected *Route, err error)
 }

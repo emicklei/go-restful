@@ -142,15 +142,28 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 			}()
 		}
 	}
-	// Find best match Route ; detected is false if no match was found
-	webService, route, detected := c.router.SelectRoute(
+	// Find best match Route ; err is non nil if no match was found
+	webService, route, err := c.router.SelectRoute(
 		c.webServices,
 		httpWriter,
 		httpRequest)
-	if !detected {
+	if err != nil {
 		// a non-200 response has already been written
 		// run container filters anyway ; they should not touch the response...
-		chain := FilterChain{Filters: c.containerFilters, Target: func(req *Request, resp *Response) {}} // nop
+		chain := FilterChain{Filters: c.containerFilters, Target: func(req *Request, resp *Response) {
+			switch err.(type) {
+			case ServiceError:
+				ser := err.(ServiceError)
+				httpWriter.WriteHeader(ser.Code)
+				httpWriter.Write([]byte(ser.Message))
+			default:
+			}
+
+			// err
+
+			// handle err here
+
+		}}
 		chain.ProcessFilter(newRequest(httpRequest), newResponse(writer))
 		return
 	}
