@@ -4,6 +4,8 @@ package restful
 // Use of this source code is governed by a license
 // that can be found in the LICENSE file.
 
+import "strings"
+
 // Cross-origin resource sharing (CORS) is a mechanism that allows JavaScript on a web page
 // to make XMLHttpRequests to another domain, not the domain the JavaScript originated from.
 //
@@ -54,9 +56,11 @@ func (c CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Respo
 	}
 	acrhs := req.Request.Header.Get(HEADER_AccessControlRequestHeaders)
 	if len(acrhs) > 0 {
-		if !c.isValidAccessControlRequestHeader(acrhs) {
-			chain.ProcessFilter(req, resp)
-			return
+		for _, each := range strings.Split(acrhs, ",") {
+			if !c.isValidAccessControlRequestHeader(strings.Trim(each, " ")) {
+				chain.ProcessFilter(req, resp)
+				return
+			}
 		}
 	}
 	resp.AddHeader(HEADER_AccessControlAllowMethods, toCommaSeparated(allowedMethods))

@@ -16,7 +16,7 @@ func TestCORSFilter_Preflight(t *testing.T) {
 
 	cors := CrossOriginResourceSharing{
 		ExposeHeaders:  []string{"X-Custom-Header"},
-		AllowedHeaders: []string{"X-Custom-Header"},
+		AllowedHeaders: []string{"X-Custom-Header", "X-Additional-Header"},
 		CookiesAllowed: true,
 		Container:      DefaultContainer}
 	Filter(cors.Filter)
@@ -26,7 +26,7 @@ func TestCORSFilter_Preflight(t *testing.T) {
 	httpRequest.Method = "OPTIONS"
 	httpRequest.Header.Set(HEADER_Origin, "http://api.bob.com")
 	httpRequest.Header.Set(HEADER_AccessControlRequestMethod, "PUT")
-	httpRequest.Header.Set(HEADER_AccessControlRequestHeaders, "X-Custom-Header")
+	httpRequest.Header.Set(HEADER_AccessControlRequestHeaders, "X-Custom-Header, X-Additional-Header")
 
 	httpWriter := httptest.NewRecorder()
 	DefaultContainer.dispatch(httpWriter, httpRequest)
@@ -40,8 +40,8 @@ func TestCORSFilter_Preflight(t *testing.T) {
 		t.Fatal("expected: PUT but got:" + actual)
 	}
 	actual = httpWriter.Header().Get(HEADER_AccessControlAllowHeaders)
-	if "X-Custom-Header" != actual {
-		t.Fatal("expected: X-Custom-Header but got:" + actual)
+	if "X-Custom-Header, X-Additional-Header" != actual {
+		t.Fatal("expected: X-Custom-Header, X-Additional-Header but got:" + actual)
 	}
 }
 
@@ -55,7 +55,7 @@ func TestCORSFilter_Actual(t *testing.T) {
 
 	cors := CrossOriginResourceSharing{
 		ExposeHeaders:  []string{"X-Custom-Header"},
-		AllowedHeaders: []string{"X-Custom-Header"},
+		AllowedHeaders: []string{"X-Custom-Header", "X-Additional-Header"},
 		CookiesAllowed: true,
 		Container:      DefaultContainer}
 	Filter(cors.Filter)
