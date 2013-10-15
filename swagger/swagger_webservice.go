@@ -8,14 +8,13 @@ import (
 	"reflect"
 )
 
-const swaggerVersion = "1.1"
-
 var config Config
 
 // InstallSwaggerService add the WebService that provides the API documentation of all services
 // conform the Swagger documentation specifcation. (https://github.com/wordnik/swagger-core/wiki).
 // DEPRECATED , use RegisterSwaggerService(...)
 func InstallSwaggerService(aSwaggerConfig Config) {
+	println("[restful] DEPRECATED, use RegisterSwaggerService")
 	RegisterSwaggerService(aSwaggerConfig, restful.DefaultContainer)
 }
 
@@ -56,7 +55,7 @@ func enableCORS(req *restful.Request, resp *restful.Response, chain *restful.Fil
 }
 
 func getListing(req *restful.Request, resp *restful.Response) {
-	listing := ResourceListing{SwaggerVersion: swaggerVersion, BasePath: config.WebServicesUrl}
+	listing := ResourceListing{SwaggerVersion: swaggerVersion}
 	for _, each := range config.WebServices {
 		// skip the api service itself
 		if each.RootPath() != config.ApiPath {
@@ -70,10 +69,12 @@ func getListing(req *restful.Request, resp *restful.Response) {
 }
 
 func getDeclarations(req *restful.Request, resp *restful.Response) {
-	rootPath := composeRootPath(req)
-	// log.Printf("rootPath:%V", rootPath)
-	decl := ApiDeclaration{SwaggerVersion: swaggerVersion, BasePath: config.WebServicesUrl, ResourcePath: rootPath}
-	for _, each := range config.WebServices {
+	resp.WriteAsJson(composeDeclaration(composeRootPath(req), config))
+}
+
+func composeDeclaration(rootPath string, configuration Config) ApiDeclaration {
+	decl := ApiDeclaration{SwaggerVersion: swaggerVersion, BasePath: configuration.WebServicesUrl, ResourcePath: rootPath}
+	for _, each := range configuration.WebServices {
 		// find the webservice
 		if each.RootPath() == rootPath {
 			// collect any path parameters
@@ -91,9 +92,9 @@ func getDeclarations(req *restful.Request, resp *restful.Response) {
 				api := Api{Path: path, Models: map[string]Model{}}
 				for _, route := range routes {
 					operation := Operation{HttpMethod: route.Method,
-						Summary:       route.Doc,
-						ResponseClass: asDataType(route.WriteSample),
-						Nickname:      route.Operation}
+						Summary:  route.Doc,
+						Type:     asDataType(route.WriteSample),
+						Nickname: route.Operation}
 
 					// share root params if any
 					for _, swparam := range rootParams {
@@ -110,7 +111,7 @@ func getDeclarations(req *restful.Request, resp *restful.Response) {
 			}
 		}
 	}
-	resp.WriteAsJson(decl)
+	return decl
 }
 
 // addModelsFromRoute takes any read or write sample from the Route and creates a Swagger model from it.
@@ -134,10 +135,8 @@ func addModelFromSample(api *Api, operation *Operation, isResponse bool, sample 
 	modelName := st.String()
 	if isResponse {
 		if isCollection {
-			modelName = "Array[" + modelName + "]"
+			modelName = "array[" + modelName + "]"
 		}
-		operation.ResponseClass = modelName
-	} else {
 		operation.Type = modelName
 	}
 	addModelToApi(api, reflect.TypeOf(sample))
@@ -149,7 +148,7 @@ func addModelToApi(api *Api, st reflect.Type) {
 	if _, ok := api.Models[modelName]; ok {
 		return
 	}
-	sm := Model{modelName, map[string]ModelProperty{}}
+	sm := Model{modelName, []string{}, map[string]ModelProperty{}}
 	// store before further initializing
 	api.Models[modelName] = sm
 	// check for structure or primitive type
@@ -170,7 +169,7 @@ func asModelProperty(sf reflect.StructField, api *Api) ModelProperty {
 	prop := ModelProperty{}
 	st := sf.Type
 	if st.Kind() == reflect.Slice || st.Kind() == reflect.Array {
-		prop.Type = "List"
+		prop.Type = "array"
 		prop.Items = map[string]string{"$ref": st.Elem().String()}
 		// add|overwrite model for element type
 		addModelToApi(api, st.Elem())
@@ -185,7 +184,8 @@ func asSwaggerParameter(param restful.ParameterData) Parameter {
 		Name:        param.Name,
 		Description: param.Description,
 		ParamType:   asParamType(param.Kind),
-		DataType:    param.DataType,
+		Type:        param.DataType,
+		Format:      asFormat(param.DataType),
 		Required:    param.Required}
 }
 
@@ -222,6 +222,10 @@ func composeRootPath(req *restful.Request) string {
 		return path
 	}
 	return path + "/" + g
+}
+
+func asFormat(name string) string {
+	return name // TODO
 }
 
 func asParamType(kind int) string {
