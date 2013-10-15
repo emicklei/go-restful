@@ -64,11 +64,13 @@ func (b *RouteBuilder) Doc(documentation string) *RouteBuilder {
 }
 
 // Reads tells what resource type will be read from the request payload. Optional.
+// A parameter of type "body" is added ,required is set to true and the dataType is set to the qualified name of the sample's type.
 func (b *RouteBuilder) Reads(sample interface{}) *RouteBuilder {
 	b.readSample = sample
-	typeAsName := reflect.TypeOf(sample).Name()
+	typeAsName := reflect.TypeOf(sample).String()
 	bodyParameter := &Parameter{&ParameterData{Name: typeAsName}}
 	bodyParameter.beBody()
+	bodyParameter.Required(true)
 	bodyParameter.DataType(typeAsName)
 	b.Param(bodyParameter)
 	return b

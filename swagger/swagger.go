@@ -26,6 +26,7 @@ type ApiDeclaration struct {
 type Operation struct {
 	HttpMethod     string          `json:"httpMethod"`
 	Nickname       string          `json:"nickname"`
+	Type           string          `json:"type"` // 1.1 = DataType
 	ResponseClass  string          `json:"responseClass"`
 	Summary        string          `json:"summary"`
 	Notes          string          `json:"notes"`

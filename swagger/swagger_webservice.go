@@ -8,6 +8,8 @@ import (
 	"reflect"
 )
 
+const swaggerVersion = "1.1"
+
 var config Config
 
 // InstallSwaggerService add the WebService that provides the API documentation of all services
@@ -54,7 +56,7 @@ func enableCORS(req *restful.Request, resp *restful.Response, chain *restful.Fil
 }
 
 func getListing(req *restful.Request, resp *restful.Response) {
-	listing := ResourceListing{SwaggerVersion: "1.1", BasePath: config.WebServicesUrl}
+	listing := ResourceListing{SwaggerVersion: swaggerVersion, BasePath: config.WebServicesUrl}
 	for _, each := range config.WebServices {
 		// skip the api service itself
 		if each.RootPath() != config.ApiPath {
@@ -70,7 +72,7 @@ func getListing(req *restful.Request, resp *restful.Response) {
 func getDeclarations(req *restful.Request, resp *restful.Response) {
 	rootPath := composeRootPath(req)
 	// log.Printf("rootPath:%V", rootPath)
-	decl := ApiDeclaration{SwaggerVersion: "1.1", BasePath: config.WebServicesUrl, ResourcePath: rootPath}
+	decl := ApiDeclaration{SwaggerVersion: swaggerVersion, BasePath: config.WebServicesUrl, ResourcePath: rootPath}
 	for _, each := range config.WebServices {
 		// find the webservice
 		if each.RootPath() == rootPath {
@@ -129,12 +131,14 @@ func addModelFromSample(api *Api, operation *Operation, isResponse bool, sample 
 		st = st.Elem()
 		isCollection = true
 	}
+	modelName := st.String()
 	if isResponse {
-		modelName := st.String()
 		if isCollection {
 			modelName = "Array[" + modelName + "]"
 		}
 		operation.ResponseClass = modelName
+	} else {
+		operation.Type = modelName
 	}
 	addModelToApi(api, reflect.TypeOf(sample))
 }
