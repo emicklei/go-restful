@@ -34,7 +34,7 @@ func (u UserService) Register() {
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
 		Writes(User{})) // on the response
 
-	ws.Route(ws.POST("").To(u.updateUser).
+	ws.Route(ws.PATCH("").To(u.updateUser).
 		// docs
 		Doc("update a user").
 		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
@@ -69,7 +69,7 @@ func (u UserService) findUser(request *restful.Request, response *restful.Respon
 	}
 }
 
-// POST http://localhost:8080/users/1
+// PATCH http://localhost:8080/users
 // <User><Id>1</Id><Name>Melissa Raspberry</Name></User>
 //
 func (u *UserService) updateUser(request *restful.Request, response *restful.Response) {
