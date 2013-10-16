@@ -35,14 +35,12 @@ func (u UserService) Register() {
 	ws.Route(ws.PUT("").To(u.updateUser).
 		// docs
 		Doc("update a user").
-		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
 		Reads(User{})) // from the request
 
 	ws.Route(ws.PUT("/{user-id}").To(u.createUser).
 		// docs
 		Doc("create a user").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
 		Reads(User{})) // from the request
 
 	ws.Route(ws.DELETE("/{user-id}").To(u.removeUser).
@@ -115,7 +113,7 @@ func main() {
 
 		// Optionally, specifiy where the UI is located
 		SwaggerPath:     "/apidocs/",
-		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7"}
+		SwaggerFilePath: "/Users/emicklei/Projects/swagger-ui/dist"}
 	swagger.InstallSwaggerService(config)
 
 	log.Printf("start listening on localhost:8080")

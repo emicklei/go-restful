@@ -12,7 +12,6 @@ var config Config
 
 // InstallSwaggerService add the WebService that provides the API documentation of all services
 // conform the Swagger documentation specifcation. (https://github.com/wordnik/swagger-core/wiki).
-// DEPRECATED , use RegisterSwaggerService(...)
 func InstallSwaggerService(aSwaggerConfig Config) {
 	RegisterSwaggerService(aSwaggerConfig, restful.DefaultContainer)
 }
@@ -47,8 +46,8 @@ func RegisterSwaggerService(aSwaggerConfig Config, wsContainer *restful.Containe
 }
 
 func enableCORS(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
-	if origin := req.HeaderParameter("Origin"); origin != "" {
-		resp.AddHeader("Access-Control-Allow-Origin", origin)
+	if origin := req.HeaderParameter(restful.HEADER_Origin); origin != "" {
+		resp.AddHeader(restful.HEADER_AccessControlAllowOrigin, origin)
 	}
 	chain.ProcessFilter(req, resp)
 }

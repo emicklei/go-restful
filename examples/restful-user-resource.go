@@ -50,14 +50,12 @@ func (u UserResource) Register(container *restful.Container) {
 	ws.Route(ws.PUT("").To(u.updateUser).
 		// docs
 		Doc("update a user").
-		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
 		Reads(User{})) // from the request
 
 	ws.Route(ws.PUT("/{user-id}").To(u.createUser).
 		// docs
 		Doc("create a user").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
 		Reads(User{})) // from the request
 
 	ws.Route(ws.DELETE("/{user-id}").To(u.removeUser).
