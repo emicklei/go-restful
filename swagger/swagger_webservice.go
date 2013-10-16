@@ -14,7 +14,6 @@ var config Config
 // conform the Swagger documentation specifcation. (https://github.com/wordnik/swagger-core/wiki).
 // DEPRECATED , use RegisterSwaggerService(...)
 func InstallSwaggerService(aSwaggerConfig Config) {
-	println("[restful] DEPRECATED, use RegisterSwaggerService")
 	RegisterSwaggerService(aSwaggerConfig, restful.DefaultContainer)
 }
 
@@ -60,7 +59,7 @@ func getListing(req *restful.Request, resp *restful.Response) {
 		// skip the api service itself
 		if each.RootPath() != config.ApiPath {
 			api := Api{
-				Path: config.ApiPath + each.RootPath()}
+				Path: each.RootPath()}
 			//Description: each.Doc}
 			listing.Apis = append(listing.Apis, api)
 		}
@@ -95,6 +94,9 @@ func composeDeclaration(rootPath string, configuration Config) ApiDeclaration {
 						Summary:  route.Doc,
 						Type:     asDataType(route.WriteSample),
 						Nickname: route.Operation}
+
+					operation.Consumes = route.Consumes
+					operation.Produces = route.Produces
 
 					// share root params if any
 					for _, swparam := range rootParams {
@@ -185,6 +187,7 @@ func asSwaggerParameter(param restful.ParameterData) Parameter {
 		Description: param.Description,
 		ParamType:   asParamType(param.Kind),
 		Type:        param.DataType,
+		DataType:    param.DataType,
 		Format:      asFormat(param.DataType),
 		Required:    param.Required}
 }
@@ -225,7 +228,7 @@ func composeRootPath(req *restful.Request) string {
 }
 
 func asFormat(name string) string {
-	return name // TODO
+	return "" // TODO
 }
 
 func asParamType(kind int) string {

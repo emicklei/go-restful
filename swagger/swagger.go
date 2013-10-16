@@ -55,8 +55,9 @@ type Parameter struct {
 	ParamType   string `json:"paramType"` // path,query,body,header,form
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	Type        string `json:"type"`   // integer
-	Format      string `json:"format"` // int64
+	DataType    string `json:"dataType"` // 1.2 needed?
+	Type        string `json:"type"`     // integer
+	Format      string `json:"format"`   // int64
 	Required    bool   `json:"required"`
 	Minimum     int    `json:"minimum"`
 	Maximum     int    `json:"maximum"`
