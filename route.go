@@ -66,10 +66,12 @@ func (r Route) matchesAccept(mimeTypesWithQuality string) bool {
 	for _, each := range parts {
 		var withoutQuality string
 		if strings.Contains(each, ";") {
-			withoutQuality = strings.Trim(strings.Split(each, ";")[0], " ")
+			withoutQuality = strings.Split(each, ";")[0]
 		} else {
 			withoutQuality = each
 		}
+		// trim before compare
+		withoutQuality = strings.Trim(withoutQuality, " ")
 		if withoutQuality == "*/*" {
 			return true
 		}
@@ -88,10 +90,12 @@ func (r Route) matchesContentType(mimeTypes string) bool {
 	for _, each := range parts {
 		var contentType string
 		if strings.Contains(each, ";") {
-			contentType = strings.Trim(strings.Split(each, ";")[0], " ")
+			contentType = strings.Split(each, ";")[0]
 		} else {
 			contentType = each
 		}
+		// trim before compare
+		contentType = strings.Trim(contentType, " ")
 		for _, other := range r.Consumes {
 			if other == "*/*" || other == contentType {
 				return true

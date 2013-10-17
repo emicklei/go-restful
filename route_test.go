@@ -13,6 +13,14 @@ func TestMatchesAcceptStar(t *testing.T) {
 }
 
 // accept should match produces
+func TestMatchesAcceptIE(t *testing.T) {
+	r := Route{Produces: []string{"application/xml"}}
+	if !r.matchesAccept("text/html, application/xhtml+xml, */*") {
+		t.Errorf("accept should match star")
+	}
+}
+
+// accept should match produces
 func TestMatchesAcceptXml(t *testing.T) {
 	r := Route{Produces: []string{"application/xml"}}
 	if r.matchesAccept("application/json") {
