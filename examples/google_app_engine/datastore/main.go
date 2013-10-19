@@ -44,7 +44,9 @@ func init() {
 	// Optionally, you can install the Swagger Service which provides a nice Web UI on your REST API
 	// You need to download the Swagger HTML5 assets and change the FilePath location in the config below.
 	// Open <your_app_id>.appspot.com/apidocs and enter
+	// Place the Swagger UI files into a folder called static/swagger if you wish to use Swagger
 	// http://<your_app_id>.appspot.com/apidocs.json in the api input field.
+	// For testing, you can use http://localhost:8080/apidocs.json
 	config := swagger.Config{
 		// You control what services are visible
 		WebServices:    restful.RegisteredWebServices(),
