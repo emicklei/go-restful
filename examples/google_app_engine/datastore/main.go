@@ -208,7 +208,7 @@ func (u *ProfileApi) update(r *restful.Request, w *restful.Response) {
 	// Since the whole entity is re-written, we need to assign any invariant fields again
 	// e.g. the owner of the entity.
 	p.Email = user.Current(c).String()
-g234gzq8ETus
+
 	// Keep track of the last modification date.
 	p.LastModified = time.Now()
 
