@@ -9,7 +9,9 @@ import (
 )
 
 // This example is functionally the same as ../restful-user-service.go
-// but it`s supposed to ron on Goole App Engine (GAE)
+// but it`s supposed to run on Goole App Engine (GAE)
+//
+// contributed by ivanhawkes
 
 type User struct {
 	Id, Name string
@@ -37,14 +39,12 @@ func (u UserService) Register() {
 	ws.Route(ws.PATCH("").To(u.updateUser).
 		// docs
 		Doc("update a user").
-		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
 		Reads(User{})) // from the request
 
 	ws.Route(ws.PUT("/{user-id}").To(u.createUser).
 		// docs
 		Doc("create a user").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-		Param(ws.BodyParameter("User", "representation of a user").DataType("main.User")).
 		Reads(User{})) // from the request
 
 	ws.Route(ws.DELETE("/{user-id}").To(u.removeUser).
