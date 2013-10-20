@@ -5,10 +5,10 @@ package restful
 // that can be found in the LICENSE file.
 
 const (
-	PATH_PARAMETER = iota // indicator of Request parameter type
-	QUERY_PARAMETER
-	BODY_PARAMETER
-	HEADER_PARAMETER
+	PATH_PARAMETER   = iota // indicator of Request parameter type "path"
+	QUERY_PARAMETER         // indicator of Request parameter type "query"
+	BODY_PARAMETER          // indicator of Request parameter type "body"
+	HEADER_PARAMETER        // indicator of Request parameter type "header"
 )
 
 // Parameter is for documententing the parameter used in a Http Request

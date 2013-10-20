@@ -18,6 +18,6 @@ func NewError(code int, message string) ServiceError {
 }
 
 // Error returns a text representation of the service error
-func (self ServiceError) Error() string {
-	return fmt.Sprintf("[ServiceError:%v] %v", self.Code, self.Message)
+func (s ServiceError) Error() string {
+	return fmt.Sprintf("[ServiceError:%v] %v", s.Code, s.Message)
 }

@@ -206,15 +206,15 @@ type sortableDispatcherCandidates struct {
 	candidates []dispatcherCandidate
 }
 
-func (self *sortableDispatcherCandidates) Len() int {
-	return len(self.candidates)
+func (dc *sortableDispatcherCandidates) Len() int {
+	return len(dc.candidates)
 }
-func (self *sortableDispatcherCandidates) Swap(i, j int) {
-	self.candidates[i], self.candidates[j] = self.candidates[j], self.candidates[i]
+func (dc *sortableDispatcherCandidates) Swap(i, j int) {
+	dc.candidates[i], dc.candidates[j] = dc.candidates[j], dc.candidates[i]
 }
-func (self *sortableDispatcherCandidates) Less(i, j int) bool {
-	ci := self.candidates[i]
-	cj := self.candidates[j]
+func (dc *sortableDispatcherCandidates) Less(i, j int) bool {
+	ci := dc.candidates[i]
+	cj := dc.candidates[j]
 	// primary key
 	if ci.matchesCount < cj.matchesCount {
 		return true
