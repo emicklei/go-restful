@@ -38,8 +38,8 @@ func NewContainer() *Container {
 		contentEncodingEnabled: false}
 }
 
-// If DoNotRecover then panics will not be caught to return HTTP 500.
-// In that case, Route functions are responsible for handling any error situation.
+// DoNotRecover controls whether panics will be caught to return HTTP 500.
+// If set to true, Route functions are responsible for handling any error situation.
 // Default value is false = recover from panics. This has performance implications.
 func (c *Container) DoNotRecover(doNot bool) {
 	c.doNotRecover = doNot
@@ -55,6 +55,7 @@ func (c *Container) EnableContentEncoding(enabled bool) {
 	c.contentEncodingEnabled = enabled
 }
 
+// Add a WebService to the Container. It will detect duplicate root paths and panic in that case.
 func (c *Container) Add(service *WebService) *Container {
 	if service.pathExpr == nil {
 		service.Path("") // lazy initialize path
@@ -86,7 +87,7 @@ func (c *Container) Add(service *WebService) *Container {
 	// cannot have duplicate root paths
 	for _, each := range c.webServices {
 		if each.RootPath() == service.RootPath() {
-			log.Fatalf("[restful] WebService with duplicate root path detected:['%s']", each.RootPath())
+			log.Fatalf("[restful] WebService with duplicate root path detected:['%v']", each)
 		}
 	}
 	c.webServices = append(c.webServices, service)

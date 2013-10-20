@@ -45,7 +45,7 @@ func (b *RouteBuilder) Produces(mimeTypes ...string) *RouteBuilder {
 	return b
 }
 
-// Specify what MIME types can be consumes ; the Accept Http header must matched any of these
+// Consumes specifies what MIME types can be consumes ; the Accept Http header must matched any of these
 func (b *RouteBuilder) Consumes(mimeTypes ...string) *RouteBuilder {
 	b.consumes = mimeTypes
 	return b

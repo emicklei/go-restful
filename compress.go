@@ -56,9 +56,8 @@ func wantsCompressedResponse(httpRequest *http.Request) (bool, string) {
 	} else {
 		if gi < zi {
 			return true, ENCODING_GZIP
-		} else {
-			return true, ENCODING_DEFLATE
 		}
+		return true, ENCODING_DEFLATE
 	}
 }
 

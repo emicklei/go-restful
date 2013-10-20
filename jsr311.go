@@ -4,20 +4,21 @@ package restful
 // Use of this source code is governed by a license
 // that can be found in the LICENSE file.
 
-// This file implements the flow for matching Requests to Routes (and consequently Resource Functions)
-// as specified by the JSR311 http://jsr311.java.net/nonav/releases/1.1/spec/spec.html.
-// Concept of locators is not implemented.
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"sort"
-	//"strconv"
-	"fmt"
-	//"github.com/emicklei/hopwatch"
 )
 
+// RouterJSR311 implements the flow for matching Requests to Routes (and consequently Resource Functions)
+// as specified by the JSR311 http://jsr311.java.net/nonav/releases/1.1/spec/spec.html.
+// RouterJSR311 implements the Router interface.
+// Concept of locators is not implemented.
 type RouterJSR311 struct{}
 
+// SelectRoute is part of the Router interface and returns the best match
+// for the WebService and its Route for the given Request.
 func (r RouterJSR311) SelectRoute(
 	webServices []*WebService,
 	httpRequest *http.Request) (selectedService *WebService, selectedRoute *Route, err error) {
@@ -158,15 +159,15 @@ type sortableRouteCandidates struct {
 	candidates []routeCandidate
 }
 
-func (self *sortableRouteCandidates) Len() int {
-	return len(self.candidates)
+func (rcs *sortableRouteCandidates) Len() int {
+	return len(rcs.candidates)
 }
-func (self *sortableRouteCandidates) Swap(i, j int) {
-	self.candidates[i], self.candidates[j] = self.candidates[j], self.candidates[i]
+func (rcs *sortableRouteCandidates) Swap(i, j int) {
+	rcs.candidates[i], rcs.candidates[j] = rcs.candidates[j], rcs.candidates[i]
 }
-func (self *sortableRouteCandidates) Less(i, j int) bool {
-	ci := self.candidates[i]
-	cj := self.candidates[j]
+func (rcs *sortableRouteCandidates) Less(i, j int) bool {
+	ci := rcs.candidates[i]
+	cj := rcs.candidates[j]
 	// primary key
 	if ci.literalCount < cj.literalCount {
 		return true

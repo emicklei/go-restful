@@ -5,7 +5,7 @@ package restful
 // that can be found in the LICENSE file.
 
 const (
-	PATH_PARAMETER = iota
+	PATH_PARAMETER = iota // indicator of Request parameter type
 	QUERY_PARAMETER
 	BODY_PARAMETER
 	HEADER_PARAMETER
@@ -17,6 +17,8 @@ type Parameter struct {
 	data *ParameterData
 }
 
+// ParameterData represents the state of a Parameter.
+// It is made public to make it accessible to e.g. the Swagger package.
 type ParameterData struct {
 	Name, Description, DataType string
 	Kind                        int
@@ -25,10 +27,12 @@ type ParameterData struct {
 	AllowMultiple               bool
 }
 
+// Data returns the state of the Parameter
 func (p *Parameter) Data() ParameterData {
 	return *p.data
 }
 
+// Kind returns the parameter type indicator (see const for valid values)
 func (p *Parameter) Kind() int {
 	return p.data.Kind
 }

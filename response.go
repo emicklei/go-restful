@@ -32,6 +32,7 @@ func newResponse(httpWriter http.ResponseWriter) *Response {
 	return &Response{httpWriter, "", []string{}, http.StatusOK} // empty content-types
 }
 
+// InternalServerError writes the StatusInternalServerError header.
 // DEPRECATED, use r.WriteHeader(http.StatusInternalServerError)
 func (r Response) InternalServerError() Response {
 	r.WriteHeader(http.StatusInternalServerError)
@@ -110,6 +111,7 @@ func (r Response) WriteAsJson(value interface{}) Response {
 	return r
 }
 
+// WriteError write the http status and the error string on the response.
 // DEPRECATED; use WriteErrorString(status,reason)
 func (r Response) WriteError(httpStatus int, err error) Response {
 	return r.WriteErrorString(httpStatus, err.Error())

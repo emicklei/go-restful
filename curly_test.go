@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var request_paths = []struct {
+var requestPaths = []struct {
 	// url with path (1) is handled by service with root (2) and remainder has value final (3)
 	path, root string
 }{
@@ -37,7 +37,7 @@ func TestCurlyDetectWebService(t *testing.T) {
 	router := CurlyRouter{}
 
 	ok := true
-	for i, fixture := range request_paths {
+	for i, fixture := range requestPaths {
 		requestTokens := tokenizePath(fixture.path)
 		who := router.detectWebService(requestTokens, wss)
 		if who != nil && who.RootPath() != fixture.root {
