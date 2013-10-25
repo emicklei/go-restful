@@ -123,6 +123,11 @@ func (w *WebService) Filter(filter FilterFunction) *WebService {
 	Convenience methods
 */
 
+// HEAD is a shortcut for .Method("HEAD").Path(subPath)
+func (w *WebService) HEAD(subPath string) *RouteBuilder {
+	return new(RouteBuilder).servicePath(w.rootPath).Method("HEAD").Path(subPath)
+}
+
 // GET is a shortcut for .Method("GET").Path(subPath)
 func (w *WebService) GET(subPath string) *RouteBuilder {
 	return new(RouteBuilder).servicePath(w.rootPath).Method("GET").Path(subPath)
