@@ -49,7 +49,7 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 - Automatic responses on OPTIONS (using a filter)
 - Automatic CORS request handling (using a filter)
 - API declaration for Swagger UI
-- Panic recovery to produce HTTP 500
+- Panic recovery to produce HTTP 500, customizable using RecoverHandler(...)
 	
 ### Resources
 

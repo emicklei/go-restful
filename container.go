@@ -21,7 +21,8 @@ type Container struct {
 	serveMux               *http.ServeMux
 	isRegisteredOnRoot     bool
 	containerFilters       []FilterFunction
-	doNotRecover           bool          // default is false
+	doNotRecover           bool // default is false
+	recoverHandleFunc      RecoverHandleFunction
 	router                 RouteSelector // default is a RouterJSR311
 	contentEncodingEnabled bool          // default is false
 }
@@ -34,8 +35,19 @@ func NewContainer() *Container {
 		isRegisteredOnRoot:     false,
 		containerFilters:       []FilterFunction{},
 		doNotRecover:           false,
+		recoverHandleFunc:      logStackOnRecover,
 		router:                 RouterJSR311{},
 		contentEncodingEnabled: false}
+}
+
+// RecoverHandleFunction declares functions that can be used to handle a panic situation.
+// Data returned by this function is send as the response payload of the Http request.
+type RecoverHandleFunction func(interface{}) []byte
+
+// RecoverHandler changes the default function (logStackOnRecover) to be called
+// when a panic is detected. DoNotRecover must be have its default value (=false).
+func (c *Container) RecoverHandler(handler RecoverHandleFunction) {
+	c.recoverHandleFunc = handler
 }
 
 // DoNotRecover controls whether panics will be caught to return HTTP 500.
@@ -91,8 +103,24 @@ func (c *Container) Add(service *WebService) *Container {
 		}
 	}
 	c.webServices = append(c.webServices, service)
-	//hopwatch.Dump(c)
 	return c
+}
+
+// logStackOnRecover is the default RecoverHandleFunction and is called
+// if DoNotRecover is false and the recoverHandleFunc is not set for the container.
+// Returns the stacktrace of the current go-routine; this maybe a security issue for you.
+func logStackOnRecover(panicReason interface{}) []byte {
+	var buffer bytes.Buffer
+	buffer.WriteString(fmt.Sprintf("[restful] recover from panic situation: - %v\r\n", panicReason))
+	for i := 2; ; i += 1 {
+		_, file, line, ok := runtime.Caller(i)
+		if !ok {
+			break
+		}
+		buffer.WriteString(fmt.Sprintf("    %s:%d\r\n", file, line))
+	}
+	log.Println(buffer.String())
+	return buffer.Bytes()
 }
 
 // Dispatch the incoming Http Request to a matching WebService.
@@ -101,19 +129,9 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 	if !c.doNotRecover { // catch all for 500 response
 		defer func() {
 			if r := recover(); r != nil {
-				var buffer bytes.Buffer
-				buffer.WriteString(fmt.Sprintf("[restful] recover from panic situation: - %v\r\n", r))
-				for i := 1; ; i += 1 {
-					_, file, line, ok := runtime.Caller(i)
-					if !ok {
-						break
-					}
-					buffer.WriteString(fmt.Sprintf("    %s:%d\r\n", file, line))
-				}
-
-				log.Println(buffer.String())
+				responseData := c.recoverHandleFunc(r)
 				httpWriter.WriteHeader(http.StatusInternalServerError)
-				httpWriter.Write(buffer.Bytes())
+				httpWriter.Write(responseData)
 				return
 			}
 		}()
