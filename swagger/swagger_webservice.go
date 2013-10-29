@@ -10,6 +10,9 @@ import (
 
 var config Config
 
+// LogInfo is the function that is called when this package needs to log. It defaults to log.Printf
+var LogInfo = log.Printf
+
 // InstallSwaggerService add the WebService that provides the API documentation of all services
 // conform the Swagger documentation specifcation. (https://github.com/wordnik/swagger-core/wiki).
 func InstallSwaggerService(aSwaggerConfig Config) {
@@ -33,15 +36,15 @@ func RegisterSwaggerService(aSwaggerConfig Config, wsContainer *restful.Containe
 	ws.Route(ws.GET("/{a}/{b}/{c}/{d}/{e}").To(getDeclarations))
 	ws.Route(ws.GET("/{a}/{b}/{c}/{d}/{e}/{f}").To(getDeclarations))
 	ws.Route(ws.GET("/{a}/{b}/{c}/{d}/{e}/{f}/{g}").To(getDeclarations))
-	log.Printf("[restful/swagger] listing is available at %v%v", config.WebServicesUrl, config.ApiPath)
+	LogInfo("[restful/swagger] listing is available at %v%v", config.WebServicesUrl, config.ApiPath)
 	wsContainer.Add(ws)
 
 	// Check paths for UI serving
 	if config.SwaggerPath != "" && config.SwaggerFilePath != "" {
-		log.Printf("[restful/swagger] %v%v is mapped to folder %v", config.WebServicesUrl, config.SwaggerPath, config.SwaggerFilePath)
+		LogInfo("[restful/swagger] %v%v is mapped to folder %v", config.WebServicesUrl, config.SwaggerPath, config.SwaggerFilePath)
 		wsContainer.Handle(config.SwaggerPath, http.StripPrefix(config.SwaggerPath, http.FileServer(http.Dir(config.SwaggerFilePath))))
 	} else {
-		log.Printf("[restful/swagger] Swagger(File)Path is empty ; no UI is served")
+		LogInfo("[restful/swagger] Swagger(File)Path is empty ; no UI is served")
 	}
 }
 
