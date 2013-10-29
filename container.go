@@ -41,8 +41,8 @@ func NewContainer() *Container {
 }
 
 // RecoverHandleFunction declares functions that can be used to handle a panic situation.
-// Data returned by this function is send as the response payload of the Http request.
-type RecoverHandleFunction func(interface{}) []byte
+// The first argument is what recover() returns. The second must be used to communicate an error response.
+type RecoverHandleFunction func(interface{}, http.ResponseWriter)
 
 // RecoverHandler changes the default function (logStackOnRecover) to be called
 // when a panic is detected. DoNotRecover must be have its default value (=false).
@@ -107,9 +107,10 @@ func (c *Container) Add(service *WebService) *Container {
 }
 
 // logStackOnRecover is the default RecoverHandleFunction and is called
-// if DoNotRecover is false and the recoverHandleFunc is not set for the container.
-// Returns the stacktrace of the current go-routine; this maybe a security issue for you.
-func logStackOnRecover(panicReason interface{}) []byte {
+// when DoNotRecover is false and the recoverHandleFunc is not set for the container.
+// Default implementation logs the stacktrace and writes the stacktrace on the response.
+// This may be a security issue as it exposes sourcecode information.
+func logStackOnRecover(panicReason interface{}, httpWriter http.ResponseWriter) {
 	var buffer bytes.Buffer
 	buffer.WriteString(fmt.Sprintf("[restful] recover from panic situation: - %v\r\n", panicReason))
 	for i := 2; ; i += 1 {
@@ -120,7 +121,8 @@ func logStackOnRecover(panicReason interface{}) []byte {
 		buffer.WriteString(fmt.Sprintf("    %s:%d\r\n", file, line))
 	}
 	log.Println(buffer.String())
-	return buffer.Bytes()
+	httpWriter.WriteHeader(http.StatusInternalServerError)
+	httpWriter.Write(buffer.Bytes())
 }
 
 // Dispatch the incoming Http Request to a matching WebService.
@@ -129,9 +131,7 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 	if !c.doNotRecover { // catch all for 500 response
 		defer func() {
 			if r := recover(); r != nil {
-				responseData := c.recoverHandleFunc(r)
-				httpWriter.WriteHeader(http.StatusInternalServerError)
-				httpWriter.Write(responseData)
+				c.recoverHandleFunc(r, httpWriter)
 				return
 			}
 		}()
