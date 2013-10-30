@@ -2,6 +2,7 @@ package restful
 
 import (
 	"io"
+	"net/http"
 	"testing"
 )
 
@@ -152,6 +153,21 @@ func TestCurly_ISSUE_34_2(t *testing.T) {
 	}
 	if routes[0].Path != "/network/{id}" {
 		t.Error("first is", routes[0].Path)
+	}
+}
+
+// clear && go test -v -test.run TestCurly_JsonHtml ...restful
+func TestCurly_JsonHtml(t *testing.T) {
+	ws1 := new(WebService).Path("/")
+	ws1.Route(ws1.GET("/some.html").To(curlyDummy).Consumes("*/*").Produces("text/html"))
+	req, _ := http.NewRequest("GET", "/some.html", nil)
+	req.Header.Set("Accept", "application/json")
+	_, route, err := CurlyRouter{}.SelectRoute([]*WebService{ws1}, req)
+	if err == nil {
+		t.Error("error expected")
+	}
+	if route != nil {
+		t.Error("no route expected")
 	}
 }
 

@@ -75,7 +75,7 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 		}
 	}
 	if len(outputMediaOk) == 0 {
-		return &Route{}, NewError(http.StatusNotAcceptable, "406: Not Acceptable")
+		return nil, NewError(http.StatusNotAcceptable, "406: Not Acceptable")
 	}
 	return r.bestMatchByMedia(outputMediaOk, contentType, accept), nil
 }
