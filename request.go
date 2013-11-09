@@ -16,12 +16,17 @@ import (
 // Request is a wrapper for a http Request that provides convenience methods
 type Request struct {
 	Request        *http.Request
+	bodyContent    *[]byte // to cache the request body for multiple reads of ReadEntity
 	pathParameters map[string]string
 	attributes     map[string]interface{} // for storing request-scoped values
 }
 
 func newRequest(httpRequest *http.Request) *Request {
-	return &Request{httpRequest, map[string]string{}, map[string]interface{}{}} // empty parameters, attributes
+	return &Request{
+		Request:        httpRequest,
+		pathParameters: map[string]string{},
+		attributes:     map[string]interface{}{},
+	} // empty parameters, attributes
 }
 
 // PathParameter accesses the Path parameter value by its name
@@ -54,12 +59,20 @@ func (r *Request) HeaderParameter(name string) string {
 }
 
 // ReadEntity checks the Accept header and reads the content into the entityPointer
-func (r *Request) ReadEntity(entityPointer interface{}) error {
+func (r *Request) ReadEntity(entityPointer interface{}) (err error) {
 	contentType := r.Request.Header.Get(HEADER_ContentType)
-	buffer, err := ioutil.ReadAll(r.Request.Body)
-	if err != nil {
-		return err
+
+	var buffer []byte
+	if r.bodyContent != nil {
+		buffer = *r.bodyContent
+	} else {
+		buffer, err = ioutil.ReadAll(r.Request.Body)
+		r.bodyContent = &buffer
+		if err != nil {
+			return err
+		}
 	}
+
 	if strings.Contains(contentType, MIME_XML) {
 		err = xml.Unmarshal(buffer, entityPointer)
 	} else {
