@@ -156,6 +156,13 @@ func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse 
 	if st.Kind() == reflect.Slice || st.Kind() == reflect.Array {
 		st = st.Elem()
 		isCollection = true
+	} else {
+		if st.Kind() == reflect.Ptr {
+			if st.Elem().Kind() == reflect.Slice || st.Elem().Kind() == reflect.Array {
+				st = st.Elem().Elem()
+				isCollection = true
+			}
+		}
 	}
 	modelName := st.String()
 	if isResponse {
@@ -186,17 +193,27 @@ func (sws SwaggerService) addModelTo(st reflect.Type, decl *ApiDeclaration) {
 				jsonName = override
 			}
 			// convert to model property
+			sft := sf.Type
 			prop := ModelProperty{}
-			st := sf.Type
-			if st.Kind() == reflect.Slice || st.Kind() == reflect.Array {
+			prop.Type = sft.String() // include pkg path
+			// override type of list-likes
+			if sft.Kind() == reflect.Slice || sft.Kind() == reflect.Array {
 				prop.Type = "array"
-				prop.Items = map[string]string{"$ref": st.Elem().String()}
+				prop.Items = map[string]string{"$ref": sft.Elem().String()}
 				// add|overwrite model for element type
-				sws.addModelTo(st.Elem(), decl)
-			} else {
-				prop.Type = st.String() // include pkg path
+				sws.addModelTo(sft.Elem(), decl)
+			}
+			// override type of pointer to list-likes
+			if sft.Kind() == reflect.Ptr {
+				if sft.Elem().Kind() == reflect.Slice || sft.Elem().Kind() == reflect.Array {
+					prop.Type = "array"
+					prop.Items = map[string]string{"$ref": sft.Elem().Elem().String()}
+					// add|overwrite model for element type
+					sws.addModelTo(sft.Elem().Elem(), decl)
+				}
 			}
 			sm.Properties[jsonName] = prop
+			//log.Printf("%s=%#v", jsonName, prop)
 		}
 	}
 }

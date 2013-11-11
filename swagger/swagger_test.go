@@ -18,7 +18,8 @@ type item struct {
 }
 
 type File struct {
-	History []File
+	History     []File
+	HistoryPtrs []*File
 }
 
 func TestApi(t *testing.T) {
@@ -66,3 +67,56 @@ func TestServiceToApi(t *testing.T) {
 }
 
 func dummy(i *restful.Request, o *restful.Response) {}
+
+// go test -v -test.run TestIssue78 ...swagger
+type Response struct {
+	Code  int
+	Users *[]User
+	Items *[]Item
+}
+type User struct {
+	Id, Name string
+}
+type Item struct {
+	Id, Name string
+}
+
+func TestIssue78(t *testing.T) {
+	sws := newSwaggerService(Config{})
+	decl := ApiDeclaration{Models: map[string]Model{}}
+	sws.addModelFromSampleTo(&Operation{}, true, Response{Items: &[]Item{}}, &decl)
+	model, ok := decl.Models["swagger.Response"]
+	if !ok {
+		t.Fatal("missing response model")
+	}
+	if "swagger.Response" != model.Id {
+		t.Fatal("wrong model id:" + model.Id)
+	}
+	code, ok := model.Properties["Code"]
+	if !ok {
+		t.Fatal("missing code")
+	}
+	if "int" != code.Type {
+		t.Fatal("wrong code type:" + code.Type)
+	}
+	items, ok := model.Properties["Items"]
+	if !ok {
+		t.Fatal("missing items")
+	}
+	if "array" != items.Type {
+		t.Fatal("wrong items type:" + items.Type)
+	}
+	items_items := items.Items
+	if items_items == nil {
+		t.Fatal("missing items->items")
+	}
+	ref := items_items["$ref"]
+	if ref == "" {
+		t.Fatal("missing $ref")
+	}
+	if ref != "swagger.Item" {
+		t.Fatal("wrong $ref:" + ref)
+	}
+	output, _ := json.MarshalIndent(decl, " ", " ")
+	os.Stdout.Write(output)
+}
