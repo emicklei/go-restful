@@ -17,6 +17,7 @@ type WebService struct {
 	consumes       []string
 	pathParameters []*Parameter
 	filters        []FilterFunction
+	documentation  string
 }
 
 // Path specifies the root URL template path of the WebService.
@@ -117,6 +118,16 @@ func (w WebService) PathParameters() []*Parameter {
 func (w *WebService) Filter(filter FilterFunction) *WebService {
 	w.filters = append(w.filters, filter)
 	return w
+}
+
+// Doc is used to set the documentation of this service.
+func (w *WebService) Doc(plainText string) {
+	w.documentation = plainText
+}
+
+// Documentation returns it.
+func (w WebService) Documentation() string {
+	return w.documentation
 }
 
 /*

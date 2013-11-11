@@ -22,29 +22,29 @@ type File struct {
 }
 
 func TestApi(t *testing.T) {
-	value := Api{Path: "/", Description: "Some Path", Operations: []Operation{}, Models: map[string]Model{}}
+	value := Api{Path: "/", Description: "Some Path", Operations: []Operation{}}
 	output, _ := json.MarshalIndent(value, " ", " ")
 	print(string(output))
 }
 
 func TestModelToJsonSchema(t *testing.T) {
-	api := new(Api)
-	api.Models = map[string]Model{}
+	sws := newSwaggerService(Config{})
+	decl := ApiDeclaration{Models: map[string]Model{}}
 	op := new(Operation)
 	op.Nickname = "getSome"
-	addModelFromSample(api, op, true, sample{items: []item{}})
-	output, _ := json.MarshalIndent(api, " ", " ")
+	sws.addModelFromSampleTo(op, true, sample{items: []item{}}, &decl)
+	output, _ := json.MarshalIndent(decl.Models, " ", " ")
 	os.Stdout.Write(output)
 }
 
 // go test -v -test.run TestCreateModelFromRecursiveDataStructure ...swagger
 func TestCreateModelFromRecursiveDataStructure(t *testing.T) {
-	api := new(Api)
-	api.Models = map[string]Model{}
+	sws := newSwaggerService(Config{})
+	decl := ApiDeclaration{Models: map[string]Model{}}
 	op := new(Operation)
 	op.Nickname = "getSome"
-	addModelFromSample(api, op, true, File{})
-	output, _ := json.MarshalIndent(api, " ", " ")
+	sws.addModelFromSampleTo(op, true, File{}, &decl)
+	output, _ := json.MarshalIndent(decl.Models, " ", " ")
 	os.Stdout.Write(output)
 }
 
@@ -59,7 +59,8 @@ func TestServiceToApi(t *testing.T) {
 		WebServicesUrl: "http://here.com",
 		ApiPath:        "/apipath",
 		WebServices:    []*restful.WebService{ws}}
-	decl := composeDeclaration("/tests", cfg)
+	sws := newSwaggerService(cfg)
+	decl := sws.composeDeclaration("/tests")
 	output, _ := json.MarshalIndent(decl, " ", " ")
 	os.Stdout.Write(output)
 }
