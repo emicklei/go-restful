@@ -7,7 +7,6 @@ package restful
 import (
 	"encoding/json"
 	"encoding/xml"
-	"io"
 	"net/http"
 	"strings"
 )
@@ -23,13 +22,14 @@ var DefaultResponseMimeType string
 // It provides several convenience methods to prepare and write response content.
 type Response struct {
 	http.ResponseWriter
-	accept     string   // content-types what the Http Request says it want to receive
-	produces   []string // content-types what the Route says it can produce
-	statusCode int      // HTTP status code that has been written explicity (if zero then net/http has written 200)
+	accept        string   // content-types what the Http Request says it want to receive
+	produces      []string // content-types what the Route says it can produce
+	statusCode    int      // HTTP status code that has been written explicity (if zero then net/http has written 200)
+	contentLength int      // number of bytes written for the response body
 }
 
 func newResponse(httpWriter http.ResponseWriter) *Response {
-	return &Response{httpWriter, "", []string{}, http.StatusOK} // empty content-types
+	return &Response{httpWriter, "", []string{}, http.StatusOK, 0} // empty content-types
 }
 
 // InternalServerError writes the StatusInternalServerError header.
@@ -49,7 +49,7 @@ func (r Response) AddHeader(header string, value string) Response {
 // If no Accept header is specified (or */*) then return the Content-Type as specified by the first in the Route.Produces.
 // If an Accept header is specified then return the Content-Type as specified by the first in the Route.Produces that is matched with the Accept header.
 // Current implementation ignores any q-parameters in the Accept Header.
-func (r Response) WriteEntity(value interface{}) Response {
+func (r *Response) WriteEntity(value interface{}) *Response {
 	if "" == r.accept || "*/*" == r.accept {
 		for _, each := range r.produces {
 			if MIME_JSON == each {
@@ -81,26 +81,26 @@ func (r Response) WriteEntity(value interface{}) Response {
 		r.WriteAsXml(value)
 	} else {
 		r.WriteHeader(http.StatusNotAcceptable)
-		io.WriteString(r, "406: Not Acceptable")
+		r.Write([]byte("406: Not Acceptable"))
 	}
 	return r
 }
 
 // WriteAsXml is a convenience method for writing a value in xml (requires Xml tags on the value)
-func (r Response) WriteAsXml(value interface{}) Response {
+func (r *Response) WriteAsXml(value interface{}) *Response {
 	output, err := xml.MarshalIndent(value, " ", " ")
 	if err != nil {
 		r.WriteError(http.StatusInternalServerError, err)
 	} else {
 		r.Header().Set(HEADER_ContentType, MIME_XML)
-		io.WriteString(r, xml.Header)
+		r.Write([]byte(xml.Header))
 		r.Write(output)
 	}
 	return r
 }
 
 // WriteAsJson is a convenience method for writing a value in json
-func (r Response) WriteAsJson(value interface{}) Response {
+func (r *Response) WriteAsJson(value interface{}) *Response {
 	output, err := json.MarshalIndent(value, " ", " ")
 	if err != nil {
 		r.WriteError(http.StatusInternalServerError, err)
@@ -113,21 +113,21 @@ func (r Response) WriteAsJson(value interface{}) Response {
 
 // WriteError write the http status and the error string on the response.
 // DEPRECATED; use WriteErrorString(status,reason)
-func (r Response) WriteError(httpStatus int, err error) Response {
+func (r *Response) WriteError(httpStatus int, err error) *Response {
 	return r.WriteErrorString(httpStatus, err.Error())
 }
 
 // WriteServiceError is a convenience method for a responding with a ServiceError and a status
-func (r Response) WriteServiceError(httpStatus int, err ServiceError) Response {
+func (r *Response) WriteServiceError(httpStatus int, err ServiceError) *Response {
 	r.WriteHeader(httpStatus)
 	r.WriteEntity(err)
 	return r
 }
 
 // WriteErrorString is a convenience method for an error status with the actual error
-func (r Response) WriteErrorString(status int, err string) Response {
+func (r *Response) WriteErrorString(status int, errorReason string) *Response {
 	r.WriteHeader(status)
-	io.WriteString(r, err)
+	r.Write([]byte(errorReason))
 	return r
 }
 
@@ -144,4 +144,17 @@ func (r Response) StatusCode() int {
 		return http.StatusOK
 	}
 	return r.statusCode
+}
+
+// Write writes the data to the connection as part of an HTTP reply.
+// Write is part of http.ResponseWriter interface
+func (r *Response) Write(bytes []byte) (int, error) {
+	written, err := r.ResponseWriter.Write(bytes)
+	r.contentLength += written
+	return written, err
+}
+
+// ContentLength returns the number of bytes written for the response content
+func (r Response) ContentLength() int {
+	return r.contentLength
 }
