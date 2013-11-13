@@ -147,14 +147,16 @@ func (r Response) StatusCode() int {
 }
 
 // Write writes the data to the connection as part of an HTTP reply.
-// Write is part of http.ResponseWriter interface
+// Write is part of http.ResponseWriter interface.
 func (r *Response) Write(bytes []byte) (int, error) {
 	written, err := r.ResponseWriter.Write(bytes)
 	r.contentLength += written
 	return written, err
 }
 
-// ContentLength returns the number of bytes written for the response content
+// ContentLength returns the number of bytes written for the response content.
+// Note that this value is only correct if all data is written through the Response using its Write* methods.
+// Data written directly using the underlying http.ResponseWriter is not accounted for.
 func (r Response) ContentLength() int {
 	return r.contentLength
 }

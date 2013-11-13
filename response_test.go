@@ -45,5 +45,14 @@ func TestMeasureContentLengthJson(t *testing.T) {
 	if resp.ContentLength() != 22 {
 		t.Errorf("Incorrect measured length:%d", resp.ContentLength())
 	}
-	//println(httpWriter.Body.String())
+}
+
+// go test -v -test.run TestMeasureContentLengthWriteErrorString ...restful
+func TestMeasureContentLengthWriteErrorString(t *testing.T) {
+	httpWriter := httptest.NewRecorder()
+	resp := Response{httpWriter, "*/*", []string{"*/*"}, 0, 0}
+	resp.WriteErrorString(404, "Invalid")
+	if resp.ContentLength() != len("Invalid") {
+		t.Errorf("Incorrect measured length:%d", resp.ContentLength())
+	}
 }
