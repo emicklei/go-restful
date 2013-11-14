@@ -22,6 +22,7 @@ type File struct {
 	HistoryPtrs []*File
 }
 
+// go test -v -test.run TestApi ...swagger
 func TestApi(t *testing.T) {
 	value := Api{Path: "/", Description: "Some Path", Operations: []Operation{}}
 	output, _ := json.MarshalIndent(value, " ", " ")

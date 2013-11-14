@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+	"strings"
 )
 
 type SwaggerService struct {
@@ -50,9 +51,18 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 	// Build all ApiDeclarations
 	for _, each := range config.WebServices {
 		// skip the api service itself
-		if each.RootPath() != config.ApiPath {
-			decl := sws.composeDeclaration(each.RootPath())
-			sws.apiDeclarationMap[each.RootPath()] = decl
+		rootPath := each.RootPath()
+		if rootPath != config.ApiPath {
+			// handle empty root
+			if rootPath == "" || rootPath == "/" {
+				// collect subresources from its Routes
+				//for _, _ := range ws.Routes() {
+
+				//}
+				println("TODO")
+			} else {
+				sws.apiDeclarationMap[rootPath] = sws.composeDeclaration(each)
+			}
 		}
 	}
 
@@ -76,11 +86,31 @@ func (sws SwaggerService) getListing(req *restful.Request, resp *restful.Respons
 	listing := ResourceListing{SwaggerVersion: swaggerVersion}
 	for _, each := range sws.config.WebServices {
 		// skip the api service itself
-		if each.RootPath() != sws.config.ApiPath {
-			ref := ApiRef{
-				Path:        each.RootPath(),
-				Description: each.Documentation()}
-			listing.Apis = append(listing.Apis, ref)
+		rootPath := each.RootPath()
+		if rootPath != sws.config.ApiPath {
+			// handle empty root
+			if rootPath == "" || rootPath == "/" {
+				// collect unique subpaths from its routes
+				fakePaths := map[string]restful.Route{}
+				for _, route := range each.Routes() {
+					pathParts := strings.Split(route.Path, "/")
+					if len(pathParts) > 0 { // can still be empty
+						fakePaths[pathParts[0]] = route
+					}
+				}
+				// build reference for each unique subpath
+				for subpath, route := range fakePaths {
+					ref := ApiRef{
+						Path:        subpath,
+						Description: route.Doc}
+					listing.Apis = append(listing.Apis, ref)
+				}
+			} else {
+				ref := ApiRef{
+					Path:        rootPath,
+					Description: each.Documentation()}
+				listing.Apis = append(listing.Apis, ref)
+			}
 		}
 	}
 	resp.WriteAsJson(listing)
@@ -90,51 +120,47 @@ func (sws SwaggerService) getDeclarations(req *restful.Request, resp *restful.Re
 	resp.WriteAsJson(sws.apiDeclarationMap[composeRootPath(req)])
 }
 
-func (sws SwaggerService) composeDeclaration(rootPath string) ApiDeclaration {
+func (sws SwaggerService) composeDeclaration(ws *restful.WebService) ApiDeclaration {
 	decl := ApiDeclaration{
 		SwaggerVersion: swaggerVersion,
 		BasePath:       sws.config.WebServicesUrl,
-		ResourcePath:   rootPath,
+		ResourcePath:   ws.RootPath(),
 		Models:         map[string]Model{}}
-	for _, each := range sws.config.WebServices {
-		// find the webservice
-		if each.RootPath() == rootPath {
-			// collect any path parameters
-			rootParams := []Parameter{}
-			for _, param := range each.PathParameters() {
-				rootParams = append(rootParams, asSwaggerParameter(param.Data()))
-			}
-			// aggregate by path
-			pathToRoutes := map[string][]restful.Route{}
-			for _, other := range each.Routes() {
-				routes := pathToRoutes[other.Path]
-				pathToRoutes[other.Path] = append(routes, other)
-			}
-			for path, routes := range pathToRoutes {
-				api := Api{Path: path}
-				for _, route := range routes {
-					operation := Operation{HttpMethod: route.Method,
-						Summary:  route.Doc,
-						Type:     asDataType(route.WriteSample),
-						Nickname: route.Operation}
 
-					operation.Consumes = route.Consumes
-					operation.Produces = route.Produces
+	// collect any path parameters
+	rootParams := []Parameter{}
+	for _, param := range ws.PathParameters() {
+		rootParams = append(rootParams, asSwaggerParameter(param.Data()))
+	}
+	// aggregate by path
+	pathToRoutes := map[string][]restful.Route{}
+	for _, other := range ws.Routes() {
+		routes := pathToRoutes[other.Path]
+		pathToRoutes[other.Path] = append(routes, other)
+	}
+	for path, routes := range pathToRoutes {
+		api := Api{Path: path}
+		for _, route := range routes {
+			operation := Operation{HttpMethod: route.Method,
+				Summary:  route.Doc,
+				Type:     asDataType(route.WriteSample),
+				Nickname: route.Operation}
 
-					// share root params if any
-					for _, swparam := range rootParams {
-						operation.Parameters = append(operation.Parameters, swparam)
-					}
-					// route specific params
-					for _, param := range route.ParameterDocs {
-						operation.Parameters = append(operation.Parameters, asSwaggerParameter(param.Data()))
-					}
-					sws.addModelsFromRouteTo(&operation, route, &decl)
-					api.Operations = append(api.Operations, operation)
-				}
-				decl.Apis = append(decl.Apis, api)
+			operation.Consumes = route.Consumes
+			operation.Produces = route.Produces
+
+			// share root params if any
+			for _, swparam := range rootParams {
+				operation.Parameters = append(operation.Parameters, swparam)
 			}
+			// route specific params
+			for _, param := range route.ParameterDocs {
+				operation.Parameters = append(operation.Parameters, asSwaggerParameter(param.Data()))
+			}
+			sws.addModelsFromRouteTo(&operation, route, &decl)
+			api.Operations = append(api.Operations, operation)
 		}
+		decl.Apis = append(decl.Apis, api)
 	}
 	return decl
 }
