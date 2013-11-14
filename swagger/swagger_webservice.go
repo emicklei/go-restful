@@ -94,8 +94,8 @@ func (sws SwaggerService) getListing(req *restful.Request, resp *restful.Respons
 				fakePaths := map[string]restful.Route{}
 				for _, route := range each.Routes() {
 					pathParts := strings.Split(route.Path, "/")
-					if len(pathParts) > 0 { // can still be empty
-						fakePaths[pathParts[0]] = route
+					if len(pathParts) > 1 { // can still be empty
+						fakePaths["/"+pathParts[1]] = route
 					}
 				}
 				// build reference for each unique subpath
