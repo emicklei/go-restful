@@ -50,19 +50,19 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 
 	// Build all ApiDeclarations
 	for _, each := range config.WebServices {
-		// skip the api service itself
 		rootPath := each.RootPath()
+		// skip the api service itself
 		if rootPath != config.ApiPath {
-			// handle empty root
-			if rootPath == "" || rootPath == "/" {
-				// collect subresources from its Routes
-				//for _, _ := range ws.Routes() {
-
-				//}
-				println("TODO")
-			} else {
-				sws.apiDeclarationMap[rootPath] = sws.composeDeclaration(each)
-			}
+			if each.Path == "" || each.Path == "/" {
+				// use routes
+				for _, route := range each.Routes() {
+					_, exists := sws.apiDeclarationMap[route.Path]
+					if !exists {
+						sws.apiDeclarationMap[key] = sws.composeDeclaration(each, key)
+					}
+				}
+			} else { // use root path
+			sws.apiDeclarationMap[each.RootPath()] = sws.composeDeclaration(each, each.RootPath())
 		}
 	}
 
@@ -75,6 +75,20 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 	}
 }
 
+func staticPathFromRoute(r restful.Route) string {
+	static := r.Path
+	bracket := strings.Index(r.Path, "{")
+	if bracket != -1 {
+		static = r.Path[0:bracket]
+	}
+	//
+	if strings.HasSuffix(static, "/") {
+		return static[0 : len(static)-1]
+	} else {
+		return static
+	}
+}
+
 func enableCORS(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
 	if origin := req.HeaderParameter(restful.HEADER_Origin); origin != "" {
 		resp.AddHeader(restful.HEADER_AccessControlAllowOrigin, origin)
@@ -84,34 +98,9 @@ func enableCORS(req *restful.Request, resp *restful.Response, chain *restful.Fil
 
 func (sws SwaggerService) getListing(req *restful.Request, resp *restful.Response) {
 	listing := ResourceListing{SwaggerVersion: swaggerVersion}
-	for _, each := range sws.config.WebServices {
-		// skip the api service itself
-		rootPath := each.RootPath()
-		if rootPath != sws.config.ApiPath {
-			// handle empty root
-			if rootPath == "" || rootPath == "/" {
-				// collect unique subpaths from its routes
-				fakePaths := map[string]restful.Route{}
-				for _, route := range each.Routes() {
-					pathParts := strings.Split(route.Path, "/")
-					if len(pathParts) > 1 { // can still be empty
-						fakePaths["/"+pathParts[1]] = route
-					}
-				}
-				// build reference for each unique subpath
-				for subpath, route := range fakePaths {
-					ref := ApiRef{
-						Path:        subpath,
-						Description: route.Doc}
-					listing.Apis = append(listing.Apis, ref)
-				}
-			} else {
-				ref := ApiRef{
-					Path:        rootPath,
-					Description: each.Documentation()}
-				listing.Apis = append(listing.Apis, ref)
-			}
-		}
+	for k, _ := range sws.apiDeclarationMap {
+		ref := ApiRef{Path: k}
+		listing.Apis = append(listing.Apis, ref)
 	}
 	resp.WriteAsJson(listing)
 }
@@ -120,7 +109,7 @@ func (sws SwaggerService) getDeclarations(req *restful.Request, resp *restful.Re
 	resp.WriteAsJson(sws.apiDeclarationMap[composeRootPath(req)])
 }
 
-func (sws SwaggerService) composeDeclaration(ws *restful.WebService) ApiDeclaration {
+func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix string) ApiDeclaration {
 	decl := ApiDeclaration{
 		SwaggerVersion: swaggerVersion,
 		BasePath:       sws.config.WebServicesUrl,
@@ -135,8 +124,10 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService) ApiDeclarat
 	// aggregate by path
 	pathToRoutes := map[string][]restful.Route{}
 	for _, other := range ws.Routes() {
-		routes := pathToRoutes[other.Path]
-		pathToRoutes[other.Path] = append(routes, other)
+		if strings.HasPrefix(other.Path, pathPrefix) {
+			routes := pathToRoutes[other.Path]
+			pathToRoutes[other.Path] = append(routes, other)
+		}
 	}
 	for path, routes := range pathToRoutes {
 		api := Api{Path: path}
