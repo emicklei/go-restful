@@ -62,7 +62,7 @@ func TestServiceToApi(t *testing.T) {
 		ApiPath:        "/apipath",
 		WebServices:    []*restful.WebService{ws}}
 	sws := newSwaggerService(cfg)
-	decl := sws.composeDeclaration("/tests")
+	decl := sws.composeDeclaration(ws, "/tests")
 	output, _ := json.MarshalIndent(decl, " ", " ")
 	os.Stdout.Write(output)
 }

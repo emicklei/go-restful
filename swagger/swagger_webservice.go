@@ -53,16 +53,17 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 		rootPath := each.RootPath()
 		// skip the api service itself
 		if rootPath != config.ApiPath {
-			if each.Path == "" || each.Path == "/" {
+			if rootPath == "" || rootPath == "/" {
 				// use routes
 				for _, route := range each.Routes() {
 					_, exists := sws.apiDeclarationMap[route.Path]
 					if !exists {
-						sws.apiDeclarationMap[key] = sws.composeDeclaration(each, key)
+						sws.apiDeclarationMap[route.Path] = sws.composeDeclaration(each, route.Path)
 					}
 				}
 			} else { // use root path
-			sws.apiDeclarationMap[each.RootPath()] = sws.composeDeclaration(each, each.RootPath())
+				sws.apiDeclarationMap[each.RootPath()] = sws.composeDeclaration(each, each.RootPath())
+			}
 		}
 	}
 
