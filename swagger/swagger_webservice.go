@@ -56,9 +56,10 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 			if rootPath == "" || rootPath == "/" {
 				// use routes
 				for _, route := range each.Routes() {
-					_, exists := sws.apiDeclarationMap[route.Path]
+					entry := staticPathFromRoute(route)
+					_, exists := sws.apiDeclarationMap[entry]
 					if !exists {
-						sws.apiDeclarationMap[route.Path] = sws.composeDeclaration(each, route.Path)
+						sws.apiDeclarationMap[entry] = sws.composeDeclaration(each, entry)
 					}
 				}
 			} else { // use root path
@@ -78,13 +79,15 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 
 func staticPathFromRoute(r restful.Route) string {
 	static := r.Path
-	bracket := strings.Index(r.Path, "{")
-	if bracket != -1 {
-		static = r.Path[0:bracket]
+	bracket := strings.Index(static, "{")
+	if bracket <= 1 { // result cannot be empty
+		return static
 	}
-	//
+	if bracket != -1 {
+		static = r.Path[:bracket]
+	}
 	if strings.HasSuffix(static, "/") {
-		return static[0 : len(static)-1]
+		return static[:len(static)-1]
 	} else {
 		return static
 	}
