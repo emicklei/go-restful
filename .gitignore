@@ -61,3 +61,5 @@ examples/restful-cpuprofiler-service
 examples/restful-pre-post-filters
 
 curly.prof
+
+examples/restful-NCSA-logging
