@@ -22,6 +22,7 @@ type File struct {
 	HistoryPtrs []*File
 }
 
+// go test -v -test.run TestApi ...swagger
 func TestApi(t *testing.T) {
 	value := Api{Path: "/", Description: "Some Path", Operations: []Operation{}}
 	output, _ := json.MarshalIndent(value, " ", " ")
@@ -61,7 +62,7 @@ func TestServiceToApi(t *testing.T) {
 		ApiPath:        "/apipath",
 		WebServices:    []*restful.WebService{ws}}
 	sws := newSwaggerService(cfg)
-	decl := sws.composeDeclaration("/tests")
+	decl := sws.composeDeclaration(ws, "/tests")
 	output, _ := json.MarshalIndent(decl, " ", " ")
 	os.Stdout.Write(output)
 }
