@@ -2,15 +2,15 @@ package restful
 
 import (
 	"fmt"
-	"io"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
-var uris_curly = []string{}
-
-func setupCurly(container *Container) {
+func setupCurly(container *Container) []string {
 	wsCount := 26
 	rtCount := 26
+	uris_curly := []string{}
 
 	container.Router(CurlyRouter{})
 	for i := 0; i < wsCount; i++ {
@@ -18,27 +18,34 @@ func setupCurly(container *Container) {
 		ws := new(WebService).Path(root)
 		for j := 0; j < rtCount; j++ {
 			sub := fmt.Sprintf("/%s2/{%s2}", string(j+97), string(j+97))
-			ws.Route(ws.GET(sub).To(echoCurly))
+			ws.Route(ws.GET(sub).Consumes("application/xml").Produces("application/xml").To(echoCurly))
 		}
 		container.Add(ws)
 		for _, each := range ws.Routes() {
-			uris = append(uris, "http://bench.com"+each.Path)
+			uris_curly = append(uris_curly, "http://bench.com"+each.Path)
 		}
 	}
+	return uris_curly
 }
 
-func echoCurly(req *Request, resp *Response) {
-	io.WriteString(resp.ResponseWriter, "echo")
-}
+func echoCurly(req *Request, resp *Response) {}
 
 func BenchmarkManyCurly(b *testing.B) {
 	container := NewContainer()
-	setupCurly(container)
+	uris_curly := setupCurly(container)
 	b.ResetTimer()
 	for t := 0; t < b.N; t++ {
-		for _, each := range uris_curly {
-			// println(each)
-			sendItTo(each, container)
+		for r := 0; r < 1000; r++ {
+			for _, each := range uris_curly {
+				sendNoReturnTo(each, container, t)
+			}
 		}
 	}
+}
+
+func sendNoReturnTo(address string, container *Container, t int) {
+	httpRequest, _ := http.NewRequest("GET", address, nil)
+	httpRequest.Header.Set("Accept", "application/xml")
+	httpWriter := httptest.NewRecorder()
+	container.dispatch(httpWriter, httpRequest)
 }

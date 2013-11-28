@@ -7,7 +7,6 @@ package restful
 import (
 	"bytes"
 	"fmt"
-	//"github.com/emicklei/hopwatch"
 	"log"
 	"net/http"
 	"runtime"
@@ -23,7 +22,7 @@ type Container struct {
 	containerFilters       []FilterFunction
 	doNotRecover           bool // default is false
 	recoverHandleFunc      RecoverHandleFunction
-	router                 RouteSelector // default is a RouterJSR311
+	router                 RouteSelector // default is a RouterJSR311, CurlyRouter is the faster alternative
 	contentEncodingEnabled bool          // default is false
 }
 
@@ -175,7 +174,7 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 				httpWriter.WriteHeader(ser.Code)
 				httpWriter.Write([]byte(ser.Message))
 			}
-
+			// TODO
 			// err
 
 			// handle err here

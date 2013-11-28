@@ -5,7 +5,6 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
-	//	"log"
 	"errors"
 	"net/http"
 	"sort"
@@ -15,8 +14,8 @@ import (
 // CurlyRouter expects Routes with paths that contain zero or more parameters in curly brackets.
 type CurlyRouter struct{}
 
-// SelectRoute finds a Route given the input HTTP Request and report if found (ok).
-// The HTTP writer is be used to directly communicate non-200 HTTP stati.
+// SelectRoute is part of the Router interface and returns the best match
+// for the WebService and its Route for the given Request.
 func (c CurlyRouter) SelectRoute(
 	webServices []*WebService,
 	httpRequest *http.Request) (selectedService *WebService, selected *Route, err error) {
@@ -25,11 +24,11 @@ func (c CurlyRouter) SelectRoute(
 
 	detectedService := c.detectWebService(requestTokens, webServices)
 	if detectedService == nil {
-		return nil, nil, errors.New("no detected service")
+		return nil, nil, errors.New("[restful] no detected service")
 	}
 	candidateRoutes := c.selectRoutes(detectedService, requestTokens)
 	if len(candidateRoutes) == 0 {
-		return detectedService, nil, errors.New("no candidate routes")
+		return detectedService, nil, errors.New("[restful] no candidate routes")
 	}
 	selectedRoute, err := c.detectRoute(candidateRoutes, httpRequest)
 	if selectedRoute == nil {
@@ -38,6 +37,7 @@ func (c CurlyRouter) SelectRoute(
 	return detectedService, selectedRoute, nil
 }
 
+// selectRoutes return a collection of Route from a WebService that matches the path tokens from the request.
 func (c CurlyRouter) selectRoutes(ws *WebService, requestTokens []string) []Route {
 	candidates := &sortableCurlyRoutes{[]*curlyRoute{}}
 	for _, each := range ws.routes {
@@ -50,6 +50,7 @@ func (c CurlyRouter) selectRoutes(ws *WebService, requestTokens []string) []Rout
 	return candidates.routes()
 }
 
+// matchesRouteByPathTokens computes whether it matches, howmany parameters do match and what the number of static path elements are.
 func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []string) (matches bool, paramCount int, staticCount int) {
 	if len(routeTokens) != len(requestTokens) {
 		return false, 0, 0
@@ -68,19 +69,15 @@ func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []strin
 	return true, paramCount, staticCount
 }
 
+// detectRoute selectes from a list of Route the first match by inspecting both the Accept and Content-Type
+// headers of the Request. See also RouterJSR311 in jsr311.go
 func (c CurlyRouter) detectRoute(candidateRoutes []Route, httpRequest *http.Request) (*Route, error) {
-	return RouterJSR311{}.detectRoute(candidateRoutes, httpRequest) // TODO change signature
-	// if found != nil{
-	// 	return route
-	// } else {
-	// 	return nil
-	// }
+	return RouterJSR311{}.detectRoute(candidateRoutes, httpRequest)
 }
 
+// detectWebService returns the best matching webService given the list of path tokens.
+// see also computeWebserviceScore
 func (c CurlyRouter) detectWebService(requestTokens []string, webServices []*WebService) *WebService {
-	if len(webServices) == 0 {
-		return nil
-	}
 	var best *WebService
 	score := -1
 	for _, each := range webServices {
@@ -93,9 +90,9 @@ func (c CurlyRouter) detectWebService(requestTokens []string, webServices []*Web
 	return best
 }
 
+// computeWebserviceScore returns whether tokens match and
+// the weighted score of the longest matching consecutive tokens from the beginning.
 func (c CurlyRouter) computeWebserviceScore(requestTokens []string, tokens []string) (bool, int) {
-	// return whether tokens match and the weighted score of the longest matching consecutive tokens from the beginning
-
 	if len(tokens) > len(requestTokens) {
 		return false, 0
 	}

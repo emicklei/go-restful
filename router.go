@@ -9,8 +9,9 @@ import "net/http"
 // A RouteSelector finds the best matching Route given the input HTTP Request
 type RouteSelector interface {
 
-	// SelectRoute finds a Route given the input HTTP Request and report if found (ok).
-	// The HTTP writer is be used to directly communicate non-200 HTTP stati.
+	// SelectRoute finds a Route given the input HTTP Request and a list of WebServices.
+	// It returns a selected Route and its containing WebService or an error indicating
+	// a problem.
 	SelectRoute(
 		webServices []*WebService,
 		httpRequest *http.Request) (selectedService *WebService, selected *Route, err error)
