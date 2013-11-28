@@ -211,7 +211,7 @@ func (sws SwaggerService) addModelTo(st reflect.Type, decl *ApiDeclaration) {
 			jsonName := sf.Name
 			// see if a tag overrides this
 			if override := st.Field(i).Tag.Get("json"); override != "" {
-				jsonName = override
+				jsonName = strings.Split(override, ",")[0] // take the name from the tag
 			}
 			// convert to model property
 			sft := sf.Type
@@ -231,6 +231,10 @@ func (sws SwaggerService) addModelTo(st reflect.Type, decl *ApiDeclaration) {
 					prop.Items = map[string]string{"$ref": sft.Elem().Elem().String()}
 					// add|overwrite model for element type
 					sws.addModelTo(sft.Elem().Elem(), decl)
+				} else {
+					// non-array, pointer type
+					prop.Type = sft.String()[1:] // no star, include pkg path
+					sws.addModelTo(sft.Elem(), decl)
 				}
 			}
 			sm.Properties[jsonName] = prop
