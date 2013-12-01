@@ -22,8 +22,8 @@ var DefaultResponseMimeType string
 // It provides several convenience methods to prepare and write response content.
 type Response struct {
 	http.ResponseWriter
-	accept        string   // content-types what the Http Request says it want to receive
-	produces      []string // content-types what the Route says it can produce
+	requestAccept string   // mime-type what the Http Request says it wants to receive
+	routeProduces []string // mime-types what the Route says it can produce
 	statusCode    int      // HTTP status code that has been written explicity (if zero then net/http has written 200)
 	contentLength int      // number of bytes written for the response body
 }
@@ -50,8 +50,8 @@ func (r Response) AddHeader(header string, value string) Response {
 // If an Accept header is specified then return the Content-Type as specified by the first in the Route.Produces that is matched with the Accept header.
 // Current implementation ignores any q-parameters in the Accept Header.
 func (r *Response) WriteEntity(value interface{}) *Response {
-	if "" == r.accept || "*/*" == r.accept {
-		for _, each := range r.produces {
+	if "" == r.requestAccept || "*/*" == r.requestAccept {
+		for _, each := range r.routeProduces {
 			if MIME_JSON == each {
 				r.WriteAsJson(value)
 				return r
@@ -62,8 +62,8 @@ func (r *Response) WriteEntity(value interface{}) *Response {
 			}
 		}
 	} else { // Accept header specified ; scan for each element in Route.Produces
-		for _, each := range r.produces {
-			if strings.Index(r.accept, each) != -1 {
+		for _, each := range r.routeProduces {
+			if strings.Index(r.requestAccept, each) != -1 {
 				if MIME_JSON == each {
 					r.WriteAsJson(value)
 					return r

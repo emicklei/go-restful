@@ -260,6 +260,6 @@ func (c Container) computeAllowedMethods(req *Request) []string {
 // It is basic because no parameter or (produces) content-type information is given.
 func newBasicRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {
 	resp := newResponse(httpWriter)
-	resp.accept = httpRequest.Header.Get(HEADER_Accept)
+	resp.requestAccept = httpRequest.Header.Get(HEADER_Accept)
 	return newRequest(httpRequest), resp
 }
