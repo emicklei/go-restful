@@ -15,7 +15,7 @@ This package has the logic to find the best matching Route and if found, call it
 		Path("/users").
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_JSON, restful.MIME_XML)
-	ws.Route(ws.GET("/{id}").To(u.findUser))  // u is a UserResource
+	ws.Route(ws.GET("/{user-id}").To(u.findUser))  // u is a UserResource
 	...
 	// GET http://localhost:8080/users/1
 	func (u UserResource) findUser(request *restful.Request, response *restful.Response) {
