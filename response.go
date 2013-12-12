@@ -33,7 +33,7 @@ func newResponse(httpWriter http.ResponseWriter) *Response {
 }
 
 // InternalServerError writes the StatusInternalServerError header.
-// DEPRECATED, use r.WriteHeader(http.StatusInternalServerError)
+// DEPRECATED, use WriteErrorString(http.StatusInternalServerError,reason)
 func (r Response) InternalServerError() Response {
 	r.WriteHeader(http.StatusInternalServerError)
 	return r
@@ -80,7 +80,8 @@ func (r *Response) WriteEntity(value interface{}) *Response {
 	} else if DefaultResponseMimeType == MIME_XML {
 		r.WriteAsXml(value)
 	} else {
-		r.WriteHeader(http.StatusNotAcceptable)
+		r.WriteHeader(http.StatusNotAcceptable) // for recording only
+		r.ResponseWriter.WriteHeader(http.StatusNotAcceptable)
 		r.Write([]byte("406: Not Acceptable"))
 	}
 	return r
@@ -93,6 +94,9 @@ func (r *Response) WriteAsXml(value interface{}) *Response {
 		r.WriteError(http.StatusInternalServerError, err)
 	} else {
 		r.Header().Set(HEADER_ContentType, MIME_XML)
+		if r.statusCode > 0 { // a WriteHeader was intercepted
+			r.ResponseWriter.WriteHeader(r.statusCode)
+		}
 		r.Write([]byte(xml.Header))
 		r.Write(output)
 	}
@@ -103,9 +107,12 @@ func (r *Response) WriteAsXml(value interface{}) *Response {
 func (r *Response) WriteAsJson(value interface{}) *Response {
 	output, err := json.MarshalIndent(value, " ", " ")
 	if err != nil {
-		r.WriteError(http.StatusInternalServerError, err)
+		r.WriteErrorString(http.StatusInternalServerError, err.Error())
 	} else {
 		r.Header().Set(HEADER_ContentType, MIME_JSON)
+		if r.statusCode > 0 { // a WriteHeader was intercepted
+			r.ResponseWriter.WriteHeader(r.statusCode)
+		}
 		r.Write(output)
 	}
 	return r
@@ -119,22 +126,24 @@ func (r *Response) WriteError(httpStatus int, err error) *Response {
 
 // WriteServiceError is a convenience method for a responding with a ServiceError and a status
 func (r *Response) WriteServiceError(httpStatus int, err ServiceError) *Response {
-	r.WriteHeader(httpStatus)
+	r.WriteHeader(httpStatus) // for recording only
+	r.ResponseWriter.WriteHeader(httpStatus)
 	r.WriteEntity(err)
 	return r
 }
 
 // WriteErrorString is a convenience method for an error status with the actual error
 func (r *Response) WriteErrorString(status int, errorReason string) *Response {
-	r.WriteHeader(status)
+	r.WriteHeader(status) // for recording only
+	r.ResponseWriter.WriteHeader(status)
 	r.Write([]byte(errorReason))
 	return r
 }
 
 // WriteHeader is overridden to remember the Status Code that has been written.
+// Note that using this method, the status value is only written when calling WriteEntity or directly WriteAsXml,WriteAsJson.
 func (r *Response) WriteHeader(httpStatus int) {
 	r.statusCode = httpStatus
-	r.ResponseWriter.WriteHeader(httpStatus)
 }
 
 // StatusCode returns the code that has been written using WriteHeader.

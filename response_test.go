@@ -56,3 +56,17 @@ func TestMeasureContentLengthWriteErrorString(t *testing.T) {
 		t.Errorf("Incorrect measured length:%d", resp.ContentLength())
 	}
 }
+
+// go test -v -test.run TestStatusCreatedAndContentTypeJson_Issue54 ...restful
+func TestStatusCreatedAndContentTypeJson_Issue54(t *testing.T) {
+	httpWriter := httptest.NewRecorder()
+	resp := Response{httpWriter, "application/json", []string{"application/json"}, 0, 0}
+	resp.WriteHeader(201)
+	resp.WriteAsJson(food{"Juicy"})
+	if httpWriter.HeaderMap.Get("Content-Type") != "application/json" {
+		t.Errorf("Expected content type json but got:%d", httpWriter.HeaderMap.Get("Content-Type"))
+	}
+	if httpWriter.Code != 201 {
+		t.Errorf("Expected status 201 but got:%d", httpWriter.Code)
+	}
+}
