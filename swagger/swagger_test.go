@@ -133,12 +133,11 @@ func TestIssue85(t *testing.T) {
 	decl := ApiDeclaration{Models: map[string]Model{}}
 	anon := struct{ Datasets []Dataset }{}
 	sws.addModelFromSampleTo(&Operation{}, true, anon, &decl)
-	t.Logf("models:%v", decl.Models)
-	for k, _ := range decl.Models {
-		t.Logf("key:%s", k)
-	}
-	_, ok := decl.Models["swagger.Dataset"]
+	_, ok := decl.Models["struct { Datasets ||swagger.Dataset }"]
 	if !ok {
-		t.Fatal("missing model swagger.Dataset")
+		for k, _ := range decl.Models {
+			t.Logf("key:%s", k)
+		}
+		t.Fatal("missing anonymous model")
 	}
 }

@@ -185,66 +185,14 @@ func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse 
 			}
 		}
 	}
-	modelName := st.String()
+	modelName := modelBuilder{}.keyFrom(st)
 	if isResponse {
 		if isCollection {
 			modelName = "array[" + modelName + "]"
 		}
 		operation.Type = modelName
 	}
-	sws.addModelTo(reflect.TypeOf(sample), decl)
-}
-
-func (sws SwaggerService) addModelTo(st reflect.Type, decl *ApiDeclaration) {
-	modelName := st.String()
-	// no models needed for primitive types
-	if isPrimitiveType(modelName) {
-		return
-	}
-	// see if we already have visited this model
-	if _, ok := decl.Models[modelName]; ok {
-		return
-	}
-	sm := Model{modelName, []string{}, map[string]ModelProperty{}}
-	// store before further initializing
-	decl.Models[modelName] = sm
-	// check for structure or primitive type
-	if st.Kind() == reflect.Struct {
-		for i := 0; i < st.NumField(); i++ {
-			sf := st.Field(i)
-			jsonName := sf.Name
-			// see if a tag overrides this
-			if override := st.Field(i).Tag.Get("json"); override != "" {
-				jsonName = strings.Split(override, ",")[0] // take the name from the tag
-			}
-			// convert to model property
-			sft := sf.Type
-			prop := ModelProperty{}
-			prop.Type = sft.String() // include pkg path
-			// override type of list-likes
-			if sft.Kind() == reflect.Slice || sft.Kind() == reflect.Array {
-				prop.Type = "array"
-				prop.Items = map[string]string{"$ref": sft.Elem().String()}
-				// add|overwrite model for element type
-				sws.addModelTo(sft.Elem(), decl)
-			}
-			// override type of pointer to list-likes
-			if sft.Kind() == reflect.Ptr {
-				if sft.Elem().Kind() == reflect.Slice || sft.Elem().Kind() == reflect.Array {
-					prop.Type = "array"
-					prop.Items = map[string]string{"$ref": sft.Elem().Elem().String()}
-					// add|overwrite model for element type
-					sws.addModelTo(sft.Elem().Elem(), decl)
-				} else {
-					// non-array, pointer type
-					prop.Type = sft.String()[1:] // no star, include pkg path
-					sws.addModelTo(sft.Elem(), decl)
-				}
-			}
-			sm.Properties[jsonName] = prop
-			//log.Printf("%s=%#v", jsonName, prop)
-		}
-	}
+	modelBuilder{decl.Models}.addModel(reflect.TypeOf(sample))
 }
 
 func asSwaggerParameter(param restful.ParameterData) Parameter {
@@ -316,8 +264,4 @@ func asDataType(any interface{}) string {
 		return "void"
 	}
 	return reflect.TypeOf(any).Name()
-}
-
-func isPrimitiveType(modelName string) bool {
-	return strings.Contains("int int32 int64 float32 float64 bool string byte", modelName)
 }
