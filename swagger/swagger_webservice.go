@@ -197,6 +197,10 @@ func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse 
 
 func (sws SwaggerService) addModelTo(st reflect.Type, decl *ApiDeclaration) {
 	modelName := st.String()
+	// no models needed for primitive types
+	if isPrimitiveType(modelName) {
+		return
+	}
 	// see if we already have visited this model
 	if _, ok := decl.Models[modelName]; ok {
 		return
@@ -312,4 +316,8 @@ func asDataType(any interface{}) string {
 		return "void"
 	}
 	return reflect.TypeOf(any).Name()
+}
+
+func isPrimitiveType(modelName string) bool {
+	return strings.Contains("int int32 int64 float32 float64 bool string byte", modelName)
 }

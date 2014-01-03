@@ -2,9 +2,10 @@ package swagger
 
 import (
 	"encoding/json"
-	"github.com/emicklei/go-restful"
 	"os"
 	"testing"
+
+	"github.com/emicklei/go-restful"
 )
 
 type sample struct {
@@ -120,4 +121,24 @@ func TestIssue78(t *testing.T) {
 	}
 	output, _ := json.MarshalIndent(decl, " ", " ")
 	os.Stdout.Write(output)
+}
+
+// go test -v -test.run TestIssue85 ...swagger
+type Dataset struct {
+	Names []string
+}
+
+func TestIssue85(t *testing.T) {
+	sws := newSwaggerService(Config{})
+	decl := ApiDeclaration{Models: map[string]Model{}}
+	anon := struct{ Datasets []Dataset }{}
+	sws.addModelFromSampleTo(&Operation{}, true, anon, &decl)
+	t.Logf("models:%v", decl.Models)
+	for k, _ := range decl.Models {
+		t.Logf("key:%s", k)
+	}
+	_, ok := decl.Models["swagger.Dataset"]
+	if !ok {
+		t.Fatal("missing model swagger.Dataset")
+	}
 }
