@@ -97,7 +97,7 @@ func (c CrossOriginResourceSharing) isValidAccessControlRequestMethod(method str
 
 func (c CrossOriginResourceSharing) isValidAccessControlRequestHeader(header string) bool {
 	for _, each := range c.AllowedHeaders {
-		if each == header {
+		if strings.ToLower(each) == strings.ToLower(header) {
 			return true
 		}
 	}
