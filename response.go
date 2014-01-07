@@ -22,14 +22,15 @@ var DefaultResponseMimeType string
 // It provides several convenience methods to prepare and write response content.
 type Response struct {
 	http.ResponseWriter
-	requestAccept string   // mime-type what the Http Request says it wants to receive
-	routeProduces []string // mime-types what the Route says it can produce
-	statusCode    int      // HTTP status code that has been written explicity (if zero then net/http has written 200)
-	contentLength int      // number of bytes written for the response body
+	requestAccept  string   // mime-type what the Http Request says it wants to receive
+	routeProduces  []string // mime-types what the Route says it can produce
+	statusCode     int      // HTTP status code that has been written explicity (if zero then net/http has written 200)
+	contentLength  int      // number of bytes written for the response body
+	lastWriteError error    // if not nil then the last Write was not succesful
 }
 
 func newResponse(httpWriter http.ResponseWriter) *Response {
-	return &Response{httpWriter, "", []string{}, http.StatusOK, 0} // empty content-types
+	return &Response{httpWriter, "", []string{}, http.StatusOK, 0, nil} // empty content-types
 }
 
 // InternalServerError writes the StatusInternalServerError header.
@@ -119,7 +120,6 @@ func (r *Response) WriteAsJson(value interface{}) *Response {
 }
 
 // WriteError write the http status and the error string on the response.
-// DEPRECATED; use WriteErrorString(status,reason)
 func (r *Response) WriteError(httpStatus int, err error) *Response {
 	return r.WriteErrorString(httpStatus, err.Error())
 }
@@ -160,6 +160,7 @@ func (r Response) StatusCode() int {
 func (r *Response) Write(bytes []byte) (int, error) {
 	written, err := r.ResponseWriter.Write(bytes)
 	r.contentLength += written
+	r.lastWriteError = err
 	return written, err
 }
 
@@ -168,4 +169,10 @@ func (r *Response) Write(bytes []byte) (int, error) {
 // Data written directly using the underlying http.ResponseWriter is not accounted for.
 func (r Response) ContentLength() int {
 	return r.contentLength
+}
+
+// LastWriteError returns nil or the last error that was returned on Write(bytes)
+// Note that Write() is called by all Write methods of Response, except WriteHeader.
+func (r Response) LastWriteError() error {
+	return r.lastWriteError
 }

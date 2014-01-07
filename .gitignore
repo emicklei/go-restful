@@ -63,3 +63,5 @@ examples/restful-pre-post-filters
 curly.prof
 
 examples/restful-NCSA-logging
+
+examples/restful-html-template
