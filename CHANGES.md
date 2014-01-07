@@ -3,6 +3,7 @@ Change history of go-restful
 2014-01-07
  - (api change) Write* methods in Response now return the error or nil.
  - added example of serving HTML from a Go template.
+ - fixed comparing Allowed headers in CORS (is now case-insensitive)
 
 2013-11-13
  - (api add) Response knows how many bytes are written to the response body.
