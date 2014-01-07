@@ -1,10 +1,11 @@
 Change history of go-restful
 =
+2014-01-07
+ - (api change) Write* methods in Response now return the error or nil.
+ - added example of serving HTML from a Go template.
+
 2013-11-13
  - (api add) Response knows how many bytes are written to the response body.
-2014-01-07
- - (api add) LastWriteError() returns the last error (or nil) on a response Write*.
- - added example of serving HTML from a Go template.
 
 2013-10-29
  - (api add) RecoverHandler(handler RecoverHandleFunction) to change how panic recovery is handled. Default behavior is to log and return a stacktrace. This may be a security issue as it exposes sourcecode information.

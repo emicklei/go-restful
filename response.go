@@ -22,15 +22,14 @@ var DefaultResponseMimeType string
 // It provides several convenience methods to prepare and write response content.
 type Response struct {
 	http.ResponseWriter
-	requestAccept  string   // mime-type what the Http Request says it wants to receive
-	routeProduces  []string // mime-types what the Route says it can produce
-	statusCode     int      // HTTP status code that has been written explicity (if zero then net/http has written 200)
-	contentLength  int      // number of bytes written for the response body
-	lastWriteError error    // if not nil then the last Write was not succesful
+	requestAccept string   // mime-type what the Http Request says it wants to receive
+	routeProduces []string // mime-types what the Route says it can produce
+	statusCode    int      // HTTP status code that has been written explicity (if zero then net/http has written 200)
+	contentLength int      // number of bytes written for the response body
 }
 
 func newResponse(httpWriter http.ResponseWriter) *Response {
-	return &Response{httpWriter, "", []string{}, http.StatusOK, 0, nil} // empty content-types
+	return &Response{httpWriter, "", []string{}, http.StatusOK, 0} // empty content-types
 }
 
 // InternalServerError writes the StatusInternalServerError header.
@@ -50,94 +49,100 @@ func (r Response) AddHeader(header string, value string) Response {
 // If no Accept header is specified (or */*) then return the Content-Type as specified by the first in the Route.Produces.
 // If an Accept header is specified then return the Content-Type as specified by the first in the Route.Produces that is matched with the Accept header.
 // Current implementation ignores any q-parameters in the Accept Header.
-func (r *Response) WriteEntity(value interface{}) *Response {
+func (r *Response) WriteEntity(value interface{}) error {
 	if "" == r.requestAccept || "*/*" == r.requestAccept {
 		for _, each := range r.routeProduces {
 			if MIME_JSON == each {
-				r.WriteAsJson(value)
-				return r
+				return r.WriteAsJson(value)
 			}
 			if MIME_XML == each {
-				r.WriteAsXml(value)
-				return r
+				return r.WriteAsXml(value)
 			}
 		}
 	} else { // Accept header specified ; scan for each element in Route.Produces
 		for _, each := range r.routeProduces {
 			if strings.Index(r.requestAccept, each) != -1 {
 				if MIME_JSON == each {
-					r.WriteAsJson(value)
-					return r
+					return r.WriteAsJson(value)
 				}
 				if MIME_XML == each {
-					r.WriteAsXml(value)
-					return r
+					return r.WriteAsXml(value)
 				}
 			}
 		}
 	}
 	if DefaultResponseMimeType == MIME_JSON {
-		r.WriteAsJson(value)
+		return r.WriteAsJson(value)
 	} else if DefaultResponseMimeType == MIME_XML {
-		r.WriteAsXml(value)
+		return r.WriteAsXml(value)
 	} else {
 		r.WriteHeader(http.StatusNotAcceptable) // for recording only
 		r.ResponseWriter.WriteHeader(http.StatusNotAcceptable)
-		r.Write([]byte("406: Not Acceptable"))
+		if _, err := r.Write([]byte("406: Not Acceptable")); err != nil {
+			return err
+		}
 	}
-	return r
+	return nil
 }
 
 // WriteAsXml is a convenience method for writing a value in xml (requires Xml tags on the value)
-func (r *Response) WriteAsXml(value interface{}) *Response {
+func (r *Response) WriteAsXml(value interface{}) error {
 	output, err := xml.MarshalIndent(value, " ", " ")
 	if err != nil {
-		r.WriteError(http.StatusInternalServerError, err)
+		return r.WriteError(http.StatusInternalServerError, err)
 	} else {
 		r.Header().Set(HEADER_ContentType, MIME_XML)
 		if r.statusCode > 0 { // a WriteHeader was intercepted
 			r.ResponseWriter.WriteHeader(r.statusCode)
 		}
-		r.Write([]byte(xml.Header))
-		r.Write(output)
+		_, err = r.Write([]byte(xml.Header))
+		if err != nil {
+			return err
+		}
+		if _, err = r.Write(output); err != nil {
+			return err
+		}
 	}
-	return r
+	return nil
 }
 
 // WriteAsJson is a convenience method for writing a value in json
-func (r *Response) WriteAsJson(value interface{}) *Response {
+func (r *Response) WriteAsJson(value interface{}) error {
 	output, err := json.MarshalIndent(value, " ", " ")
 	if err != nil {
-		r.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return r.WriteErrorString(http.StatusInternalServerError, err.Error())
 	} else {
 		r.Header().Set(HEADER_ContentType, MIME_JSON)
 		if r.statusCode > 0 { // a WriteHeader was intercepted
 			r.ResponseWriter.WriteHeader(r.statusCode)
 		}
-		r.Write(output)
+		if _, err = r.Write(output); err != nil {
+			return err
+		}
 	}
-	return r
+	return nil
 }
 
 // WriteError write the http status and the error string on the response.
-func (r *Response) WriteError(httpStatus int, err error) *Response {
+func (r *Response) WriteError(httpStatus int, err error) error {
 	return r.WriteErrorString(httpStatus, err.Error())
 }
 
 // WriteServiceError is a convenience method for a responding with a ServiceError and a status
-func (r *Response) WriteServiceError(httpStatus int, err ServiceError) *Response {
+func (r *Response) WriteServiceError(httpStatus int, err ServiceError) error {
 	r.WriteHeader(httpStatus) // for recording only
 	r.ResponseWriter.WriteHeader(httpStatus)
-	r.WriteEntity(err)
-	return r
+	return r.WriteEntity(err)
 }
 
 // WriteErrorString is a convenience method for an error status with the actual error
-func (r *Response) WriteErrorString(status int, errorReason string) *Response {
+func (r *Response) WriteErrorString(status int, errorReason string) error {
 	r.WriteHeader(status) // for recording only
 	r.ResponseWriter.WriteHeader(status)
-	r.Write([]byte(errorReason))
-	return r
+	if _, err := r.Write([]byte(errorReason)); err != nil {
+		return err
+	}
+	return nil
 }
 
 // WriteHeader is overridden to remember the Status Code that has been written.
@@ -160,7 +165,6 @@ func (r Response) StatusCode() int {
 func (r *Response) Write(bytes []byte) (int, error) {
 	written, err := r.ResponseWriter.Write(bytes)
 	r.contentLength += written
-	r.lastWriteError = err
 	return written, err
 }
 
@@ -169,10 +173,4 @@ func (r *Response) Write(bytes []byte) (int, error) {
 // Data written directly using the underlying http.ResponseWriter is not accounted for.
 func (r Response) ContentLength() int {
 	return r.contentLength
-}
-
-// LastWriteError returns nil or the last error that was returned on Write(bytes)
-// Note that Write() is called by all Write methods of Response, except WriteHeader.
-func (r Response) LastWriteError() error {
-	return r.lastWriteError
 }
