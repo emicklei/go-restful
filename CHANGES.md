@@ -1,5 +1,8 @@
 Change history of go-restful
 =
+2014-01-10
+ - (api add) support for CloseNotify, see http://golang.org/pkg/net/http/#CloseNotifier
+
 2014-01-07
  - (api change) Write* methods in Response now return the error or nil.
  - added example of serving HTML from a Go template.

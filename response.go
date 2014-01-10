@@ -174,3 +174,8 @@ func (r *Response) Write(bytes []byte) (int, error) {
 func (r Response) ContentLength() int {
 	return r.contentLength
 }
+
+// CloseNotify is part of http.CloseNotifier interface
+func (r Response) CloseNotify() <-chan bool {
+	return r.ResponseWriter.(http.CloseNotifier).CloseNotify()
+}

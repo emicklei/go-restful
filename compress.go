@@ -38,6 +38,11 @@ func (c *CompressingResponseWriter) Write(bytes []byte) (int, error) {
 	return c.compressor.Write(bytes)
 }
 
+// CloseNotify is part of http.CloseNotifier interface
+func (c *CompressingResponseWriter) CloseNotify() <-chan bool {
+	return c.writer.(http.CloseNotifier).CloseNotify()
+}
+
 // Close the underlying compressor
 func (c *CompressingResponseWriter) Close() {
 	c.compressor.Close()
