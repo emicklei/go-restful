@@ -27,13 +27,28 @@ func (b modelBuilder) addModel(st reflect.Type) {
 		for i := 0; i < st.NumField(); i++ {
 			sf := st.Field(i)
 			jsonName := sf.Name
-			// see if a tag overrides this
-			if override := st.Field(i).Tag.Get("json"); override != "" {
-				jsonName = strings.Split(override, ",")[0] // take the name from the tag
-			}
-			// convert to model property
 			sft := sf.Type
 			prop := ModelProperty{}
+
+			// see if a tag overrides this
+			if jsonTag := st.Field(i).Tag.Get("json"); jsonTag != "" {
+				s := strings.Split(jsonTag, ",")
+				if s[0] == "-" {
+					continue
+				} else if s[0] != "" {
+					jsonName = s[0]
+				}
+				if len(s) > 1 {
+					switch s[1] {
+					case "string":
+						prop.Description = "(" + sft.String() + " as string)"
+						sft = reflect.TypeOf("")
+					case "omitempty":
+						//todo: handle this case?
+					}
+				}
+			}
+
 			prop.Type = sft.String() // include pkg path
 			// override type of list-likes
 			if sft.Kind() == reflect.Slice || sft.Kind() == reflect.Array {
