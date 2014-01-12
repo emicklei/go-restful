@@ -19,7 +19,12 @@ func TestJsonTags(t *testing.T) {
 
 	expected := `{
   "id": "swagger.X",
-  "required": [],
+  "required": [
+   "A",
+   "C",
+   "E",
+   "I"
+  ],
   "properties": {
    "A": {
     "type": "string",
@@ -48,14 +53,10 @@ func TestJsonTags(t *testing.T) {
   }
  }`
 
-	_ = expected
 	sws := newSwaggerService(Config{})
 	decl := ApiDeclaration{Models: map[string]Model{}}
 	sws.addModelFromSampleTo(&Operation{}, true, X{}, &decl)
 
-	properties := decl.Models["swagger.X"].Properties
-	_, ok := properties[""]
-	_ = ok
 	output, _ := json.MarshalIndent(decl.Models["swagger.X"], " ", " ")
 	if string(output) != expected {
 		t.Error("output != expected")

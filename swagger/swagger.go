@@ -76,7 +76,7 @@ type ErrorResponse struct {
 
 type Model struct {
 	Id         string                   `json:"id"`
-	Required   []string                 `json:"required"`
+	Required   []string                 `json:"required,omitempty"`
 	Properties map[string]ModelProperty `json:"properties"`
 }
 
