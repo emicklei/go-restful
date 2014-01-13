@@ -89,3 +89,27 @@ func TestLastWriteErrorCaught(t *testing.T) {
 		t.Errorf("Unexpected error message:%v", err)
 	}
 }
+
+// go test -v -test.run TestAcceptStarStar_Issue83 ...restful
+func TestAcceptStarStar_Issue83(t *testing.T) {
+	httpWriter := httptest.NewRecorder()
+	//								Accept									Produces
+	resp := Response{httpWriter, "application/bogus,*/*;q=0.8", []string{"application/json"}, 0, 0}
+	resp.WriteEntity(food{"Juicy"})
+	ct := httpWriter.Header().Get("Content-Type")
+	if "application/json" != ct {
+		t.Errorf("Unexpected content type:%s", ct)
+	}
+}
+
+// go test -v -test.run TestAcceptSkipStarStar_Issue83 ...restful
+func TestAcceptSkipStarStar_Issue83(t *testing.T) {
+	httpWriter := httptest.NewRecorder()
+	//								Accept									Produces
+	resp := Response{httpWriter, " application/xml ,*/* ; q=0.8", []string{"application/json", "application/xml"}, 0, 0}
+	resp.WriteEntity(food{"Juicy"})
+	ct := httpWriter.Header().Get("Content-Type")
+	if "application/xml" != ct {
+		t.Errorf("Unexpected content type:%s", ct)
+	}
+}

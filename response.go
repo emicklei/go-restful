@@ -50,24 +50,18 @@ func (r Response) AddHeader(header string, value string) Response {
 // If an Accept header is specified then return the Content-Type as specified by the first in the Route.Produces that is matched with the Accept header.
 // Current implementation ignores any q-parameters in the Accept Header.
 func (r *Response) WriteEntity(value interface{}) error {
-	if "" == r.requestAccept || "*/*" == r.requestAccept {
+	for _, qualifiedMime := range strings.Split(r.requestAccept, ",") {
+		mime := strings.Trim(strings.Split(qualifiedMime, ";")[0], " ")
 		for _, each := range r.routeProduces {
-			if MIME_JSON == each {
+			match := mime
+			if 0 == len(mime) || mime == "*/*" {
+				match = each
+			}
+			if MIME_JSON == match {
 				return r.WriteAsJson(value)
 			}
-			if MIME_XML == each {
+			if MIME_XML == match {
 				return r.WriteAsXml(value)
-			}
-		}
-	} else { // Accept header specified ; scan for each element in Route.Produces
-		for _, each := range r.routeProduces {
-			if strings.Index(r.requestAccept, each) != -1 {
-				if MIME_JSON == each {
-					return r.WriteAsJson(value)
-				}
-				if MIME_XML == each {
-					return r.WriteAsXml(value)
-				}
 			}
 		}
 	}
