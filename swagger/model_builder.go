@@ -29,7 +29,7 @@ func (b modelBuilder) addModel(st reflect.Type) {
 			jsonName := sf.Name
 			sft := sf.Type
 			prop := ModelProperty{}
-
+			required := true
 			// see if a tag overrides this
 			if jsonTag := st.Field(i).Tag.Get("json"); jsonTag != "" {
 				s := strings.Split(jsonTag, ",")
@@ -45,10 +45,13 @@ func (b modelBuilder) addModel(st reflect.Type) {
 						sft = reflect.TypeOf("")
 					case "omitempty":
 						//todo: handle this case?
+						required = false
 					}
 				}
 			}
-
+			if required {
+				sm.Required = append(sm.Required, jsonName)
+			}
 			prop.Type = sft.String() // include pkg path
 			// override type of list-likes
 			if sft.Kind() == reflect.Slice || sft.Kind() == reflect.Array {
@@ -71,9 +74,11 @@ func (b modelBuilder) addModel(st reflect.Type) {
 				}
 			}
 			sm.Properties[jsonName] = prop
-			//log.Printf("%s=%#v", jsonName, prop)
 		}
 	}
+
+	// update model builder with completed model
+	b.Models[modelName] = sm
 }
 
 func (b modelBuilder) keyFrom(st reflect.Type) string {
