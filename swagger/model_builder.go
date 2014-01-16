@@ -9,8 +9,11 @@ type modelBuilder struct {
 	Models map[string]Model
 }
 
-func (b modelBuilder) addModel(st reflect.Type) {
+func (b modelBuilder) addModel(st reflect.Type, nameOverride string) {
 	modelName := b.keyFrom(st)
+	if nameOverride != "" {
+		modelName = nameOverride
+	}
 	// no models needed for primitive types
 	if b.isPrimitiveType(modelName) {
 		return
@@ -44,7 +47,6 @@ func (b modelBuilder) addModel(st reflect.Type) {
 						prop.Description = "(" + sft.String() + " as string)"
 						sft = reflect.TypeOf("")
 					case "omitempty":
-						//todo: handle this case?
 						required = false
 					}
 				}
@@ -52,33 +54,51 @@ func (b modelBuilder) addModel(st reflect.Type) {
 			if required {
 				sm.Required = append(sm.Required, jsonName)
 			}
+
 			prop.Type = sft.String() // include pkg path
+
 			// override type of list-likes
 			if sft.Kind() == reflect.Slice || sft.Kind() == reflect.Array {
 				prop.Type = "array"
-				prop.Items = map[string]string{"$ref": b.keyFrom(sft.Elem())}
+				elemName := b.getElementTypeName(modelName, jsonName, sft.Elem())
+				prop.Items = map[string]string{"$ref": elemName}
 				// add|overwrite model for element type
-				b.addModel(sft.Elem())
-			}
-			// override type of pointer to list-likes
-			if sft.Kind() == reflect.Ptr {
+				b.addModel(sft.Elem(), elemName)
+			} else if sft.Kind() == reflect.Ptr { // override type of pointer to list-likes
 				if sft.Elem().Kind() == reflect.Slice || sft.Elem().Kind() == reflect.Array {
 					prop.Type = "array"
-					prop.Items = map[string]string{"$ref": b.keyFrom(sft.Elem().Elem())}
+					elemName := b.getElementTypeName(modelName, jsonName, sft.Elem().Elem())
+					prop.Items = map[string]string{"$ref": elemName}
 					// add|overwrite model for element type
-					b.addModel(sft.Elem().Elem())
+					b.addModel(sft.Elem().Elem(), elemName)
 				} else {
 					// non-array, pointer type
 					prop.Type = sft.String()[1:] // no star, include pkg path
-					b.addModel(sft.Elem())
+					elemName := ""
+					if sft.Elem().Name() == "" {
+						elemName = modelName + "." + jsonName
+						prop.Type = elemName
+					}
+					b.addModel(sft.Elem(), elemName)
 				}
+			} else if sft.Name() == "" { // override type of anonymous structs
+				prop.Type = modelName + "." + jsonName
+				b.addModel(sft, prop.Type)
 			}
+
 			sm.Properties[jsonName] = prop
 		}
 	}
 
 	// update model builder with completed model
 	b.Models[modelName] = sm
+}
+
+func (b modelBuilder) getElementTypeName(modelName, jsonName string, t reflect.Type) string {
+	if t.Name() == "" {
+		return modelName + "." + jsonName
+	}
+	return b.keyFrom(t)
 }
 
 func (b modelBuilder) keyFrom(st reflect.Type) string {
