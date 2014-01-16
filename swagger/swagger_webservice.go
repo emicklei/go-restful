@@ -70,8 +70,14 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 
 	// Check paths for UI serving
 	if config.SwaggerPath != "" && config.SwaggerFilePath != "" {
-		LogInfo("[restful/swagger] %v%v is mapped to folder %v", config.WebServicesUrl, config.SwaggerPath, config.SwaggerFilePath)
-		wsContainer.Handle(config.SwaggerPath, http.StripPrefix(config.SwaggerPath, http.FileServer(http.Dir(config.SwaggerFilePath))))
+		swaggerPathSlash := config.SwaggerPath
+		// path must end with slash /
+		if "/" != config.SwaggerPath[len(config.SwaggerPath)-1:] {
+			LogInfo("[restful/swagger] use corrected SwaggerFilePath ; must end with slash (/)")
+			swaggerPathSlash += "/"
+		}
+		LogInfo("[restful/swagger] %v%v is mapped to folder %v", config.WebServicesUrl, swaggerPathSlash, config.SwaggerFilePath)
+		wsContainer.Handle(swaggerPathSlash, http.StripPrefix(swaggerPathSlash, http.FileServer(http.Dir(config.SwaggerFilePath))))
 	} else {
 		LogInfo("[restful/swagger] Swagger(File)Path is empty ; no UI is served")
 	}
