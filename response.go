@@ -52,16 +52,25 @@ func (r Response) AddHeader(header string, value string) Response {
 func (r *Response) WriteEntity(value interface{}) error {
 	for _, qualifiedMime := range strings.Split(r.requestAccept, ",") {
 		mime := strings.Trim(strings.Split(qualifiedMime, ";")[0], " ")
-		for _, each := range r.routeProduces {
-			match := mime
-			if 0 == len(mime) || mime == "*/*" {
-				match = each
+		if 0 == len(mime) || mime == "*/*" {
+			for _, each := range r.routeProduces {
+				if MIME_JSON == each {
+					return r.WriteAsJson(value)
+				}
+				if MIME_XML == each {
+					return r.WriteAsXml(value)
+				}
 			}
-			if MIME_JSON == match {
-				return r.WriteAsJson(value)
-			}
-			if MIME_XML == match {
-				return r.WriteAsXml(value)
+		} else { // mime is not blank; see if we have a match in Produces
+			for _, each := range r.routeProduces {
+				if mime == each {
+					if MIME_JSON == each {
+						return r.WriteAsJson(value)
+					}
+					if MIME_XML == each {
+						return r.WriteAsXml(value)
+					}
+				}
 			}
 		}
 	}

@@ -113,3 +113,15 @@ func TestAcceptSkipStarStar_Issue83(t *testing.T) {
 		t.Errorf("Unexpected content type:%s", ct)
 	}
 }
+
+// go test -v -test.run TestAcceptXmlBeforeStarStar_Issue83 ...restful
+func TestAcceptXmlBeforeStarStar_Issue83(t *testing.T) {
+	httpWriter := httptest.NewRecorder()
+	//								Accept									Produces
+	resp := Response{httpWriter, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", []string{"application/json"}, 0, 0}
+	resp.WriteEntity(food{"Juicy"})
+	ct := httpWriter.Header().Get("Content-Type")
+	if "application/json" != ct {
+		t.Errorf("Unexpected content type:%s", ct)
+	}
+}
