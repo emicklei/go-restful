@@ -261,6 +261,8 @@ func asParamType(kind int) string {
 		return "body"
 	case kind == restful.HEADER_PARAMETER:
 		return "header"
+	case kind == restful.FORM_PARAMETER:
+		return "form"
 	}
 	return ""
 }

@@ -73,6 +73,14 @@ func (w *WebService) HeaderParameter(name, description string) *Parameter {
 	return p
 }
 
+// FormParameter creates a new Parameter of kind Form (using application/x-www-form-urlencoded) for documentation purposes.
+// It is initialized as required with string as its DataType.
+func (w *WebService) FormParameter(name, description string) *Parameter {
+	p := &Parameter{&ParameterData{Name: name, Description: description, Required: false, DataType: "string"}}
+	p.beForm()
+	return p
+}
+
 // Route creates a new Route using the RouteBuilder and add to the ordered list of Routes.
 func (w *WebService) Route(builder *RouteBuilder) *WebService {
 	builder.copyDefaults(w.produces, w.consumes)

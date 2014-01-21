@@ -9,6 +9,7 @@ const (
 	QUERY_PARAMETER         // indicator of Request parameter type "query"
 	BODY_PARAMETER          // indicator of Request parameter type "body"
 	HEADER_PARAMETER        // indicator of Request parameter type "header"
+	FORM_PARAMETER          // indicator of Request parameter type "form"
 )
 
 // Parameter is for documententing the parameter used in a Http Request
@@ -52,6 +53,11 @@ func (p *Parameter) beBody() *Parameter {
 
 func (p *Parameter) beHeader() *Parameter {
 	p.data.Kind = HEADER_PARAMETER
+	return p
+}
+
+func (p *Parameter) beForm() *Parameter {
+	p.data.Kind = FORM_PARAMETER
 	return p
 }
 
