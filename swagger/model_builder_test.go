@@ -2,6 +2,8 @@ package swagger
 
 import (
 	"encoding/json"
+	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -243,19 +245,87 @@ func TestAnonymousPtrArrayStruct(t *testing.T) {
 	testJsonFromStruct(t, X{}, expected)
 }
 
-func jsonFromSwaggerService(sample interface{}) string {
-	sws := newSwaggerService(Config{})
-	decl := ApiDeclaration{Models: map[string]Model{}}
-	sws.addModelFromSampleTo(&Operation{}, true, sample, &decl)
+// TODO this fails
+//func TestEmbeddedStruct_Issue98(t *testing.T) {
+//	type Y struct {
+//		A int
+//	}
+//	type X struct {
+//		Y
+//	}
+//	testJsonFromStruct(t, X{}, "")
+//}
 
-	output, _ := json.MarshalIndent(decl.Models, " ", " ")
-	return string(output)
+type File struct {
+	History     []File
+	HistoryPtrs []*File
 }
 
+// go test -v -test.run TestRecursiveStructure ...swagger
+func TestRecursiveStructure(t *testing.T) {
+	testJsonFromStruct(t, File{}, `{
+  "swagger.File": {
+   "id": "swagger.File",
+   "required": [
+    "History",
+    "HistoryPtrs"
+   ],
+   "properties": {
+    "History": {
+     "type": "array",
+     "description": "",
+     "items": {
+      "$ref": "swagger.File"
+     }
+    },
+    "HistoryPtrs": {
+     "type": "array",
+     "description": "",
+     "items": {
+      "$ref": "swagger.File.HistoryPtrs"
+     }
+    }
+   }
+  },
+  "swagger.File.HistoryPtrs": {
+   "id": "swagger.File.HistoryPtrs",
+   "properties": {}
+  }
+ }`)
+}
+
+// Utils
+
 func testJsonFromStruct(t *testing.T, sample interface{}, expectedJson string) {
-	output := jsonFromSwaggerService(sample)
-	if output != expectedJson {
-		t.Error("output != expected\nexpected:", expectedJson)
+	compareJson(t, false, modelsFromStruct(sample), expectedJson)
+}
+
+func modelsFromStruct(sample interface{}) map[string]Model {
+	models := map[string]Model{}
+	builder := modelBuilder{models}
+	builder.addModel(reflect.TypeOf(sample), "")
+	return models
+}
+
+func compareJson(t *testing.T, flatCompare bool, value interface{}, expectedJsonAsString string) {
+	var output []byte
+	var err error
+	if flatCompare {
+		output, err = json.Marshal(value)
+	} else {
+		output, err = json.MarshalIndent(value, " ", " ")
 	}
-	t.Log("output:\n", output)
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+	actual := string(output)
+	if actual != expectedJsonAsString {
+		t.Errorf("Mismatch JSON doc")
+		// Use simple fmt to create a pastable output :-)
+		fmt.Println("---- expected -----")
+		fmt.Println(expectedJsonAsString)
+		fmt.Println("---- actual -----")
+		fmt.Println(actual)
+	}
 }

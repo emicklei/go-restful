@@ -2,7 +2,6 @@ package swagger
 
 import (
 	"encoding/json"
-	"os"
 	"testing"
 
 	"github.com/emicklei/go-restful"
@@ -18,37 +17,23 @@ type item struct {
 	itemName string `json:"name"`
 }
 
-type File struct {
-	History     []File
-	HistoryPtrs []*File
-}
-
 // go test -v -test.run TestApi ...swagger
 func TestApi(t *testing.T) {
 	value := Api{Path: "/", Description: "Some Path", Operations: []Operation{}}
-	output, _ := json.MarshalIndent(value, " ", " ")
-	print(string(output))
+	compareJson(t, true, value, `{"path":"/","description":"Some Path"}`)
 }
 
+// go test -v -test.run TestModelToJsonSchema ...swagger
 func TestModelToJsonSchema(t *testing.T) {
 	sws := newSwaggerService(Config{})
-	decl := ApiDeclaration{Models: map[string]Model{}}
+	models := map[string]Model{}
 	op := new(Operation)
 	op.Nickname = "getSome"
-	sws.addModelFromSampleTo(op, true, sample{items: []item{}}, &decl)
-	output, _ := json.MarshalIndent(decl.Models, " ", " ")
-	os.Stdout.Write(output)
-}
-
-// go test -v -test.run TestCreateModelFromRecursiveDataStructure ...swagger
-func TestCreateModelFromRecursiveDataStructure(t *testing.T) {
-	sws := newSwaggerService(Config{})
-	decl := ApiDeclaration{Models: map[string]Model{}}
-	op := new(Operation)
-	op.Nickname = "getSome"
-	sws.addModelFromSampleTo(op, true, File{}, &decl)
-	output, _ := json.MarshalIndent(decl.Models, " ", " ")
-	os.Stdout.Write(output)
+	sws.addModelFromSampleTo(op, true, sample{items: []item{}}, models)
+	_, err := json.MarshalIndent(op, " ", " ")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
 }
 
 // go test -v -test.run TestServiceToApi ...swagger
@@ -64,8 +49,10 @@ func TestServiceToApi(t *testing.T) {
 		WebServices:    []*restful.WebService{ws}}
 	sws := newSwaggerService(cfg)
 	decl := sws.composeDeclaration(ws, "/tests")
-	output, _ := json.MarshalIndent(decl, " ", " ")
-	os.Stdout.Write(output)
+	_, err := json.MarshalIndent(decl, " ", " ")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
 }
 
 func dummy(i *restful.Request, o *restful.Response) {}
@@ -85,9 +72,9 @@ type Item struct {
 
 func TestIssue78(t *testing.T) {
 	sws := newSwaggerService(Config{})
-	decl := ApiDeclaration{Models: map[string]Model{}}
-	sws.addModelFromSampleTo(&Operation{}, true, Response{Items: &[]Item{}}, &decl)
-	model, ok := decl.Models["swagger.Response"]
+	models := map[string]Model{}
+	sws.addModelFromSampleTo(&Operation{}, true, Response{Items: &[]Item{}}, models)
+	model, ok := models["swagger.Response"]
 	if !ok {
 		t.Fatal("missing response model")
 	}
@@ -119,8 +106,6 @@ func TestIssue78(t *testing.T) {
 	if ref != "swagger.Item" {
 		t.Fatal("wrong $ref:" + ref)
 	}
-	output, _ := json.MarshalIndent(decl, " ", " ")
-	os.Stdout.Write(output)
 }
 
 // go test -v -test.run TestIssue85 ...swagger
@@ -130,12 +115,12 @@ type Dataset struct {
 
 func TestIssue85(t *testing.T) {
 	sws := newSwaggerService(Config{})
-	decl := ApiDeclaration{Models: map[string]Model{}}
+	models := map[string]Model{}
 	anon := struct{ Datasets []Dataset }{}
-	sws.addModelFromSampleTo(&Operation{}, true, anon, &decl)
-	_, ok := decl.Models["struct { Datasets ||swagger.Dataset }"]
+	sws.addModelFromSampleTo(&Operation{}, true, anon, models)
+	_, ok := models["struct { Datasets ||swagger.Dataset }"]
 	if !ok {
-		for k, _ := range decl.Models {
+		for k, _ := range models {
 			t.Logf("key:%s", k)
 		}
 		t.Fatal("missing anonymous model")

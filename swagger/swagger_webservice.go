@@ -169,15 +169,15 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix 
 // addModelsFromRoute takes any read or write sample from the Route and creates a Swagger model from it.
 func (sws SwaggerService) addModelsFromRouteTo(operation *Operation, route restful.Route, decl *ApiDeclaration) {
 	if route.ReadSample != nil {
-		sws.addModelFromSampleTo(operation, false, route.ReadSample, decl)
+		sws.addModelFromSampleTo(operation, false, route.ReadSample, decl.Models)
 	}
 	if route.WriteSample != nil {
-		sws.addModelFromSampleTo(operation, true, route.WriteSample, decl)
+		sws.addModelFromSampleTo(operation, true, route.WriteSample, decl.Models)
 	}
 }
 
 // addModelFromSample creates and adds (or overwrites) a Model from a sample resource
-func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse bool, sample interface{}, decl *ApiDeclaration) {
+func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse bool, sample interface{}, models map[string]Model) {
 	st := reflect.TypeOf(sample)
 	isCollection := false
 	if st.Kind() == reflect.Slice || st.Kind() == reflect.Array {
@@ -198,7 +198,7 @@ func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse 
 		}
 		operation.Type = modelName
 	}
-	modelBuilder{decl.Models}.addModel(reflect.TypeOf(sample), "")
+	modelBuilder{models}.addModel(reflect.TypeOf(sample), "")
 }
 
 func asSwaggerParameter(param restful.ParameterData) Parameter {
