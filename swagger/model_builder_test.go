@@ -33,7 +33,7 @@ func TestJsonTags(t *testing.T) {
      "description": "(int as string)"
     },
     "D": {
-     "type": "int",
+     "type": "integer",
      "description": ""
     }
    }
@@ -54,11 +54,11 @@ func TestJsonTagOmitempty(t *testing.T) {
    "id": "swagger.X",
    "properties": {
     "A": {
-     "type": "int",
+     "type": "integer",
      "description": ""
     },
     "C": {
-     "type": "int",
+     "type": "integer",
      "description": ""
     }
    }
@@ -102,23 +102,11 @@ func TestAnonymousStruct(t *testing.T) {
   "swagger.X": {
    "id": "swagger.X",
    "required": [
-    "A"
-   ],
-   "properties": {
-    "A": {
-     "type": "swagger.X.A",
-     "description": ""
-    }
-   }
-  },
-  "swagger.X.A": {
-   "id": "swagger.X.A",
-   "required": [
     "B"
    ],
    "properties": {
     "B": {
-     "type": "int",
+     "type": "integer",
      "description": ""
     }
    }
@@ -155,7 +143,7 @@ func TestAnonymousPtrStruct(t *testing.T) {
    ],
    "properties": {
     "B": {
-     "type": "int",
+     "type": "integer",
      "description": ""
     }
    }
@@ -195,7 +183,7 @@ func TestAnonymousArrayStruct(t *testing.T) {
    ],
    "properties": {
     "B": {
-     "type": "int",
+     "type": "integer",
      "description": ""
     }
    }
@@ -235,7 +223,7 @@ func TestAnonymousPtrArrayStruct(t *testing.T) {
    ],
    "properties": {
     "B": {
-     "type": "int",
+     "type": "integer",
      "description": ""
     }
    }
@@ -245,16 +233,29 @@ func TestAnonymousPtrArrayStruct(t *testing.T) {
 	testJsonFromStruct(t, X{}, expected)
 }
 
-// TODO this fails
-//func TestEmbeddedStruct_Issue98(t *testing.T) {
-//	type Y struct {
-//		A int
-//	}
-//	type X struct {
-//		Y
-//	}
-//	testJsonFromStruct(t, X{}, "")
-//}
+// go test -v -test.run TestEmbeddedStruct_Issue98 ...swagger
+func TestEmbeddedStruct_Issue98(t *testing.T) {
+	type Y struct {
+		A int
+	}
+	type X struct {
+		Y
+	}
+	testJsonFromStruct(t, X{}, `{
+  "swagger.X": {
+   "id": "swagger.X",
+   "required": [
+    "A"
+   ],
+   "properties": {
+    "A": {
+     "type": "integer",
+     "description": ""
+    }
+   }
+  }
+ }`)
+}
 
 type File struct {
 	History     []File

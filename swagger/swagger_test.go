@@ -85,7 +85,7 @@ func TestIssue78(t *testing.T) {
 	if !ok {
 		t.Fatal("missing code")
 	}
-	if "int" != code.Type {
+	if "integer" != code.Type {
 		t.Fatal("wrong code type:" + code.Type)
 	}
 	items, ok := model.Properties["Items"]
