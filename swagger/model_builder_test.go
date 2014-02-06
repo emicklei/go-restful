@@ -101,6 +101,15 @@ func TestAnonymousStruct(t *testing.T) {
 	expected := `{
   "swagger.X": {
    "id": "swagger.X",
+   "properties": {
+    "A": {
+     "type": "swagger.X.A",
+     "description": ""
+    }
+   }
+  },
+  "swagger.X.A": {
+   "id": "swagger.X.A",
    "required": [
     "B"
    ],
@@ -291,6 +300,56 @@ func TestRecursiveStructure(t *testing.T) {
   "swagger.File.HistoryPtrs": {
    "id": "swagger.File.HistoryPtrs",
    "properties": {}
+  }
+ }`)
+}
+
+//1
+type A1 struct {
+	B struct {
+		Id int
+	}
+}
+
+//2
+type A2 struct {
+	C `json:"B"`
+}
+type C struct{ Id int }
+
+//3
+type A3 struct {
+	B D
+}
+type D struct {
+	Id int
+}
+
+// go test -v -test.run TestEmbeddedStructA1 ...swagger
+func TestEmbeddedStructA1(t *testing.T) {
+	output, _ := json.MarshalIndent(A1{}, " ", " ")
+	print(string(output))
+	testJsonFromStruct(t, A1{}, `{
+  "swagger.A1": {
+   "id": "swagger.A1",
+   "properties": {
+    "B": {
+     "type": "swagger.A1.B",
+     "description": ""
+    }
+   }
+  },
+  "swagger.A1.B": {
+   "id": "swagger.A1.B",
+   "required": [
+    "Id"
+   ],
+   "properties": {
+    "Id": {
+     "type": "integer",
+     "description": ""
+    }
+   }
   }
  }`)
 }

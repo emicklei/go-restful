@@ -51,18 +51,27 @@ func (b modelBuilder) buildProperty(field reflect.StructField, sm *Model, modelN
 	prop := ModelProperty{}
 
 	if fieldKind == reflect.Struct {
-		// embedded struct
-		sub := modelBuilder{map[string]Model{}}
-		sub.addModel(fieldType, "")
-		subKey := sub.keyFrom(fieldType)
-		// merge properties from sub
-		subModel := sub.Models[subKey]
-		for k, v := range subModel.Properties {
-			sm.Properties[k] = v
-			sm.Required = append(sm.Required, k)
+		// check for anonymous
+		if len(fieldType.Name()) == 0 {
+			// anonymous
+			anonType := sm.Id + "." + jsonName
+			b.addModel(fieldType, anonType)
+			prop.Type = anonType
+			return jsonName, prop
+		} else {
+			// embedded struct
+			sub := modelBuilder{map[string]Model{}}
+			sub.addModel(fieldType, "")
+			subKey := sub.keyFrom(fieldType)
+			// merge properties from sub
+			subModel := sub.Models[subKey]
+			for k, v := range subModel.Properties {
+				sm.Properties[k] = v
+				sm.Required = append(sm.Required, k)
+			}
+			// empty name signals skip property
+			return "", prop
 		}
-		// empty name signals skip property
-		return "", prop
 	}
 
 	required := true
