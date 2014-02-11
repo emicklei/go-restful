@@ -1,11 +1,140 @@
 package swagger
 
-import (
-	"encoding/json"
-	"fmt"
-	"reflect"
-	"testing"
-)
+import "testing"
+
+// clear && go test -v -test.run TestS1 ...swagger
+func TestS1(t *testing.T) {
+	type S1 struct {
+		Id string
+	}
+	testJsonFromStruct(t, S1{}, `{
+  "swagger.S1": {
+   "id": "swagger.S1",
+   "required": [
+    "Id"
+   ],
+   "properties": {
+    "Id": {
+     "type": "string",
+     "description": ""
+    }
+   }
+  }
+ }`)
+}
+
+// clear && go test -v -test.run TestS2 ...swagger
+func TestS2(t *testing.T) {
+	type S2 struct {
+		Ids []string
+	}
+	testJsonFromStruct(t, S2{}, `{
+  "swagger.S2": {
+   "id": "swagger.S2",
+   "required": [
+    "Ids"
+   ],
+   "properties": {
+    "Ids": {
+     "type": "array",
+     "description": "",
+     "items": {
+      "$ref": "string"
+     }
+    }
+   }
+  }
+ }`)
+}
+
+// clear && go test -v -test.run TestS3 ...swagger
+func TestS3(t *testing.T) {
+	type NestedS3 struct {
+		Id string
+	}
+	type S3 struct {
+		Nested NestedS3
+	}
+	testJsonFromStruct(t, S3{}, `{
+  "swagger.NestedS3": {
+   "id": "swagger.NestedS3",
+   "required": [
+    "Id"
+   ],
+   "properties": {
+    "Id": {
+     "type": "string",
+     "description": ""
+    }
+   }
+  },
+  "swagger.S3": {
+   "id": "swagger.S3",
+   "required": [
+    "Nested"
+   ],
+   "properties": {
+    "Nested": {
+     "type": "swagger.NestedS3",
+     "description": ""
+    }
+   }
+  }
+ }`)
+}
+
+type sample struct {
+	id       string `swagger:"required"` // TODO
+	items    []item
+	rootItem item `json:"root"`
+}
+
+type item struct {
+	itemName string `json:"name"`
+}
+
+// clear && go test -v -test.run TestSampleToModelAsJson ...swagger
+func TestSampleToModelAsJson(t *testing.T) {
+	testJsonFromStruct(t, sample{items: []item{}}, `{
+  "swagger.item": {
+   "id": "swagger.item",
+   "required": [
+    "name"
+   ],
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": ""
+    }
+   }
+  },
+  "swagger.sample": {
+   "id": "swagger.sample",
+   "required": [
+    "id",
+    "items",
+    "root"
+   ],
+   "properties": {
+    "id": {
+     "type": "string",
+     "description": ""
+    },
+    "items": {
+     "type": "array",
+     "description": "",
+     "items": {
+      "$ref": "swagger.item"
+     }
+    },
+    "root": {
+     "type": "swagger.item",
+     "description": ""
+    }
+   }
+  }
+ }`)
+}
 
 func TestJsonTags(t *testing.T) {
 	type X struct {
@@ -101,6 +230,9 @@ func TestAnonymousStruct(t *testing.T) {
 	expected := `{
   "swagger.X": {
    "id": "swagger.X",
+   "required": [
+    "A"
+   ],
    "properties": {
     "A": {
      "type": "swagger.X.A",
@@ -266,6 +398,47 @@ func TestEmbeddedStruct_Issue98(t *testing.T) {
  }`)
 }
 
+type Dataset struct {
+	Names []string
+}
+
+// clear && go test -v -test.run TestIssue85 ...swagger
+func TestIssue85(t *testing.T) {
+	anon := struct{ Datasets []Dataset }{}
+	testJsonFromStruct(t, anon, `{
+  "struct { Datasets ||swagger.Dataset }": {
+   "id": "struct { Datasets ||swagger.Dataset }",
+   "required": [
+    "Datasets"
+   ],
+   "properties": {
+    "Datasets": {
+     "type": "array",
+     "description": "",
+     "items": {
+      "$ref": "swagger.Dataset"
+     }
+    }
+   }
+  },
+  "swagger.Dataset": {
+   "id": "swagger.Dataset",
+   "required": [
+    "Names"
+   ],
+   "properties": {
+    "Names": {
+     "type": "array",
+     "description": "",
+     "items": {
+      "$ref": "string"
+     }
+    }
+   }
+  }
+ }`)
+}
+
 type File struct {
 	History     []File
 	HistoryPtrs []*File
@@ -304,34 +477,20 @@ func TestRecursiveStructure(t *testing.T) {
  }`)
 }
 
-//1
 type A1 struct {
 	B struct {
 		Id int
 	}
 }
 
-//2
-type A2 struct {
-	C `json:"B"`
-}
-type C struct{ Id int }
-
-//3
-type A3 struct {
-	B D
-}
-type D struct {
-	Id int
-}
-
 // go test -v -test.run TestEmbeddedStructA1 ...swagger
 func TestEmbeddedStructA1(t *testing.T) {
-	output, _ := json.MarshalIndent(A1{}, " ", " ")
-	print(string(output))
 	testJsonFromStruct(t, A1{}, `{
   "swagger.A1": {
    "id": "swagger.A1",
+   "required": [
+    "B"
+   ],
    "properties": {
     "B": {
      "type": "swagger.A1.B",
@@ -354,38 +513,65 @@ func TestEmbeddedStructA1(t *testing.T) {
  }`)
 }
 
-// Utils
-
-func testJsonFromStruct(t *testing.T, sample interface{}, expectedJson string) {
-	compareJson(t, false, modelsFromStruct(sample), expectedJson)
+type A2 struct {
+	C
+}
+type C struct {
+	Id int `json:"B"`
 }
 
-func modelsFromStruct(sample interface{}) map[string]Model {
-	models := map[string]Model{}
-	builder := modelBuilder{models}
-	builder.addModel(reflect.TypeOf(sample), "")
-	return models
+// go test -v -test.run TestEmbeddedStructA2 ...swagger
+func TestEmbeddedStructA2(t *testing.T) {
+	testJsonFromStruct(t, A2{}, `{
+  "swagger.A2": {
+   "id": "swagger.A2",
+   "required": [
+    "B"
+   ],
+   "properties": {
+    "B": {
+     "type": "integer",
+     "description": ""
+    }
+   }
+  }
+ }`)
 }
 
-func compareJson(t *testing.T, flatCompare bool, value interface{}, expectedJsonAsString string) {
-	var output []byte
-	var err error
-	if flatCompare {
-		output, err = json.Marshal(value)
-	} else {
-		output, err = json.MarshalIndent(value, " ", " ")
-	}
-	if err != nil {
-		t.Error(err.Error())
-		return
-	}
-	actual := string(output)
-	if actual != expectedJsonAsString {
-		t.Errorf("Mismatch JSON doc")
-		// Use simple fmt to create a pastable output :-)
-		fmt.Println("---- expected -----")
-		fmt.Println(expectedJsonAsString)
-		fmt.Println("---- actual -----")
-		fmt.Println(actual)
-	}
+type A3 struct {
+	B D
+}
+
+type D struct {
+	Id int
+}
+
+// clear && go test -v -test.run TestStructA3 ...swagger
+func TestStructA3(t *testing.T) {
+	testJsonFromStruct(t, A3{}, `{
+  "swagger.A3": {
+   "id": "swagger.A3",
+   "required": [
+    "B"
+   ],
+   "properties": {
+    "B": {
+     "type": "swagger.D",
+     "description": ""
+    }
+   }
+  },
+  "swagger.D": {
+   "id": "swagger.D",
+   "required": [
+    "Id"
+   ],
+   "properties": {
+    "Id": {
+     "type": "integer",
+     "description": ""
+    }
+   }
+  }
+ }`)
 }

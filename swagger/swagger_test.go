@@ -7,33 +7,10 @@ import (
 	"github.com/emicklei/go-restful"
 )
 
-type sample struct {
-	id       string `swagger:"required"` // TODO
-	items    []item
-	rootItem item `json:"root"`
-}
-
-type item struct {
-	itemName string `json:"name"`
-}
-
 // go test -v -test.run TestApi ...swagger
 func TestApi(t *testing.T) {
 	value := Api{Path: "/", Description: "Some Path", Operations: []Operation{}}
 	compareJson(t, true, value, `{"path":"/","description":"Some Path"}`)
-}
-
-// go test -v -test.run TestModelToJsonSchema ...swagger
-func TestModelToJsonSchema(t *testing.T) {
-	sws := newSwaggerService(Config{})
-	models := map[string]Model{}
-	op := new(Operation)
-	op.Nickname = "getSome"
-	sws.addModelFromSampleTo(op, true, sample{items: []item{}}, models)
-	_, err := json.MarshalIndent(op, " ", " ")
-	if err != nil {
-		t.Fatal(err.Error())
-	}
 }
 
 // go test -v -test.run TestServiceToApi ...swagger
@@ -105,24 +82,5 @@ func TestIssue78(t *testing.T) {
 	}
 	if ref != "swagger.Item" {
 		t.Fatal("wrong $ref:" + ref)
-	}
-}
-
-// go test -v -test.run TestIssue85 ...swagger
-type Dataset struct {
-	Names []string
-}
-
-func TestIssue85(t *testing.T) {
-	sws := newSwaggerService(Config{})
-	models := map[string]Model{}
-	anon := struct{ Datasets []Dataset }{}
-	sws.addModelFromSampleTo(&Operation{}, true, anon, models)
-	_, ok := models["struct { Datasets ||swagger.Dataset }"]
-	if !ok {
-		for k, _ := range models {
-			t.Logf("key:%s", k)
-		}
-		t.Fatal("missing anonymous model")
 	}
 }
