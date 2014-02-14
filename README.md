@@ -38,7 +38,7 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 
 - Routes for request -> function mapping with path parameter (e.g. {id}) support
 - Configurable router:
-	- Routing algorithm after [JSR311](http://jsr311.java.net/nonav/releases/1.1/spec/spec.html) that accepts regular expressions (See RouterJSR311 which is used by default)
+	- Routing algorithm after [JSR311](http://jsr311.java.net/nonav/releases/1.1/spec/spec.html) that is implemented using (but doest **not** accept) regular expressions (See RouterJSR311 which is used by default)
 	- Fast routing algorithm that only allows static elements and dynamic parameters in the URL path (e.g. /meetings/{id}, See CurlyRouter)
 - Request API for reading structs from JSON/XML and accesing parameters (path,query,header)
 - Response API for writing structs to JSON/XML and setting headers
@@ -48,18 +48,20 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 - Content encoding (gzip,deflate) of responses
 - Automatic responses on OPTIONS (using a filter)
 - Automatic CORS request handling (using a filter)
-- API declaration for Swagger UI
+- API declaration for Swagger UI (see swagger package)
 - Panic recovery to produce HTTP 500, customizable using RecoverHandler(...)
 	
 ### Resources
 
-- [Documentation go-restful (godoc.org)](http://godoc.org/github.com/emicklei/go-restful)
-- [Examples](https://github.com/emicklei/go-restful/tree/master/examples)
+- [Documentation on godoc.org](http://godoc.org/github.com/emicklei/go-restful)
+- [Code examples](https://github.com/emicklei/go-restful/tree/master/examples)
 - [Example posted on blog](http://ernestmicklei.com/2012/11/24/go-restful-first-working-example/)
 - [Design explained on blog](http://ernestmicklei.com/2012/11/11/go-restful-api-design/)
+- [Sourcegraph](https://sourcegraph.com/github.com/emicklei/go-restful)
 - [Showcase: Mora - MongoDB REST Api server](https://github.com/emicklei/mora)
-- [Showcase: Landskape tool](https://github.com/emicklei/landskape)
 
 [![Build Status](https://drone.io/github.com/emicklei/go-restful/status.png)](https://drone.io/github.com/emicklei/go-restful/latest)
+
+[![library users](https://sourcegraph.com/api/repos/github.com/zzzeek/sqlalchemy/badges/library-users.png)](https://sourcegraph.com/github.com/zzzeek/sqlalchemy) [![authors](https://sourcegraph.com/api/repos/github.com/zzzeek/sqlalchemy/badges/authors.png)](https://sourcegraph.com/github.com/zzzeek/sqlalchemy) [![xrefs](https://sourcegraph.com/api/repos/github.com/zzzeek/sqlalchemy/badges/xrefs.png)](https://sourcegraph.com/github.com/zzzeek/sqlalchemy)
 
 (c) 2013, http://ernestmicklei.com. MIT License
