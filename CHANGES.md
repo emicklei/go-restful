@@ -1,5 +1,8 @@
 Change history of go-restful
 =
+2014-02-17
+- (api change) renamed parameter constants (go-lint checks)
+
 2014-01-10
  - (api add) support for CloseNotify, see http://golang.org/pkg/net/http/#CloseNotifier
 

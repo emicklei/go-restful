@@ -5,12 +5,20 @@ package restful
 // that can be found in the LICENSE file.
 
 const (
-	// indicator of Request parameter type "path"
-	PathParameterKind   = iota
-	QueryParameterKind  // indicator of Request parameter type "query"
-	BodyParameterKind   // indicator of Request parameter type "body"
-	HeaderParameterKind // indicator of Request parameter type "header"
-	FormParameterKind   // indicator of Request parameter type "form"
+	// PathParameterKind = indicator of Request parameter type "path"
+	PathParameterKind = iota
+
+	// QueryParameterKind = indicator of Request parameter type "query"
+	QueryParameterKind
+
+	// BodyParameterKind = indicator of Request parameter type "body"
+	BodyParameterKind
+
+	// HeaderParameterKind = indicator of Request parameter type "header"
+	HeaderParameterKind
+
+	// FormParameterKind = indicator of Request parameter type "form"
+	FormParameterKind
 )
 
 // Parameter is for documententing the parameter used in a Http Request

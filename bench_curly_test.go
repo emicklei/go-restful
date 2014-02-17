@@ -10,7 +10,7 @@ import (
 func setupCurly(container *Container) []string {
 	wsCount := 26
 	rtCount := 26
-	uris_curly := []string{}
+	urisCurly := []string{}
 
 	container.Router(CurlyRouter{})
 	for i := 0; i < wsCount; i++ {
@@ -22,21 +22,21 @@ func setupCurly(container *Container) []string {
 		}
 		container.Add(ws)
 		for _, each := range ws.Routes() {
-			uris_curly = append(uris_curly, "http://bench.com"+each.Path)
+			urisCurly = append(urisCurly, "http://bench.com"+each.Path)
 		}
 	}
-	return uris_curly
+	return urisCurly
 }
 
 func echoCurly(req *Request, resp *Response) {}
 
 func BenchmarkManyCurly(b *testing.B) {
 	container := NewContainer()
-	uris_curly := setupCurly(container)
+	urisCurly := setupCurly(container)
 	b.ResetTimer()
 	for t := 0; t < b.N; t++ {
 		for r := 0; r < 1000; r++ {
-			for _, each := range uris_curly {
+			for _, each := range urisCurly {
 				sendNoReturnTo(each, container, t)
 			}
 		}
