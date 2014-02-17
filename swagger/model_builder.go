@@ -78,6 +78,7 @@ func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, mod
 
 	prop.Type = b.jsonSchemaType(fieldType.String()) // may include pkg path
 	if b.isPrimitiveType(fieldType.String()) {
+		prop.Format = b.jsonSchemaFormat(fieldType.String())
 		return jsonName, prop
 	}
 
@@ -202,9 +203,13 @@ func (b modelBuilder) jsonNameOfField(field reflect.StructField) string {
 func (b modelBuilder) jsonSchemaType(modelName string) string {
 	schemaMap := map[string]string{
 		"int":       "integer",
+		"int32":     "integer",
+		"int64":     "integer",
+		"byte":      "string",
 		"float64":   "number",
+		"float32":   "number",
 		"bool":      "boolean",
-		"time.Time": "date-time",
+		"time.Time": "string",
 	}
 	mapped, ok := schemaMap[modelName]
 	if ok {
@@ -216,9 +221,13 @@ func (b modelBuilder) jsonSchemaType(modelName string) string {
 
 func (b modelBuilder) jsonSchemaFormat(modelName string) string {
 	schemaMap := map[string]string{
-		"int32":   "int32",
-		"int64":   "int64",
-		"float64": "double",
+		"int":       "int32",
+		"int32":     "int32",
+		"int64":     "int64",
+		"byte":      "byte",
+		"float64":   "double",
+		"float32":   "float",
+		"time.Time": "date-time",
 	}
 	mapped, ok := schemaMap[modelName]
 	if ok {

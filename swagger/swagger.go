@@ -84,7 +84,7 @@ type ModelProperty struct {
 	Type        string            `json:"type"`
 	Description string            `json:"description"`
 	Items       map[string]string `json:"items,omitempty"`
-	//	Format      string            `json:"format"`
+	Format      string            `json:"format"`
 }
 
 // https://github.com/wordnik/swagger-core/wiki/authorizations

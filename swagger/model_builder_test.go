@@ -21,11 +21,13 @@ func TestPrimitiveTypes(t *testing.T) {
    "properties": {
     "f": {
      "type": "number",
-     "description": ""
+     "description": "",
+     "format": "double"
     },
     "t": {
-     "type": "date-time",
-     "description": ""
+     "type": "string",
+     "description": "",
+     "format": "date-time"
     }
    }
   }
@@ -46,7 +48,8 @@ func TestS1(t *testing.T) {
    "properties": {
     "Id": {
      "type": "string",
-     "description": ""
+     "description": "",
+     "format": ""
     }
    }
   }
@@ -70,7 +73,8 @@ func TestS2(t *testing.T) {
      "description": "",
      "items": {
       "$ref": "string"
-     }
+     },
+     "format": ""
     }
    }
   }
@@ -94,7 +98,8 @@ func TestS3(t *testing.T) {
    "properties": {
     "Id": {
      "type": "string",
-     "description": ""
+     "description": "",
+     "format": ""
     }
    }
   },
@@ -106,7 +111,8 @@ func TestS3(t *testing.T) {
    "properties": {
     "Nested": {
      "type": "swagger.NestedS3",
-     "description": ""
+     "description": "",
+     "format": ""
     }
    }
   }
@@ -134,7 +140,8 @@ func TestSampleToModelAsJson(t *testing.T) {
    "properties": {
     "name": {
      "type": "string",
-     "description": ""
+     "description": "",
+     "format": ""
     }
    }
   },
@@ -148,18 +155,21 @@ func TestSampleToModelAsJson(t *testing.T) {
    "properties": {
     "id": {
      "type": "string",
-     "description": ""
+     "description": "",
+     "format": ""
     },
     "items": {
      "type": "array",
      "description": "",
      "items": {
       "$ref": "swagger.item"
-     }
+     },
+     "format": ""
     },
     "root": {
      "type": "swagger.item",
-     "description": ""
+     "description": "",
+     "format": ""
     }
    }
   }
@@ -185,15 +195,18 @@ func TestJsonTags(t *testing.T) {
    "properties": {
     "A": {
      "type": "string",
-     "description": ""
+     "description": "",
+     "format": ""
     },
     "C": {
      "type": "string",
-     "description": "(int as string)"
+     "description": "(int as string)",
+     "format": ""
     },
     "D": {
      "type": "integer",
-     "description": ""
+     "description": "",
+     "format": "int32"
     }
    }
   }
@@ -214,11 +227,13 @@ func TestJsonTagOmitempty(t *testing.T) {
    "properties": {
     "A": {
      "type": "integer",
-     "description": ""
+     "description": "",
+     "format": "int32"
     },
     "C": {
      "type": "integer",
-     "description": ""
+     "description": "",
+     "format": "int32"
     }
    }
   }
@@ -241,7 +256,8 @@ func TestJsonTagName(t *testing.T) {
    "properties": {
     "B": {
      "type": "string",
-     "description": ""
+     "description": "",
+     "format": ""
     }
    }
   }
@@ -266,7 +282,8 @@ func TestAnonymousStruct(t *testing.T) {
    "properties": {
     "A": {
      "type": "swagger.X.A",
-     "description": ""
+     "description": "",
+     "format": ""
     }
    }
   },
@@ -278,7 +295,8 @@ func TestAnonymousStruct(t *testing.T) {
    "properties": {
     "B": {
      "type": "integer",
-     "description": ""
+     "description": "",
+     "format": "int32"
     }
    }
   }
@@ -303,7 +321,8 @@ func TestAnonymousPtrStruct(t *testing.T) {
    "properties": {
     "A": {
      "type": "swagger.X.A",
-     "description": ""
+     "description": "",
+     "format": ""
     }
    }
   },
@@ -315,7 +334,8 @@ func TestAnonymousPtrStruct(t *testing.T) {
    "properties": {
     "B": {
      "type": "integer",
-     "description": ""
+     "description": "",
+     "format": "int32"
     }
    }
   }
@@ -343,7 +363,8 @@ func TestAnonymousArrayStruct(t *testing.T) {
      "description": "",
      "items": {
       "$ref": "swagger.X.A"
-     }
+     },
+     "format": ""
     }
    }
   },
@@ -355,7 +376,8 @@ func TestAnonymousArrayStruct(t *testing.T) {
    "properties": {
     "B": {
      "type": "integer",
-     "description": ""
+     "description": "",
+     "format": "int32"
     }
    }
   }
@@ -383,7 +405,8 @@ func TestAnonymousPtrArrayStruct(t *testing.T) {
      "description": "",
      "items": {
       "$ref": "swagger.X.A"
-     }
+     },
+     "format": ""
     }
    }
   },
@@ -395,7 +418,8 @@ func TestAnonymousPtrArrayStruct(t *testing.T) {
    "properties": {
     "B": {
      "type": "integer",
-     "description": ""
+     "description": "",
+     "format": "int32"
     }
    }
   }
@@ -421,7 +445,8 @@ func TestEmbeddedStruct_Issue98(t *testing.T) {
    "properties": {
     "A": {
      "type": "integer",
-     "description": ""
+     "description": "",
+     "format": "int32"
     }
    }
   }
@@ -447,7 +472,8 @@ func TestIssue85(t *testing.T) {
      "description": "",
      "items": {
       "$ref": "swagger.Dataset"
-     }
+     },
+     "format": ""
     }
    }
   },
@@ -462,7 +488,8 @@ func TestIssue85(t *testing.T) {
      "description": "",
      "items": {
       "$ref": "string"
-     }
+     },
+     "format": ""
     }
    }
   }
@@ -489,14 +516,16 @@ func TestRecursiveStructure(t *testing.T) {
      "description": "",
      "items": {
       "$ref": "swagger.File"
-     }
+     },
+     "format": ""
     },
     "HistoryPtrs": {
      "type": "array",
      "description": "",
      "items": {
       "$ref": "swagger.File.HistoryPtrs"
-     }
+     },
+     "format": ""
     }
    }
   },
@@ -524,7 +553,8 @@ func TestEmbeddedStructA1(t *testing.T) {
    "properties": {
     "B": {
      "type": "swagger.A1.B",
-     "description": ""
+     "description": "",
+     "format": ""
     }
    }
   },
@@ -536,7 +566,8 @@ func TestEmbeddedStructA1(t *testing.T) {
    "properties": {
     "Id": {
      "type": "integer",
-     "description": ""
+     "description": "",
+     "format": "int32"
     }
    }
   }
@@ -561,7 +592,8 @@ func TestEmbeddedStructA2(t *testing.T) {
    "properties": {
     "B": {
      "type": "integer",
-     "description": ""
+     "description": "",
+     "format": "int32"
     }
    }
   }
@@ -587,7 +619,8 @@ func TestStructA3(t *testing.T) {
    "properties": {
     "B": {
      "type": "swagger.D",
-     "description": ""
+     "description": "",
+     "format": ""
     }
    }
   },
@@ -599,7 +632,8 @@ func TestStructA3(t *testing.T) {
    "properties": {
     "Id": {
      "type": "integer",
-     "description": ""
+     "description": "",
+     "format": "int32"
     }
    }
   }
