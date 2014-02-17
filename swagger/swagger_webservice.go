@@ -253,15 +253,15 @@ func asFormat(name string) string {
 
 func asParamType(kind int) string {
 	switch {
-	case kind == restful.PATH_PARAMETER:
+	case kind == restful.PathParameterKind:
 		return "path"
-	case kind == restful.QUERY_PARAMETER:
+	case kind == restful.QueryParameterKind:
 		return "query"
-	case kind == restful.BODY_PARAMETER:
+	case kind == restful.BodyParameterKind:
 		return "body"
-	case kind == restful.HEADER_PARAMETER:
+	case kind == restful.HeaderParameterKind:
 		return "header"
-	case kind == restful.FORM_PARAMETER:
+	case kind == restful.FormParameterKind:
 		return "form"
 	}
 	return ""
