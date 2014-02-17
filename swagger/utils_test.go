@@ -40,6 +40,8 @@ func compareJson(t *testing.T, flatCompare bool, value interface{}, expectedJson
 		fmt.Println(withLineNumbers(expectedJsonAsString))
 		fmt.Println("---- actual -----")
 		fmt.Println(withLineNumbers(actual))
+		fmt.Println("---- raw -----")
+		fmt.Println(actual)
 	}
 }
 

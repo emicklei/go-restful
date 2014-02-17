@@ -1,6 +1,36 @@
 package swagger
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
+
+// clear && go test -v -test.run TestPrimitiveTypes ...swagger
+func TestPrimitiveTypes(t *testing.T) {
+	type Prims struct {
+		f float64
+		t time.Time
+	}
+	testJsonFromStruct(t, Prims{}, `{
+  "swagger.Prims": {
+   "id": "swagger.Prims",
+   "required": [
+    "f",
+    "t"
+   ],
+   "properties": {
+    "f": {
+     "type": "number",
+     "description": ""
+    },
+    "t": {
+     "type": "date-time",
+     "description": ""
+    }
+   }
+  }
+ }`)
+}
 
 // clear && go test -v -test.run TestS1 ...swagger
 func TestS1(t *testing.T) {
