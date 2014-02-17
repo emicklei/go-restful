@@ -5,6 +5,37 @@ import (
 	"time"
 )
 
+type YesNo bool
+
+func (y YesNo) MarshalJSON() ([]byte, error) {
+	if y {
+		return []byte("yes"), nil
+	}
+	return []byte("no"), nil
+}
+
+// clear && go test -v -test.run TestCustomMarshaller_Issue96 ...swagger
+func TestCustomMarshaller_Issue96(t *testing.T) {
+	type Vote struct {
+		What YesNo
+	}
+	testJsonFromStruct(t, Vote{}, `{
+  "swagger.Vote": {
+   "id": "swagger.Vote",
+   "required": [
+    "What"
+   ],
+   "properties": {
+    "What": {
+     "type": "string",
+     "description": "",
+     "format": ""
+    }
+   }
+  }
+ }`)
+}
+
 // clear && go test -v -test.run TestPrimitiveTypes ...swagger
 func TestPrimitiveTypes(t *testing.T) {
 	type Prims struct {

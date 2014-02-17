@@ -1,6 +1,7 @@
 package swagger
 
 import (
+	"encoding/json"
 	"reflect"
 	"strings"
 )
@@ -79,6 +80,12 @@ func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, mod
 	prop.Type = b.jsonSchemaType(fieldType.String()) // may include pkg path
 	if b.isPrimitiveType(fieldType.String()) {
 		prop.Format = b.jsonSchemaFormat(fieldType.String())
+		return jsonName, prop
+	}
+
+	marshalerType := reflect.TypeOf((*json.Marshaler)(nil)).Elem()
+	if fieldType.Implements(marshalerType) {
+		prop.Type = "string"
 		return jsonName, prop
 	}
 
