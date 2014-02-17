@@ -23,13 +23,13 @@ func TestParameter(t *testing.T) {
 }
 func TestWebService_CanCreateParameterKinds(t *testing.T) {
 	ws := new(WebService)
-	if ws.BodyParameter("b", "b").Kind() != BODY_PARAMETER {
+	if ws.BodyParameter("b", "b").Kind() != BodyParameterKind {
 		t.Error("body parameter expected")
 	}
-	if ws.PathParameter("p", "p").Kind() != PATH_PARAMETER {
+	if ws.PathParameter("p", "p").Kind() != PathParameterKind {
 		t.Error("path parameter expected")
 	}
-	if ws.QueryParameter("q", "q").Kind() != QUERY_PARAMETER {
+	if ws.QueryParameter("q", "q").Kind() != QueryParameterKind {
 		t.Error("query parameter expected")
 	}
 }

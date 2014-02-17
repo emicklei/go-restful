@@ -5,11 +5,12 @@ package restful
 // that can be found in the LICENSE file.
 
 const (
-	PATH_PARAMETER   = iota // indicator of Request parameter type "path"
-	QUERY_PARAMETER         // indicator of Request parameter type "query"
-	BODY_PARAMETER          // indicator of Request parameter type "body"
-	HEADER_PARAMETER        // indicator of Request parameter type "header"
-	FORM_PARAMETER          // indicator of Request parameter type "form"
+	// indicator of Request parameter type "path"
+	PathParameterKind   = iota
+	QueryParameterKind  // indicator of Request parameter type "query"
+	BodyParameterKind   // indicator of Request parameter type "body"
+	HeaderParameterKind // indicator of Request parameter type "header"
+	FormParameterKind   // indicator of Request parameter type "form"
 )
 
 // Parameter is for documententing the parameter used in a Http Request
@@ -39,25 +40,25 @@ func (p *Parameter) Kind() int {
 }
 
 func (p *Parameter) bePath() *Parameter {
-	p.data.Kind = PATH_PARAMETER
+	p.data.Kind = PathParameterKind
 	return p
 }
 func (p *Parameter) beQuery() *Parameter {
-	p.data.Kind = QUERY_PARAMETER
+	p.data.Kind = QueryParameterKind
 	return p
 }
 func (p *Parameter) beBody() *Parameter {
-	p.data.Kind = BODY_PARAMETER
+	p.data.Kind = BodyParameterKind
 	return p
 }
 
 func (p *Parameter) beHeader() *Parameter {
-	p.data.Kind = HEADER_PARAMETER
+	p.data.Kind = HeaderParameterKind
 	return p
 }
 
 func (p *Parameter) beForm() *Parameter {
-	p.data.Kind = FORM_PARAMETER
+	p.data.Kind = FormParameterKind
 	return p
 }
 

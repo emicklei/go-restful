@@ -26,7 +26,7 @@ func TestRouteBuilder_PathParameter(t *testing.T) {
 	if !r.ParameterDocs[0].Data().Required {
 		t.Error("required invalid")
 	}
-	if r.ParameterDocs[0].Data().Kind != PATH_PARAMETER {
+	if r.ParameterDocs[0].Data().Kind != PathParameterKind {
 		t.Error("kind invalid")
 	}
 	if r.ParameterDocs[0].Data().AllowableValues["a"] != "b" {

@@ -93,18 +93,17 @@ func (r *Response) WriteAsXml(value interface{}) error {
 	output, err := xml.MarshalIndent(value, " ", " ")
 	if err != nil {
 		return r.WriteError(http.StatusInternalServerError, err)
-	} else {
-		r.Header().Set(HEADER_ContentType, MIME_XML)
-		if r.statusCode > 0 { // a WriteHeader was intercepted
-			r.ResponseWriter.WriteHeader(r.statusCode)
-		}
-		_, err = r.Write([]byte(xml.Header))
-		if err != nil {
-			return err
-		}
-		if _, err = r.Write(output); err != nil {
-			return err
-		}
+	}
+	r.Header().Set(HEADER_ContentType, MIME_XML)
+	if r.statusCode > 0 { // a WriteHeader was intercepted
+		r.ResponseWriter.WriteHeader(r.statusCode)
+	}
+	_, err = r.Write([]byte(xml.Header))
+	if err != nil {
+		return err
+	}
+	if _, err = r.Write(output); err != nil {
+		return err
 	}
 	return nil
 }
@@ -114,14 +113,13 @@ func (r *Response) WriteAsJson(value interface{}) error {
 	output, err := json.MarshalIndent(value, " ", " ")
 	if err != nil {
 		return r.WriteErrorString(http.StatusInternalServerError, err.Error())
-	} else {
-		r.Header().Set(HEADER_ContentType, MIME_JSON)
-		if r.statusCode > 0 { // a WriteHeader was intercepted
-			r.ResponseWriter.WriteHeader(r.statusCode)
-		}
-		if _, err = r.Write(output); err != nil {
-			return err
-		}
+	}
+	r.Header().Set(HEADER_ContentType, MIME_JSON)
+	if r.statusCode > 0 { // a WriteHeader was intercepted
+		r.ResponseWriter.WriteHeader(r.statusCode)
+	}
+	if _, err = r.Write(output); err != nil {
+		return err
 	}
 	return nil
 }
