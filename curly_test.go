@@ -107,23 +107,24 @@ var routeMatchers = []struct {
 	{"/a", "/b", false, 0, 0},
 	{"/a/{b}/c/", "/a/2/c", true, 1, 2},
 	{"/{a}/{b}/{c}/", "/a/b", false, 0, 0},
+	//	{"/{a:*}/b", "/a/b", true, 1, 1},
 }
 
 // clear && go test -v -test.run Test_matchesRouteByPathTokens ...restful
 func Test_matchesRouteByPathTokens(t *testing.T) {
 	router := CurlyRouter{}
-	for _, each := range routeMatchers {
+	for i, each := range routeMatchers {
 		routeToks := tokenizePath(each.route)
 		reqToks := tokenizePath(each.path)
 		matches, pCount, sCount := router.matchesRouteByPathTokens(routeToks, reqToks)
 		if matches != each.matches {
-			t.Fatalf("unexpected matches outcome route:%s, path:%s, matches:%v", each.route, each, each.path, each.matches)
+			t.Fatalf("[%d] unexpected matches outcome route:%s, path:%s, matches:%v", i, each.route, each.path, matches)
 		}
 		if pCount != each.paramCount {
-			t.Fatalf("unexpected paramCount got:%d want:%d ", pCount, each.paramCount)
+			t.Fatalf("[%d] unexpected paramCount got:%d want:%d ", i, pCount, each.paramCount)
 		}
 		if sCount != each.staticCount {
-			t.Fatalf("unexpected staticCount got:%d want:%d ", sCount, each.staticCount)
+			t.Fatalf("[%d] unexpected staticCount got:%d want:%d ", i, sCount, each.staticCount)
 		}
 	}
 }
