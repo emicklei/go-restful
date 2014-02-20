@@ -7,6 +7,7 @@ package restful
 import (
 	"errors"
 	"net/http"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -52,35 +53,44 @@ func (c CurlyRouter) selectRoutes(ws *WebService, requestTokens []string) []Rout
 
 // matchesRouteByPathTokens computes whether it matches, howmany parameters do match and what the number of static path elements are.
 func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []string) (matches bool, paramCount int, staticCount int) {
+	// TODO tell Route it has wildcard
 	if len(routeTokens) != len(requestTokens) {
 		return false, 0, 0
 	}
 	for i, routeToken := range routeTokens {
 		requestToken := requestTokens[i]
-		if !strings.HasPrefix(routeToken, "{") {
-			if strings.ContainsRune(routeToken, ':') {
+		if strings.HasPrefix(routeToken, "{") {
+			paramCount++
+			if colon := strings.Index(routeToken, ":"); colon != -1 {
 				// match by regex
-				matchesToken, matchesRemainder := c.regularMatchesPathToken(routeToken, requestToken)
+				matchesToken, matchesRemainder := c.regularMatchesPathToken(routeToken, colon, requestToken)
 				if !matchesToken {
 					return false, 0, 0
 				}
-				if matcheshesRemainder {
+				if matchesRemainder {
 					return true, paramCount, len(routeTokens) - i + 1
 				}
-			} else if requestToken != routeToken {
+			}
+		} else { // no { prefix
+			if requestToken != routeToken {
 				return false, 0, 0
 			}
 			staticCount++
-		} else {
-			paramCount++
 		}
 	}
 	return true, paramCount, staticCount
 }
 
 // regularMatchesPathToken tests whether the regular expression part of routeToken matches the requestToken or all remaining tokens
-func (c CurlyRouter) regularMatchesPathToken(routeToken, requestToken) (matchesToken bool, matchesRemainder bool) {
-	return false, false
+// format routeToken is {someVar:someExpression}, e.g. {zipcode:[\d][\d][A-Z][A-Z]}
+func (c CurlyRouter) regularMatchesPathToken(routeToken string, colon int, requestToken string) (matchesToken bool, matchesRemainder bool) {
+	regPart := routeToken[colon+1 : len(routeToken)-1]
+	println(regPart)
+	if regPart == "*" {
+		return true, true
+	}
+	matched, err := regexp.MatchString(regPart, requestToken)
+	return (matched && err != nil), false
 }
 
 // detectRoute selectes from a list of Route the first match by inspecting both the Accept and Content-Type
