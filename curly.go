@@ -58,7 +58,16 @@ func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []strin
 	for i, routeToken := range routeTokens {
 		requestToken := requestTokens[i]
 		if !strings.HasPrefix(routeToken, "{") {
-			if requestToken != routeToken {
+			if strings.ContainsRune(routeToken, ':') {
+				// match by regex
+				matchesToken, matchesRemainder := c.regularMatchesPathToken(routeToken, requestToken)
+				if !matchesToken {
+					return false, 0, 0
+				}
+				if matcheshesRemainder {
+					return true, paramCount, len(routeTokens) - i + 1
+				}
+			} else if requestToken != routeToken {
 				return false, 0, 0
 			}
 			staticCount++
@@ -67,6 +76,11 @@ func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []strin
 		}
 	}
 	return true, paramCount, staticCount
+}
+
+// regularMatchesPathToken tests whether the regular expression part of routeToken matches the requestToken or all remaining tokens
+func (c CurlyRouter) regularMatchesPathToken(routeToken, requestToken) (matchesToken bool, matchesRemainder bool) {
+	return false, false
 }
 
 // detectRoute selectes from a list of Route the first match by inspecting both the Accept and Content-Type
