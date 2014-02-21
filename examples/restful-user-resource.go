@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/emicklei/go-restful"
-	"github.com/emicklei/go-restful/swagger"
 	"log"
 	"net/http"
+
+	"github.com/emicklei/go-restful"
+	"github.com/emicklei/go-restful/swagger"
 )
 
 // This example show a complete (GET,PUT,POST,DELETE) conventional example of
@@ -44,23 +45,27 @@ func (u UserResource) Register(container *restful.Container) {
 	ws.Route(ws.GET("/{user-id}").To(u.findUser).
 		// docs
 		Doc("get a user").
+		Operation("findUser").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
 		Writes(User{})) // on the response
 
 	ws.Route(ws.PUT("").To(u.updateUser).
 		// docs
 		Doc("update a user").
+		Operation("updateUser").
 		Reads(User{})) // from the request
 
 	ws.Route(ws.PUT("/{user-id}").To(u.createUser).
 		// docs
 		Doc("create a user").
+		Operation("createUser").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
 		Reads(User{})) // from the request
 
 	ws.Route(ws.DELETE("/{user-id}").To(u.removeUser).
 		// docs
 		Doc("delete a user").
+		Operation("removeUser").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")))
 
 	container.Add(ws)
