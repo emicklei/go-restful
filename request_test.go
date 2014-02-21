@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestPathParameter(t *testing.T) {
+func TestQueryParameter(t *testing.T) {
 	hreq := http.Request{Method: "GET"}
 	hreq.URL, _ = url.Parse("http://www.google.com/search?q=foo&q=bar")
 	rreq := Request{Request: &hreq}
