@@ -16,6 +16,7 @@ import (
 // Request is a wrapper for a http Request that provides convenience methods
 type Request struct {
 	Request        *http.Request
+	Route          *Route
 	bodyContent    *[]byte // to cache the request body for multiple reads of ReadEntity
 	pathParameters map[string]string
 	attributes     map[string]interface{} // for storing request-scoped values
