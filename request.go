@@ -15,11 +15,11 @@ import (
 
 // Request is a wrapper for a http Request that provides convenience methods
 type Request struct {
-	Request        *http.Request
-	Route          *Route
-	bodyContent    *[]byte // to cache the request body for multiple reads of ReadEntity
-	pathParameters map[string]string
-	attributes     map[string]interface{} // for storing request-scoped values
+	Request           *http.Request
+	bodyContent       *[]byte // to cache the request body for multiple reads of ReadEntity
+	pathParameters    map[string]string
+	attributes        map[string]interface{} // for storing request-scoped values
+	selectedRoutePath string // root path + route path that matched the request, e.g. /meetings/{id}/attendees
 }
 
 func newRequest(httpRequest *http.Request) *Request {
@@ -95,4 +95,9 @@ func (r *Request) SetAttribute(name string, value interface{}) {
 // Attribute returns the value associated to the given name. Returns nil if absent.
 func (r Request) Attribute(name string) interface{} {
 	return r.attributes[name]
+}
+
+// SelectedRoutePath root path + route path that matched the request, e.g. /meetings/{id}/attendees
+func (r Request) SelectedRoutePath() string {
+	return r.selectedRoutePath
 }
