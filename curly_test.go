@@ -112,6 +112,7 @@ var routeMatchers = []struct {
 	{"/{x:*}", "/a/b", true, 1, 0},
 	{"/a/{x:*}", "/a/b", true, 1, 1},
 	{"/a/{x:[A-Z][A-Z]}", "/a/ZX", true, 1, 1},
+	{"/basepath/{resource:*}", "/basepath/some/other/location/test.xml", true, 1, 1},
 }
 
 // clear && go test -v -test.run Test_matchesRouteByPathTokens ...restful
