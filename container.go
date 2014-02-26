@@ -69,7 +69,7 @@ func (c *Container) EnableContentEncoding(enabled bool) {
 // Add a WebService to the Container. It will detect duplicate root paths and panic in that case.
 func (c *Container) Add(service *WebService) *Container {
 	if service.pathExpr == nil {
-		service.Path("") // lazy initialize path
+		service.Path("/") // lazy initialize path
 	}
 	// If registered on root then no additional specific mapping is needed
 	if !c.isRegisteredOnRoot {
