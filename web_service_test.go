@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+const (
+	pathGetFriends = "/get/{userId}/friends"
+)
+
 func TestParameter(t *testing.T) {
 	p := &Parameter{&ParameterData{Name: "name", Description: "desc"}}
 	p.AllowMultiple(true)
@@ -69,6 +73,18 @@ func TestMethodNotAllowed(t *testing.T) {
 	}
 }
 
+func TestSelectedRoutePath_Issue100(t *testing.T) {
+	tearDown()
+	Add(newSelectedRouteTestingService())
+	httpRequest, _ := http.NewRequest("GET", "http://here.com/get/232452/friends", nil)
+	httpRequest.Header.Set("Accept", "*/*")
+	httpWriter := httptest.NewRecorder()
+	DefaultContainer.dispatch(httpWriter, httpRequest)
+	if http.StatusOK != httpWriter.Code {
+		t.Error(http.StatusOK, "expected,",  httpWriter.Code, "received.",)
+	}
+}
+
 func newPanicingService() *WebService {
 	ws := new(WebService).Path("")
 	ws.Route(ws.GET("/fire").To(doPanic))
@@ -79,6 +95,18 @@ func newGetOnlyService() *WebService {
 	ws := new(WebService).Path("")
 	ws.Route(ws.GET("/get").To(doPanic))
 	return ws
+}
+
+func newSelectedRouteTestingService() *WebService {
+	ws := new(WebService).Path("")
+	ws.Route(ws.GET(pathGetFriends).To(selectedRouteChecker))
+	return ws
+}
+
+func selectedRouteChecker(req *Request, resp *Response) {
+	if req.SelectedRoutePath() != pathGetFriends {
+		resp.InternalServerError()
+	}
 }
 
 func doPanic(req *Request, resp *Response) {
