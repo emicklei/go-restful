@@ -180,7 +180,7 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 			// handle err here
 
 		}}
-		chain.ProcessFilter(newRequest(httpRequest), newResponse(writer))
+		chain.ProcessFilter(newRequest(httpRequest), NewResponse(writer))
 		return
 	}
 	wrappedRequest, wrappedResponse := route.wrapRequestResponse(writer, httpRequest)
@@ -259,7 +259,7 @@ func (c Container) computeAllowedMethods(req *Request) []string {
 // newBasicRequestResponse creates a pair of Request,Response from its http versions.
 // It is basic because no parameter or (produces) content-type information is given.
 func newBasicRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {
-	resp := newResponse(httpWriter)
+	resp := NewResponse(httpWriter)
 	resp.requestAccept = httpRequest.Header.Get(HEADER_Accept)
 	return newRequest(httpRequest), resp
 }
