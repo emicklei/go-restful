@@ -28,7 +28,8 @@ type Response struct {
 	contentLength int      // number of bytes written for the response body
 }
 
-func newResponse(httpWriter http.ResponseWriter) *Response {
+// Creates a new response based on a http ResponseWriter.
+func NewResponse(httpWriter http.ResponseWriter) *Response {
 	return &Response{httpWriter, "", []string{}, http.StatusOK, 0} // empty content-types
 }
 
