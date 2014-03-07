@@ -171,14 +171,9 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 			switch err.(type) {
 			case ServiceError:
 				ser := err.(ServiceError)
-				httpWriter.WriteHeader(ser.Code)
-				httpWriter.Write([]byte(ser.Message))
+				resp.WriteErrorString(ser.Code, ser.Message)
 			}
 			// TODO
-			// err
-
-			// handle err here
-
 		}}
 		chain.ProcessFilter(newRequest(httpRequest), NewResponse(writer))
 		return
