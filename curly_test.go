@@ -107,24 +107,46 @@ var routeMatchers = []struct {
 	{"/a", "/b", false, 0, 0},
 	{"/a/{b}/c/", "/a/2/c", true, 1, 2},
 	{"/{a}/{b}/{c}/", "/a/b", false, 0, 0},
+	{"/{x:*}", "/", false, 0, 0},
+	{"/{x:*}", "/a", true, 1, 0},
+	{"/{x:*}", "/a/b", true, 1, 0},
+	{"/a/{x:*}", "/a/b", true, 1, 1},
+	{"/a/{x:[A-Z][A-Z]}", "/a/ZX", true, 1, 1},
+	{"/basepath/{resource:*}", "/basepath/some/other/location/test.xml", true, 1, 1},
 }
 
 // clear && go test -v -test.run Test_matchesRouteByPathTokens ...restful
 func Test_matchesRouteByPathTokens(t *testing.T) {
 	router := CurlyRouter{}
-	for _, each := range routeMatchers {
+	for i, each := range routeMatchers {
 		routeToks := tokenizePath(each.route)
 		reqToks := tokenizePath(each.path)
 		matches, pCount, sCount := router.matchesRouteByPathTokens(routeToks, reqToks)
 		if matches != each.matches {
-			t.Fatalf("unexpected matches outcome route:%s, path:%s, matches:%v", each.route, each, each.path, each.matches)
+			t.Fatalf("[%d] unexpected matches outcome route:%s, path:%s, matches:%v", i, each.route, each.path, matches)
 		}
 		if pCount != each.paramCount {
-			t.Fatalf("unexpected paramCount got:%d want:%d ", pCount, each.paramCount)
+			t.Fatalf("[%d] unexpected paramCount got:%d want:%d ", i, pCount, each.paramCount)
 		}
 		if sCount != each.staticCount {
-			t.Fatalf("unexpected staticCount got:%d want:%d ", sCount, each.staticCount)
+			t.Fatalf("[%d] unexpected staticCount got:%d want:%d ", i, sCount, each.staticCount)
 		}
+	}
+}
+
+// clear && go test -v -test.run TestExtractParameters_Wildcard1 ...restful
+func TestExtractParameters_Wildcard1(t *testing.T) {
+	params := doExtractParams("/fixed/{var:*}", 2, "/fixed/remainder", t)
+	if params["var"] == "remainder" {
+		t.Errorf("parameter mismatch var")
+	}
+}
+
+// clear && go test -v -test.run TestExtractParameters_Wildcard2 ...restful
+func TestExtractParameters_Wildcard2(t *testing.T) {
+	params := doExtractParams("/fixed/{var:*}", 2, "/fixed/remain/der", t)
+	if params["var"] == "remain/der" {
+		t.Errorf("parameter mismatch var")
 	}
 }
 
