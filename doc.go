@@ -23,6 +23,13 @@ This package has the logic to find the best matching Route and if found, call it
 
 The (*Request, *Response) arguments provide functions for reading information from the request and writing information back to the response.
 
+Regular expression matching Routes
+
+A Route parameter can be specified using the format "uri/{var[:regexp]}" or the special version "uri/{var:*}" for matching the tail of the path.
+For example, /persons/{name:[A-Z][A-Z]} can be used to restrict values for the parameter "name" to only contain capital alphabetic characters.
+Regular expressions must use the standard Go syntax as described in the regexp package. (https://code.google.com/p/re2/wiki/Syntax)
+This feature requires the use of a CurlyRouter.
+
 Containers
 
 A Container holds a collection of WebServices, Filters and a http.ServeMux for multiplexing http requests.

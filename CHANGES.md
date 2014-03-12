@@ -1,5 +1,8 @@
 Change history of go-restful
 =
+2014-03-12
+- (api add) Route path parameters can use wildcard or regular expressions. (requires CurlyRouter)
+
 2014-02-26
 - (api add) Request now provides information about the matched Route, see method SelectedRoutePath 
 

@@ -81,7 +81,7 @@ func TestSelectedRoutePath_Issue100(t *testing.T) {
 	httpWriter := httptest.NewRecorder()
 	DefaultContainer.dispatch(httpWriter, httpRequest)
 	if http.StatusOK != httpWriter.Code {
-		t.Error(http.StatusOK, "expected,",  httpWriter.Code, "received.",)
+		t.Error(http.StatusOK, "expected,", httpWriter.Code, "received.")
 	}
 }
 
