@@ -39,7 +39,7 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 - Routes for request -> function mapping with path parameter (e.g. {id}) support
 - Configurable router:
 	- Routing algorithm after [JSR311](http://jsr311.java.net/nonav/releases/1.1/spec/spec.html) that is implemented using (but doest **not** accept) regular expressions (See RouterJSR311 which is used by default)
-	- Fast routing algorithm that only allows static elements and dynamic parameters in the URL path (e.g. /meetings/{id}, See CurlyRouter)
+	- Fast routing algorithm that only allows static elements, regular expressions and dynamic parameters in the URL path (e.g. /meetings/{id} or /static/{subpath:*}, See CurlyRouter)
 - Request API for reading structs from JSON/XML and accesing parameters (path,query,header)
 - Response API for writing structs to JSON/XML and setting headers
 - Filters for intercepting the request &rightarrow; response flow	 on Service or Route level
@@ -62,6 +62,6 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 
 [![Build Status](https://drone.io/github.com/emicklei/go-restful/status.png)](https://drone.io/github.com/emicklei/go-restful/latest)
 
-[![library users](https://sourcegraph.com/api/repos/github.com/zzzeek/sqlalchemy/badges/library-users.png)](https://sourcegraph.com/github.com/zzzeek/sqlalchemy) [![authors](https://sourcegraph.com/api/repos/github.com/zzzeek/sqlalchemy/badges/authors.png)](https://sourcegraph.com/github.com/zzzeek/sqlalchemy) [![xrefs](https://sourcegraph.com/api/repos/github.com/zzzeek/sqlalchemy/badges/xrefs.png)](https://sourcegraph.com/github.com/zzzeek/sqlalchemy)
+[![library users](https://sourcegraph.com/api/repos/github.com/emicklei/go-restful/badges/library-users.png)](https://sourcegraph.com/github.com/emicklei/go-restful) [![authors](https://sourcegraph.com/api/repos/github.com/emicklei/go-restful/badges/authors.png)](https://sourcegraph.com/github.com/emicklei/go-restful) [![xrefs](https://sourcegraph.com/api/repos/github.com/emicklei/go-restful/badges/xrefs.png)](https://sourcegraph.com/github.com/emicklei/go-restful)
 
 (c) 2013, http://ernestmicklei.com. MIT License
