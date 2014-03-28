@@ -7,7 +7,6 @@ package restful
 import (
 	"encoding/json"
 	"encoding/xml"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"strings"
