@@ -78,11 +78,7 @@ func (r *Request) ReadEntity(entityPointer interface{}) (err error) {
 	if strings.Contains(contentType, MIME_XML) {
 		err = xml.Unmarshal(buffer, entityPointer)
 	} else {
-		if strings.Contains(contentType, MIME_JSON) {
-			err = json.Unmarshal(buffer, entityPointer)
-		} else {
-			err = errors.New("[restful] Unable to unmarshal content of type:" + contentType)
-		}
+		err = json.Unmarshal(buffer, entityPointer)
 	}
 	return err
 }
