@@ -20,3 +20,9 @@ Now, you can install the Swagger WebService for serving the Swagger specificatio
 		SwaggerPath:     "/apidocs/",
 		SwaggerFilePath: "/Users/emicklei/Projects/swagger-ui/dist"}
 	swagger.InstallSwaggerService(config)		
+	
+	
+Notes
+--
+- Use RouteBuilder.Operation(..) to set the Nickname field of the API spec
+- The WebServices field of swagger.Config can be used to control which service you want to expose and document ; you can have multiple configs and therefore multiple endpoints.
