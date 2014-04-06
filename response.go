@@ -18,6 +18,11 @@ import (
 // 	restful.DefaultResponseMimeType = restful.MIME_JSON
 var DefaultResponseMimeType string
 
+//PrettyPrintResponses controls the indentation feature of XML and JSON
+//serialization in the response methods WriteEntity, WriteAsJson, and
+//WriteAsXml.
+var PrettyPrintResponses = true
+
 // Response is a wrapper on the actual http ResponseWriter
 // It provides several convenience methods to prepare and write response content.
 type Response struct {
@@ -91,7 +96,15 @@ func (r *Response) WriteEntity(value interface{}) error {
 
 // WriteAsXml is a convenience method for writing a value in xml (requires Xml tags on the value)
 func (r *Response) WriteAsXml(value interface{}) error {
-	output, err := xml.MarshalIndent(value, " ", " ")
+	var output []byte
+	var err error
+
+	if PrettyPrintResponses {
+		output, err = xml.MarshalIndent(value, " ", " ")
+	} else {
+		output, err = xml.Marshal(value)
+	}
+
 	if err != nil {
 		return r.WriteError(http.StatusInternalServerError, err)
 	}
@@ -111,7 +124,15 @@ func (r *Response) WriteAsXml(value interface{}) error {
 
 // WriteAsJson is a convenience method for writing a value in json
 func (r *Response) WriteAsJson(value interface{}) error {
-	output, err := json.MarshalIndent(value, " ", " ")
+	var output []byte
+	var err error
+
+	if PrettyPrintResponses {
+		output, err = json.MarshalIndent(value, " ", " ")
+	} else {
+		output, err = json.Marshal(value)
+	}
+
 	if err != nil {
 		return r.WriteErrorString(http.StatusInternalServerError, err.Error())
 	}
