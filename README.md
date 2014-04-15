@@ -50,7 +50,6 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 - Automatic CORS request handling (using a filter)
 - API declaration for Swagger UI (see swagger package)
 - Panic recovery to produce HTTP 500, customizable using RecoverHandler(...)
-- Supports versioned URLs enabling services such as [gopkg.in](http://labix.org/gopkg.in)
 	
 ### Resources
 
@@ -58,9 +57,10 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 - [Code examples](https://github.com/emicklei/go-restful/tree/master/examples)
 - [Example posted on blog](http://ernestmicklei.com/2012/11/24/go-restful-first-working-example/)
 - [Design explained on blog](http://ernestmicklei.com/2012/11/11/go-restful-api-design/)
-- [Sourcegraph](https://sourcegraph.com/github.com/emicklei/go-restful)
-- [Showcase: Mora - MongoDB REST Api server](https://github.com/emicklei/mora)
+- [sourcegraph](https://sourcegraph.com/github.com/emicklei/go-restful)
+- [gopkg.in](https://gopkg.in/emicklei/go-restful.v1)
+- [showcase: Mora - MongoDB REST Api server](https://github.com/emicklei/mora)
 
 [![Build Status](https://drone.io/github.com/emicklei/go-restful/status.png)](https://drone.io/github.com/emicklei/go-restful/latest)[![library users](https://sourcegraph.com/api/repos/github.com/emicklei/go-restful/badges/library-users.png)](https://sourcegraph.com/github.com/emicklei/go-restful) [![authors](https://sourcegraph.com/api/repos/github.com/emicklei/go-restful/badges/authors.png)](https://sourcegraph.com/github.com/emicklei/go-restful) [![xrefs](https://sourcegraph.com/api/repos/github.com/emicklei/go-restful/badges/xrefs.png)](https://sourcegraph.com/github.com/emicklei/go-restful)
 
-(c) 2013, http://ernestmicklei.com. MIT License
+(c) 2012 - 2014, http://ernestmicklei.com. MIT License

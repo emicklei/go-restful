@@ -135,35 +135,18 @@ ServiceError
 
 In addition to setting the correct (error) Http status code, you can choose to write a ServiceError message on the response.
 
-Serving files
-
-Use the Go standard http.ServeFile function to serve file system assets.
-
-	ws.Route(ws.GET("/static/{resource}").To(staticFromPathParam))
-	...
-	// http://localhost:8080/static/test.xml
-	// http://localhost:8080/static/
-	func staticFromPathParam(req *restful.Request, resp *restful.Response) {
-		http.ServeFile(
-			resp.ResponseWriter,
-			req.Request,
-			path.Join(rootdir, req.PathParameter("resource")))
-	}
-
-See the example https://github.com/emicklei/go-restful/blob/master/examples/restful-serve-static.go with full implementations.
-
 
 
 Resources
 
 [project]: https://github.com/emicklei/go-restful
 
-[example]: https://github.com/emicklei/go-restful/blob/master/examples/restful-user-resource.go
+[examples]: https://github.com/emicklei/go-restful/blob/master/examples
 
 [design]:  http://ernestmicklei.com/2012/11/11/go-restful-api-design/
 
 [showcases]: https://github.com/emicklei/mora, https://github.com/emicklei/landskape
 
-(c) 2013, http://ernestmicklei.com. MIT License
+(c) 2012-2014, http://ernestmicklei.com. MIT License
 */
 package restful
