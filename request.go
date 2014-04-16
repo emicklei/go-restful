@@ -22,7 +22,7 @@ type Request struct {
 	selectedRoutePath string                 // root path + route path that matched the request, e.g. /meetings/{id}/attendees
 }
 
-func newRequest(httpRequest *http.Request) *Request {
+func NewRequest(httpRequest *http.Request) *Request {
 	return &Request{
 		Request:        httpRequest,
 		pathParameters: map[string]string{},

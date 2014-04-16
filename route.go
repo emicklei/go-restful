@@ -42,7 +42,7 @@ func (r *Route) postBuild() {
 // Create Request and Response from their http versions
 func (r *Route) wrapRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {
 	params := r.extractParameters(httpRequest.URL.Path)
-	wrappedRequest := newRequest(httpRequest)
+	wrappedRequest := NewRequest(httpRequest)
 	wrappedRequest.pathParameters = params
 	wrappedRequest.selectedRoutePath = r.Path
 	wrappedResponse := NewResponse(httpWriter)

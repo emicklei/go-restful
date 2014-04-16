@@ -1,5 +1,8 @@
 Change history of go-restful
 =
+2014-04-16
+- (api add) expose constructor of Request for testing.
+
 2014-03-12
 - (api add) Route path parameters can use wildcard or regular expressions. (requires CurlyRouter)
 

@@ -175,7 +175,7 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 			}
 			// TODO
 		}}
-		chain.ProcessFilter(newRequest(httpRequest), NewResponse(writer))
+		chain.ProcessFilter(NewRequest(httpRequest), NewResponse(writer))
 		return
 	}
 	wrappedRequest, wrappedResponse := route.wrapRequestResponse(writer, httpRequest)
@@ -256,5 +256,5 @@ func (c Container) computeAllowedMethods(req *Request) []string {
 func newBasicRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {
 	resp := NewResponse(httpWriter)
 	resp.requestAccept = httpRequest.Header.Get(HEADER_Accept)
-	return newRequest(httpRequest), resp
+	return NewRequest(httpRequest), resp
 }
