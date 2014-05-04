@@ -1,6 +1,9 @@
 Change history of swagger
 =
 
+2014-05-04
+- (fix) include model for array element type of response
+
 2014-01-03
 - (fix) do not add primitive type to the Api models
 
