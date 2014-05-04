@@ -28,6 +28,11 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) {
 	// reference the model before further initializing (enables recursive structs)
 	b.Models[modelName] = sm
 
+	// check for slice or array
+	if st.Kind() == reflect.Slice || st.Kind() == reflect.Array {
+		b.addModel(st.Elem(), "")
+		return
+	}
 	// check for structure or primitive type
 	if st.Kind() != reflect.Struct {
 		return
@@ -176,6 +181,9 @@ func (b modelBuilder) getElementTypeName(modelName, jsonName string, t reflect.T
 	if t.Name() == "" {
 		return modelName + "." + jsonName
 	}
+	if b.isPrimitiveType(t.Name()) {
+		return b.jsonSchemaType(t.Name())
+	}
 	return b.keyFrom(t)
 }
 
@@ -189,7 +197,7 @@ func (b modelBuilder) keyFrom(st reflect.Type) string {
 }
 
 func (b modelBuilder) isPrimitiveType(modelName string) bool {
-	return strings.Contains("int int32 int64 float32 float64 bool string byte time.Time", modelName)
+	return strings.Contains("uint8 int int32 int64 float32 float64 bool string byte time.Time", modelName)
 }
 
 // jsonNameOfField returns the name of the field as it should appear in JSON format
@@ -209,6 +217,7 @@ func (b modelBuilder) jsonNameOfField(field reflect.StructField) string {
 
 func (b modelBuilder) jsonSchemaType(modelName string) string {
 	schemaMap := map[string]string{
+		"uint8":     "integer",
 		"int":       "integer",
 		"int32":     "integer",
 		"int64":     "integer",
@@ -232,6 +241,7 @@ func (b modelBuilder) jsonSchemaFormat(modelName string) string {
 		"int32":     "int32",
 		"int64":     "int64",
 		"byte":      "byte",
+		"uint8":     "byte",
 		"float64":   "double",
 		"float32":   "float",
 		"time.Time": "date-time",

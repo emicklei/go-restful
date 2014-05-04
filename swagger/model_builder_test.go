@@ -670,3 +670,53 @@ func TestStructA3(t *testing.T) {
   }
  }`)
 }
+
+type ObjectId []byte
+
+type Region struct {
+	Id   ObjectId `bson:"_id" json:"id"`
+	Name string   `bson:"name" json:"name"`
+	Type string   `bson:"type" json:"type"`
+}
+
+// clear && go test -v -test.run TestRegion_Issue113 ...swagger
+func TestRegion_Issue113(t *testing.T) {
+	testJsonFromStruct(t, []Region{}, `{
+  "integer": {
+   "id": "integer",
+   "properties": {}
+  },
+  "swagger.Region": {
+   "id": "swagger.Region",
+   "required": [
+    "id",
+    "name",
+    "type"
+   ],
+   "properties": {
+    "id": {
+     "type": "array",
+     "description": "",
+     "items": {
+      "$ref": "integer"
+     },
+     "format": ""
+    },
+    "name": {
+     "type": "string",
+     "description": "",
+     "format": ""
+    },
+    "type": {
+     "type": "string",
+     "description": "",
+     "format": ""
+    }
+   }
+  },
+  "||swagger.Region": {
+   "id": "||swagger.Region",
+   "properties": {}
+  }
+ }`)
+}
