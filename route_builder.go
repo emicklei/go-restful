@@ -148,5 +148,5 @@ func (b *RouteBuilder) Build() Route {
 }
 
 func concatPath(path1, path2 string) string {
-	return strings.TrimRight(path1, "/") + "/" + strings.TrimLeft(path2, "/")
+	return strings.TrimRight( strings.TrimRight(path1, "/") + "/" + strings.TrimLeft(path2, "/") )
 }
