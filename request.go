@@ -32,12 +32,12 @@ func NewRequest(httpRequest *http.Request) *Request {
 	} // empty parameters, attributes
 }
 
-// If ContentType header matching fails, fall back to this type, otherwise
+// If ContentType is missing or */* is given then fall back to this type, otherwise
 // a "Unable to unmarshal content of type:" response is returned.
 // Valid values are restful.MIME_JSON and restful.MIME_XML
 // Example:
-// 	restful.DefaultRequestAccept(restful.MIME_JSON)
-func DefaultRequestAccept(mime string) {
+// 	restful.DefaultRequestContentType(restful.MIME_JSON)
+func DefaultRequestContentType(mime string) {
 	defaultRequestContentType = mime
 }
 
