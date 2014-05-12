@@ -11,11 +11,7 @@ import (
 	"strings"
 )
 
-// If Accept header matching fails, fall back to this type, otherwise
-// a "406: Not Acceptable" response is returned.
-// Valid values are restful.MIME_JSON and restful.MIME_XML
-// Example:
-// 	restful.DefaultResponseMimeType = restful.MIME_JSON
+// DEPRECATED, use DefaultResponseContentType(mime)
 var DefaultResponseMimeType string
 
 //PrettyPrintResponses controls the indentation feature of XML and JSON
@@ -36,6 +32,15 @@ type Response struct {
 // Creates a new response based on a http ResponseWriter.
 func NewResponse(httpWriter http.ResponseWriter) *Response {
 	return &Response{httpWriter, "", []string{}, http.StatusOK, 0} // empty content-types
+}
+
+// If Accept header matching fails, fall back to this type, otherwise
+// a "406: Not Acceptable" response is returned.
+// Valid values are restful.MIME_JSON and restful.MIME_XML
+// Example:
+// 	restful.DefaultResponseContentType(restful.MIME_JSON)
+func DefaultResponseContentType(mime string) {
+	DefaultResponseMimeType = mime
 }
 
 // InternalServerError writes the StatusInternalServerError header.

@@ -13,6 +13,8 @@ import (
 	"strings"
 )
 
+var defaultRequestContentType string
+
 // Request is a wrapper for a http Request that provides convenience methods
 type Request struct {
 	Request           *http.Request
@@ -28,6 +30,15 @@ func NewRequest(httpRequest *http.Request) *Request {
 		pathParameters: map[string]string{},
 		attributes:     map[string]interface{}{},
 	} // empty parameters, attributes
+}
+
+// If ContentType header matching fails, fall back to this type, otherwise
+// a "Unable to unmarshal content of type:" response is returned.
+// Valid values are restful.MIME_JSON and restful.MIME_XML
+// Example:
+// 	restful.DefaultRequestAccept(restful.MIME_JSON)
+func DefaultRequestAccept(mime string) {
+	defaultRequestContentType = mime
 }
 
 // PathParameter accesses the Path parameter value by its name
@@ -74,17 +85,19 @@ func (r *Request) ReadEntity(entityPointer interface{}) (err error) {
 			return err
 		}
 	}
-
 	if strings.Contains(contentType, MIME_XML) {
-		err = xml.Unmarshal(buffer, entityPointer)
-	} else {
-		if strings.Contains(contentType, MIME_JSON) {
-			err = json.Unmarshal(buffer, entityPointer)
-		} else {
-			err = errors.New("[restful] Unable to unmarshal content of type:" + contentType)
-		}
+		return xml.Unmarshal(buffer, entityPointer)
 	}
-	return err
+	if strings.Contains(contentType, MIME_JSON) {
+		return json.Unmarshal(buffer, entityPointer)
+	}
+	if MIME_XML == defaultRequestContentType {
+		return xml.Unmarshal(buffer, entityPointer)
+	}
+	if MIME_JSON == defaultRequestContentType {
+		return json.Unmarshal(buffer, entityPointer)
+	}
+	return errors.New("[restful] Unable to unmarshal content of type:" + contentType)
 }
 
 // SetAttribute adds or replaces the attribute with the given value.
