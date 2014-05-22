@@ -34,17 +34,17 @@ func (u UserService) Register() {
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
 		Writes(User{})) // on the response
 
-	ws.Route(ws.PUT("").To(u.updateUser).
+	ws.Route(ws.PUT("/{user-id}").To(u.updateUser).
 		// docs
 		Doc("update a user").
 		Operation("updateUser").
+		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
 		Reads(User{})) // from the request
 
-	ws.Route(ws.PUT("/{user-id}").To(u.createUser).
+	ws.Route(ws.PUT("").To(u.createUser).
 		// docs
 		Doc("create a user").
 		Operation("createUser").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
 		Reads(User{})) // from the request
 
 	ws.Route(ws.DELETE("/{user-id}").To(u.removeUser).

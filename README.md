@@ -15,34 +15,36 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
     
 ### Example
 
-	ws := new(restful.WebService)
-	ws.
-		Path("/users").
-		Consumes(restful.MIME_XML, restful.MIME_JSON).
-		Produces(restful.MIME_JSON, restful.MIME_XML)
+```Go
+ws := new(restful.WebService)
+ws.
+	Path("/users").
+	Consumes(restful.MIME_XML, restful.MIME_JSON).
+	Produces(restful.MIME_JSON, restful.MIME_XML)
 
-	ws.Route(ws.GET("/{user-id}").To(u.findUser).
-		Doc("get a user").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-		Writes(User{}))		
-	...
+ws.Route(ws.GET("/{user-id}").To(u.findUser).
+	Doc("get a user").
+	Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
+	Writes(User{}))		
+...
 	
-	func (u UserResource) findUser(request *restful.Request, response *restful.Response) {
-		id := request.PathParameter("user-id")
-		...
-	}
+func (u UserResource) findUser(request *restful.Request, response *restful.Response) {
+	id := request.PathParameter("user-id")
+	...
+}
+```
 	
 [Full API of a UserResource](https://github.com/emicklei/go-restful/tree/master/examples/restful-user-resource.go) 
 		
 ### Features
 
-- Routes for request -> function mapping with path parameter (e.g. {id}) support
+- Routes for request &#8594; function mapping with path parameter (e.g. {id}) support
 - Configurable router:
 	- Routing algorithm after [JSR311](http://jsr311.java.net/nonav/releases/1.1/spec/spec.html) that is implemented using (but doest **not** accept) regular expressions (See RouterJSR311 which is used by default)
 	- Fast routing algorithm that allows static elements, regular expressions and dynamic parameters in the URL path (e.g. /meetings/{id} or /static/{subpath:*}, See CurlyRouter)
 - Request API for reading structs from JSON/XML and accesing parameters (path,query,header)
 - Response API for writing structs to JSON/XML and setting headers
-- Filters for intercepting the request &rightarrow; response flow	 on Service or Route level
+- Filters for intercepting the request &#8594; response flow on Service or Route level
 - Request-scoped variables using attributes
 - Containers for WebServices on different HTTP endpoints
 - Content encoding (gzip,deflate) of responses

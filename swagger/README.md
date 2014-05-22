@@ -9,7 +9,7 @@ The project contains a "dist" folder.
 Its contents has all the Swagger UI files you need.
 
 The `index.html` has an `url` set to `http://petstore.swagger.wordnik.com/api/api-docs`.
-You need to change that for your WebService. 
+You need to change that to match your WebService JSON endpoint  e.g. `http://localhost:8080/apidocs.json`
 
 Now, you can install the Swagger WebService for serving the Swagger specification in JSON.
 
