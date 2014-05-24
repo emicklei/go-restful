@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/emicklei/go-restful"
 	"github.com/emicklei/go-restful/swagger"
@@ -56,7 +57,7 @@ func (u UserResource) Register(container *restful.Container) {
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
 		Reads(User{})) // from the request
 
-	ws.Route(ws.PUT("").To(u.createUser).
+	ws.Route(ws.POST("").To(u.createUser).
 		// docs
 		Doc("create a user").
 		Operation("createUser").
@@ -79,9 +80,25 @@ func (u UserResource) findUser(request *restful.Request, response *restful.Respo
 	if len(usr.Id) == 0 {
 		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(http.StatusNotFound, "User could not be found.")
-	} else {
-		response.WriteEntity(usr)
 	}
+	response.WriteEntity(usr)
+}
+
+// POST http://localhost:8080/users
+// <User><Name>Melissa</Name></User>
+//
+func (u *UserResource) createUser(request *restful.Request, response *restful.Response) {
+	usr := new(User)
+	err := request.ReadEntity(usr)
+	if err != nil {
+		response.AddHeader("Content-Type", "text/plain")
+		response.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+	usr.Id = strconv.Itoa(len(u.users) + 1) // simple id generation
+	u.users[usr.Id] = *usr
+	response.WriteHeader(http.StatusCreated)
+	response.WriteEntity(usr)
 }
 
 // PUT http://localhost:8080/users/1
@@ -90,29 +107,13 @@ func (u UserResource) findUser(request *restful.Request, response *restful.Respo
 func (u *UserResource) updateUser(request *restful.Request, response *restful.Response) {
 	usr := new(User)
 	err := request.ReadEntity(&usr)
-	if err == nil {
-		u.users[usr.Id] = *usr
-		response.WriteEntity(usr)
-	} else {
+	if err != nil {
 		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
 	}
-}
-
-// PUT http://localhost:8080/users/1
-// <User><Id>1</Id><Name>Melissa</Name></User>
-//
-func (u *UserResource) createUser(request *restful.Request, response *restful.Response) {
-	usr := User{Id: request.PathParameter("user-id")}
-	err := request.ReadEntity(&usr)
-	if err == nil {
-		u.users[usr.Id] = usr
-		response.WriteHeader(http.StatusCreated)
-		response.WriteEntity(usr)
-	} else {
-		response.AddHeader("Content-Type", "text/plain")
-		response.WriteErrorString(http.StatusInternalServerError, err.Error())
-	}
+	u.users[usr.Id] = *usr
+	response.WriteEntity(usr)
 }
 
 // DELETE http://localhost:8080/users/1
