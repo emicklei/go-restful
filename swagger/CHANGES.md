@@ -1,5 +1,7 @@
 Change history of swagger
 =
+2014-05-29
+- (api add) Ability to define custom http.Handler to serve swagger-ui static files
 
 2014-05-04
 - (fix) include model for array element type of response

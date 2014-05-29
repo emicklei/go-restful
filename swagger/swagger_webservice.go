@@ -78,7 +78,7 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 		}
 		//if we define a custom static handler use it
 		if config.StaticHandler != nil {
-			LogInfo("[restful/swagger] %v%v is mapped to custom Handler %v", config.WebServicesUrl, swaggerPathSlash)
+			LogInfo("[restful/swagger] %v%v is mapped to custom Handler %T", config.WebServicesUrl, swaggerPathSlash, config.StaticHandler)
 			wsContainer.Handle(swaggerPathSlash, config.StaticHandler)
 			//otherwise use static fileserver
 		} else {
