@@ -1,6 +1,9 @@
 package swagger
 
-import "github.com/emicklei/go-restful"
+import (
+	"github.com/emicklei/go-restful"
+	"net/http"
+)
 
 type Config struct {
 	WebServicesUrl  string // url where the services are available, e.g. http://localhost:8080
@@ -8,4 +11,5 @@ type Config struct {
 	SwaggerPath     string // [optional] path where the swagger UI will be served, e.g. /swagger
 	SwaggerFilePath string // [optional] location of folder containing Swagger HTML5 application index.html
 	WebServices     []*restful.WebService
+	StaticHandler   http.Handler
 }
