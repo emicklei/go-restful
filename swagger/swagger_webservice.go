@@ -69,23 +69,28 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 	}
 
 	// Check paths for UI serving
-	if config.SwaggerPath != "" && config.SwaggerFilePath != "" {
+	if config.StaticHandler == nil && config.SwaggerFilePath != "" && config.SwaggerPath != "" {
 		swaggerPathSlash := config.SwaggerPath
 		// path must end with slash /
 		if "/" != config.SwaggerPath[len(config.SwaggerPath)-1:] {
 			LogInfo("[restful/swagger] use corrected SwaggerFilePath ; must end with slash (/)")
 			swaggerPathSlash += "/"
 		}
+
+		LogInfo("[restful/swagger] %v%v is mapped to folder %v", config.WebServicesUrl, swaggerPathSlash, config.SwaggerFilePath)
+		wsContainer.Handle(swaggerPathSlash, http.StripPrefix(swaggerPathSlash, http.FileServer(http.Dir(config.SwaggerFilePath))))
+
 		//if we define a custom static handler use it
-		if config.StaticHandler != nil {
-			LogInfo("[restful/swagger] %v%v is mapped to custom Handler %T", config.WebServicesUrl, swaggerPathSlash, config.StaticHandler)
-			wsContainer.Handle(swaggerPathSlash, config.StaticHandler)
-			//otherwise use static fileserver
-		} else {
-			LogInfo("[restful/swagger] %v%v is mapped to folder %v", config.WebServicesUrl, swaggerPathSlash, config.SwaggerFilePath)
-			wsContainer.Handle(swaggerPathSlash, http.StripPrefix(swaggerPathSlash, http.FileServer(http.Dir(config.SwaggerFilePath))))
+	} else if config.StaticHandler != nil && config.SwaggerPath != "" {
+		swaggerPathSlash := config.SwaggerPath
+		// path must end with slash /
+		if "/" != config.SwaggerPath[len(config.SwaggerPath)-1:] {
+			LogInfo("[restful/swagger] use corrected SwaggerFilePath ; must end with slash (/)")
+			swaggerPathSlash += "/"
 
 		}
+		LogInfo("[restful/swagger] %v%v is mapped to custom Handler %T", config.WebServicesUrl, swaggerPathSlash, config.StaticHandler)
+		wsContainer.Handle(swaggerPathSlash, config.StaticHandler)
 
 	} else {
 		LogInfo("[restful/swagger] Swagger(File)Path is empty ; no UI is served")
