@@ -59,8 +59,12 @@ func (r Response) AddHeader(header string, value string) Response {
 // WriteEntity marshals the value using the representation denoted by the Accept Header (XML or JSON)
 // If no Accept header is specified (or */*) then return the Content-Type as specified by the first in the Route.Produces.
 // If an Accept header is specified then return the Content-Type as specified by the first in the Route.Produces that is matched with the Accept header.
+// If the value is nil then nothing is written. You may want to call WriteHeader(http.StatusNotFound) instead.
 // Current implementation ignores any q-parameters in the Accept Header.
 func (r *Response) WriteEntity(value interface{}) error {
+	if value == nil { // do not write a nil representation
+		return nil
+	}
 	for _, qualifiedMime := range strings.Split(r.requestAccept, ",") {
 		mime := strings.Trim(strings.Split(qualifiedMime, ";")[0], " ")
 		if 0 == len(mime) || mime == "*/*" {
@@ -104,6 +108,9 @@ func (r *Response) WriteAsXml(value interface{}) error {
 	var output []byte
 	var err error
 
+	if value == nil { // do not write a nil representation
+		return nil
+	}
 	if PrettyPrintResponses {
 		output, err = xml.MarshalIndent(value, " ", " ")
 	} else {
@@ -132,6 +139,9 @@ func (r *Response) WriteAsJson(value interface{}) error {
 	var output []byte
 	var err error
 
+	if value == nil { // do not write a nil representation
+		return nil
+	}
 	if PrettyPrintResponses {
 		output, err = json.MarshalIndent(value, " ", " ")
 	} else {
@@ -173,9 +183,16 @@ func (r *Response) WriteErrorString(status int, errorReason string) error {
 }
 
 // WriteHeader is overridden to remember the Status Code that has been written.
-// Note that using this method, the status value is only written when calling WriteEntity or directly WriteAsXml,WriteAsJson.
+// Note that using this method, the status value is only written when
+// - calling WriteEntity
+// - or directly WriteAsXml,WriteAsJson.
+// - or if the status is 204 (http.StatusNoContent)
 func (r *Response) WriteHeader(httpStatus int) {
 	r.statusCode = httpStatus
+	// if 204 then WriteEntity will not be called so we need to pass this code
+	if http.StatusNoContent == httpStatus {
+		r.ResponseWriter.WriteHeader(httpStatus)
+	}
 }
 
 // StatusCode returns the code that has been written using WriteHeader.

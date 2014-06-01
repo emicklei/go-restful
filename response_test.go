@@ -125,3 +125,13 @@ func TestAcceptXmlBeforeStarStar_Issue83(t *testing.T) {
 		t.Errorf("Unexpected content type:%s", ct)
 	}
 }
+
+// go test -v -test.run TestWriteHeaderNoContent_Issue124 ...restful
+func TestWriteHeaderNoContent_Issue124(t *testing.T) {
+	httpWriter := httptest.NewRecorder()
+	resp := Response{httpWriter, "text/plain", []string{"text/plain"}, 0, 0}
+	resp.WriteHeader(http.StatusNoContent)
+	if httpWriter.Code != http.StatusNoContent {
+		t.Errorf("got %d want %d", httpWriter.Code, http.StatusNoContent)
+	}
+}
