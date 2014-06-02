@@ -129,8 +129,9 @@ func (w *WebService) Filter(filter FilterFunction) *WebService {
 }
 
 // Doc is used to set the documentation of this service.
-func (w *WebService) Doc(plainText string) {
+func (w *WebService) Doc(plainText string) *WebService {
 	w.documentation = plainText
+	return w
 }
 
 // Documentation returns it.

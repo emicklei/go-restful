@@ -40,6 +40,7 @@ func (u UserResource) Register(container *restful.Container) {
 	ws := new(restful.WebService)
 	ws.
 		Path("/users").
+		Doc("Manage Users").
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_JSON, restful.MIME_XML) // you can specify this per route as well
 
@@ -138,7 +139,7 @@ func main() {
 
 		// Optionally, specifiy where the UI is located
 		SwaggerPath:     "/apidocs/",
-		SwaggerFilePath: "/Users/emicklei/Downloads/swagger-ui-1.1.7"}
+		SwaggerFilePath: "/Users/emicklei/xProjects/swagger-ui/dist"}
 	swagger.RegisterSwaggerService(config, wsContainer)
 
 	log.Printf("start listening on localhost:8080")

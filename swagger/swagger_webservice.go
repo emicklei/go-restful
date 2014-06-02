@@ -122,8 +122,11 @@ func enableCORS(req *restful.Request, resp *restful.Response, chain *restful.Fil
 
 func (sws SwaggerService) getListing(req *restful.Request, resp *restful.Response) {
 	listing := ResourceListing{SwaggerVersion: swaggerVersion}
-	for k, _ := range sws.apiDeclarationMap {
+	for k, v := range sws.apiDeclarationMap {
 		ref := ApiRef{Path: k}
+		if len(v.Apis) > 0 { // use description of first (could still be empty)
+			ref.Description = v.Apis[0].Description
+		}
 		listing.Apis = append(listing.Apis, ref)
 	}
 	resp.WriteAsJson(listing)
