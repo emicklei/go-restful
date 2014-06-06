@@ -13,15 +13,22 @@ This package has the logic to find the best matching Route and if found, call it
 	ws := new(restful.WebService)
 	ws.
 		Path("/users").
-		Consumes(restful.MIME_XML, restful.MIME_JSON).
+		Consumes(restful.MIME_JSON, restful.MIME_XML).
 		Produces(restful.MIME_JSON, restful.MIME_XML)
+
 	ws.Route(ws.GET("/{user-id}").To(u.findUser))  // u is a UserResource
+
 	...
+
 	// GET http://localhost:8080/users/1
 	func (u UserResource) findUser(request *restful.Request, response *restful.Response) {
 		id := request.PathParameter("user-id")
+		...
+	}
 
 The (*Request, *Response) arguments provide functions for reading information from the request and writing information back to the response.
+
+See the example https://github.com/emicklei/go-restful/blob/master/examples/restful-user-resource.go with a full implementation.
 
 Regular expression matching Routes
 
@@ -75,7 +82,6 @@ These are processed before calling the function associated with the Route.
 	// install 2 chained route filters (processed before calling findUser)
 	ws.Route(ws.GET("/{user-id}").Filter(routeLogging).Filter(NewCountFilter().routeCounter).To(findUser))
 
-
 See the example https://github.com/emicklei/go-restful/blob/master/examples/restful-filters.go with full implementations.
 
 Response Encoding
@@ -85,8 +91,8 @@ Two encodings are supported: gzip and deflate. To enable this for all responses:
 	restful.DefaultContainer.EnableContentEncoding(true)
 
 If a Http request includes the Accept-Encoding header then the response content will be compressed using the specified encoding.
-
 Alternatively, you can create a Filter that performs the encoding and install it per WebService or Route.
+
 See the example https://github.com/emicklei/go-restful/blob/master/examples/restful-encoding-filter.go
 
 OPTIONS support
