@@ -31,6 +31,9 @@ func (r RouterJSR311) SelectRoute(
 	}
 	// Obtain the set of candidate methods (Routes)
 	routes := r.selectRoutes(dispatcher, finalMatch)
+	if len(routes) == 0 {
+		return dispatcher, nil, NewError(http.StatusNotFound, "404: Page Not Found")
+	}
 
 	// Identify the method (Route) that will handle the request
 	route, ok := r.detectRoute(routes, httpRequest)
