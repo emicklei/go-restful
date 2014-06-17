@@ -107,6 +107,7 @@ func (r *Response) WriteEntityThroughEncoder(value interface{}, e EntityEncoder)
 		// do not write a nil representation
 		return nil
 	}
+	e.SetResponse(r)
 	if PrettyPrintResponses {
 		output, err = e.MarshalIndent(value, " ", " ")
 	} else {

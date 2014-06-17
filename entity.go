@@ -33,8 +33,11 @@ type EntityEncoder interface {
 	// MIME must return the MIME type to be used in the Content-Type header
 	MIME() string
 	// SetRequest will receive the current request
-	// It must only operate on instances created with new
+	// It must only operate on instances created with New
 	SetRequest(*Request)
+	//  SetResponse will receive the current response
+	// It must only operate on instances created with New
+	SetResponse(*Response)
 	// Marshal to be used in Response writing
 	Marshal(v interface{}) ([]byte, error)
 	// MarshalIndent for PrettyPrint cases
@@ -92,6 +95,9 @@ func (e *JSONEntity) MIME() string {
 // no-op
 func (e *JSONEntity) SetRequest(r *Request) {}
 
+// SetResponse is a no-op
+func (e *JSONEntity) SetResponse(r *Response) {}
+
 // Marshal passthrough json.Marshal
 func (e *JSONEntity) Marshal(v interface{}) ([]byte, error) {
 	return json.Marshal(v)
@@ -123,6 +129,9 @@ func (e *XMLEntity) MIME() string {
 
 // SetRequest for current state: no-op
 func (e *XMLEntity) SetRequest(r *Request) {}
+
+// SetResponse is a no-op
+func (e *XMLEntity) SetResponse(r *Response) {}
 
 // withHeader will include the xml.Header in the output
 func (e *XMLEntity) withHeader(xmlBytes []byte, err error) ([]byte, error) {
