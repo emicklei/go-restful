@@ -7,13 +7,14 @@ package restful
 import (
 	"encoding/json"
 	"encoding/xml"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"strings"
 )
 
 var defaultRequestContentType string
+
+var doCacheReadEntityBytes = true
 
 // Request is a wrapper for a http Request that provides convenience methods
 type Request struct {
@@ -39,6 +40,12 @@ func NewRequest(httpRequest *http.Request) *Request {
 // 	restful.DefaultRequestContentType(restful.MIME_JSON)
 func DefaultRequestContentType(mime string) {
 	defaultRequestContentType = mime
+}
+
+// SetCacheReadEntity controls whether the response data ([]byte) is cached such that ReadEntity is repeatable.
+// Default is true (due to backwardcompatibility). For better performance, you should set it to false if you don't need it.
+func SetCacheReadEntity(doCache bool) {
+	doCacheReadEntityBytes = doCache
 }
 
 // PathParameter accesses the Path parameter value by its name
@@ -74,16 +81,35 @@ func (r *Request) HeaderParameter(name string) string {
 // May be called multiple times in the request-response flow
 func (r *Request) ReadEntity(entityPointer interface{}) (err error) {
 	contentType := r.Request.Header.Get(HEADER_ContentType)
+	if doCacheReadEntityBytes {
+		return r.cachingReadEntity(contentType, entityPointer)
+	}
+	// unmarshall directly from request Body
+	if strings.Contains(contentType, MIME_XML) {
+		return xml.NewDecoder(r.Request.Body).Decode(entityPointer)
+	}
+	if strings.Contains(contentType, MIME_JSON) {
+		return json.NewDecoder(r.Request.Body).Decode(entityPointer)
+	}
+	if MIME_XML == defaultRequestContentType {
+		return xml.NewDecoder(r.Request.Body).Decode(entityPointer)
+	}
+	if MIME_JSON == defaultRequestContentType {
+		return json.NewDecoder(r.Request.Body).Decode(entityPointer)
+	}
+	return NewError(400, "Unable to unmarshal content of type:"+contentType)
+}
 
+func (r *Request) cachingReadEntity(contentType string, entityPointer interface{}) (err error) {
 	var buffer []byte
 	if r.bodyContent != nil {
 		buffer = *r.bodyContent
 	} else {
 		buffer, err = ioutil.ReadAll(r.Request.Body)
-		r.bodyContent = &buffer
 		if err != nil {
 			return err
 		}
+		r.bodyContent = &buffer
 	}
 	if strings.Contains(contentType, MIME_XML) {
 		return xml.Unmarshal(buffer, entityPointer)
@@ -97,7 +123,7 @@ func (r *Request) ReadEntity(entityPointer interface{}) (err error) {
 	if MIME_JSON == defaultRequestContentType {
 		return json.Unmarshal(buffer, entityPointer)
 	}
-	return errors.New("[restful] Unable to unmarshal content of type:" + contentType)
+	return NewError(400, "Unable to unmarshal content of type:"+contentType)
 }
 
 // SetAttribute adds or replaces the attribute with the given value.
