@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -18,7 +17,6 @@ var defaultRequestContentType string
 // Request is a wrapper for a http Request that provides convenience methods
 type Request struct {
 	Request           *http.Request
-	bodyContent       *[]byte // to cache the request body for multiple reads of ReadEntity
 	pathParameters    map[string]string
 	attributes        map[string]interface{} // for storing request-scoped values
 	selectedRoutePath string                 // root path + route path that matched the request, e.g. /meetings/{id}/attendees
@@ -75,27 +73,17 @@ func (r *Request) HeaderParameter(name string) string {
 func (r *Request) ReadEntity(entityPointer interface{}) (err error) {
 	contentType := r.Request.Header.Get(HEADER_ContentType)
 
-	var buffer []byte
-	if r.bodyContent != nil {
-		buffer = *r.bodyContent
-	} else {
-		buffer, err = ioutil.ReadAll(r.Request.Body)
-		r.bodyContent = &buffer
-		if err != nil {
-			return err
-		}
-	}
 	if strings.Contains(contentType, MIME_XML) {
-		return xml.Unmarshal(buffer, entityPointer)
+		return xml.NewDecoder(r.Request.Body).Decode(entityPointer)
 	}
 	if strings.Contains(contentType, MIME_JSON) {
-		return json.Unmarshal(buffer, entityPointer)
+		return json.NewDecoder(r.Request.Body).Decode(entityPointer)
 	}
 	if MIME_XML == defaultRequestContentType {
-		return xml.Unmarshal(buffer, entityPointer)
+		return xml.NewDecoder(r.Request.Body).Decode(entityPointer)
 	}
 	if MIME_JSON == defaultRequestContentType {
-		return json.Unmarshal(buffer, entityPointer)
+		return json.NewDecoder(r.Request.Body).Decode(entityPointer)
 	}
 	return errors.New("[restful] Unable to unmarshal content of type:" + contentType)
 }
