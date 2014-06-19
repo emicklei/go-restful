@@ -5,7 +5,6 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
-	"errors"
 	"net/http"
 	"regexp"
 	"sort"
@@ -25,11 +24,11 @@ func (c CurlyRouter) SelectRoute(
 
 	detectedService := c.detectWebService(requestTokens, webServices)
 	if detectedService == nil {
-		return nil, nil, errors.New("[restful] no detected service")
+		return nil, nil, NewError(http.StatusNotFound, "404: Page Not Found")
 	}
 	candidateRoutes := c.selectRoutes(detectedService, requestTokens)
 	if len(candidateRoutes) == 0 {
-		return detectedService, nil, errors.New("[restful] no candidate routes")
+		return detectedService, nil, NewError(http.StatusNotFound, "404: Page Not Found")
 	}
 	selectedRoute, err := c.detectRoute(candidateRoutes, httpRequest)
 	if selectedRoute == nil {
