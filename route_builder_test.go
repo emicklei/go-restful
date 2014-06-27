@@ -32,6 +32,9 @@ func TestRouteBuilder_PathParameter(t *testing.T) {
 	if r.ParameterDocs[0].Data().AllowableValues["a"] != "b" {
 		t.Error("allowableValues invalid")
 	}
+	if b.ParameterNamed("name") == nil {
+		t.Error("access to parameter failed")
+	}
 }
 
 func TestRouteBuilder(t *testing.T) {

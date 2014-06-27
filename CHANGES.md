@@ -3,6 +3,10 @@ Change history of go-restful
 2014-04-16
 - (api add) expose constructor of Request for testing.
 
+2014-06-27
+- (api add) ParameterNamed gives access to a Parameter definition and its data (for further specification).
+- (api add) SetCacheReadEntity allow scontrol over whether or not the request body is being cached (default true for compatibility reasons).
+
 2014-03-12
 - (api add) Route path parameters can use wildcard or regular expressions. (requires CurlyRouter)
 
