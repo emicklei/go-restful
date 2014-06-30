@@ -16,6 +16,7 @@ import "strings"
 type CrossOriginResourceSharing struct {
 	ExposeHeaders  []string // list of Header names
 	AllowedHeaders []string // list of Header names
+	AllowedDomains []string
 	CookiesAllowed bool
 	Container      *Container
 }
@@ -67,6 +68,24 @@ func (c CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Respo
 	c.setAllowOriginHeader(req, resp)
 	c.checkAndSetAllowCredentials(resp)
 	// return http 200 response, no body
+}
+
+func (c CrossOriginResourceSharing) isOriginAllowed(req *Request) bool {
+	origin := req.Request.Header.Get(HEADER_Origin)
+	if len(origin) == 0 {
+		return false
+	}
+	if len(c.AllowedDomains) == 0 {
+		return true
+	}
+	allowed := false
+	for _, each := range c.AllowedDomains {
+		if each == origin {
+			allowed = true
+			break
+		}
+	}
+	return allowed
 }
 
 func (c CrossOriginResourceSharing) setAllowOriginHeader(req *Request, resp *Response) {
