@@ -70,8 +70,7 @@ func (c CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Respo
 	// return http 200 response, no body
 }
 
-func (c CrossOriginResourceSharing) isOriginAllowed(req *Request) bool {
-	origin := req.Request.Header.Get(HEADER_Origin)
+func (c CrossOriginResourceSharing) isOriginAllowed(origin string) bool {
 	if len(origin) == 0 {
 		return false
 	}
@@ -90,7 +89,9 @@ func (c CrossOriginResourceSharing) isOriginAllowed(req *Request) bool {
 
 func (c CrossOriginResourceSharing) setAllowOriginHeader(req *Request, resp *Response) {
 	origin := req.Request.Header.Get(HEADER_Origin)
-	resp.AddHeader(HEADER_AccessControlAllowOrigin, origin)
+	if c.isOriginAllowed(origin) {
+		resp.AddHeader(HEADER_AccessControlAllowOrigin, origin)
+	}
 }
 
 func (c CrossOriginResourceSharing) checkAndSetExposeHeaders(resp *Response) {

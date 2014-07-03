@@ -7,6 +7,9 @@ Change history of go-restful
 - (api add) ParameterNamed gives access to a Parameter definition and its data (for further specification).
 - (api add) SetCacheReadEntity allow scontrol over whether or not the request body is being cached (default true for compatibility reasons).
 
+2014-07-03
+- (api add) CORS can be configured with a list of allowed domains
+
 2014-03-12
 - (api add) Route path parameters can use wildcard or regular expressions. (requires CurlyRouter)
 
