@@ -76,13 +76,24 @@ func (b *RouteBuilder) Reads(sample interface{}) *RouteBuilder {
 	return b
 }
 
+// ParameterNamed returns a Parameter already known to the RouteBuilder. Returns nil if not.
+// Use this to modify or extend information for the Parameter (through its Data()).
+func (b RouteBuilder) ParameterNamed(name string) (p *Parameter) {
+	for _, each := range b.parameters {
+		if each.Data().Name == name {
+			return each
+		}
+	}
+	return p
+}
+
 // Writes tells what resource type will be written as the response payload. Optional.
 func (b *RouteBuilder) Writes(sample interface{}) *RouteBuilder {
 	b.writeSample = sample
 	return b
 }
 
-// Param allows you to document the parameters of the Route.
+// Param allows you to document the parameters of the Route. It adds a new Parameter (does not check for duplicates).
 func (b *RouteBuilder) Param(parameter *Parameter) *RouteBuilder {
 	if b.parameters == nil {
 		b.parameters = []*Parameter{}

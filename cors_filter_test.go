@@ -43,6 +43,18 @@ func TestCORSFilter_Preflight(t *testing.T) {
 	if "X-Custom-Header, X-Additional-Header" != actual {
 		t.Fatal("expected: X-Custom-Header, X-Additional-Header but got:" + actual)
 	}
+
+	if !cors.isOriginAllowed("somewhere") {
+		t.Fatal("origin expected to be allowed")
+	}
+	cors.AllowedDomains = []string{"overthere.com"}
+	if cors.isOriginAllowed("somewhere") {
+		t.Fatal("origin [somewhere] expected NOT to be allowed")
+	}
+	if !cors.isOriginAllowed("overthere.com") {
+		t.Fatal("origin [overthere] expected to be allowed")
+	}
+
 }
 
 // go test -v -test.run TestCORSFilter_Actual ...restful

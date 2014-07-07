@@ -21,6 +21,7 @@ type Sample struct {
 }
 
 func TestReadEntityXml(t *testing.T) {
+	SetCacheReadEntity(true)
 	bodyReader := strings.NewReader("<Sample><Value>42</Value></Sample>")
 	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
 	httpRequest.Header.Set("Content-Type", "application/xml")
@@ -29,6 +30,25 @@ func TestReadEntityXml(t *testing.T) {
 	request.ReadEntity(sam)
 	if sam.Value != "42" {
 		t.Fatal("read failed")
+	}
+	if request.bodyContent == nil {
+		t.Fatal("no expected cached bytes found")
+	}
+}
+
+func TestReadEntityXmlNonCached(t *testing.T) {
+	SetCacheReadEntity(false)
+	bodyReader := strings.NewReader("<Sample><Value>42</Value></Sample>")
+	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
+	httpRequest.Header.Set("Content-Type", "application/xml")
+	request := &Request{Request: httpRequest}
+	sam := new(Sample)
+	request.ReadEntity(sam)
+	if sam.Value != "42" {
+		t.Fatal("read failed")
+	}
+	if request.bodyContent != nil {
+		t.Fatal("unexpected cached bytes found")
 	}
 }
 
