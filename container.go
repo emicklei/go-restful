@@ -17,7 +17,7 @@ import (
 // The requests are further dispatched to routes of WebServices using a RouteSelector
 type Container struct {
 	webServices            []*WebService
-	serveMux               *http.ServeMux
+	ServeMux               *http.ServeMux
 	isRegisteredOnRoot     bool
 	containerFilters       []FilterFunction
 	doNotRecover           bool // default is false
@@ -30,7 +30,7 @@ type Container struct {
 func NewContainer() *Container {
 	return &Container{
 		webServices:            []*WebService{},
-		serveMux:               http.NewServeMux(),
+		ServeMux:               http.NewServeMux(),
 		isRegisteredOnRoot:     false,
 		containerFilters:       []FilterFunction{},
 		doNotRecover:           false,
@@ -76,7 +76,7 @@ func (c *Container) Add(service *WebService) *Container {
 		pattern := c.fixedPrefixPath(service.RootPath())
 		// check if root path registration is needed
 		if "/" == pattern || "" == pattern {
-			c.serveMux.HandleFunc("/", c.dispatch)
+			c.ServeMux.HandleFunc("/", c.dispatch)
 			c.isRegisteredOnRoot = true
 		} else {
 			// detect if registration already exists
@@ -88,9 +88,9 @@ func (c *Container) Add(service *WebService) *Container {
 				}
 			}
 			if !alreadyMapped {
-				c.serveMux.HandleFunc(pattern, c.dispatch)
+				c.ServeMux.HandleFunc(pattern, c.dispatch)
 				if !strings.HasSuffix(pattern, "/") {
-					c.serveMux.HandleFunc(pattern+"/", c.dispatch)
+					c.ServeMux.HandleFunc(pattern+"/", c.dispatch)
 				}
 			}
 		}
@@ -208,12 +208,12 @@ func (c Container) fixedPrefixPath(pathspec string) string {
 
 // ServeHTTP implements net/http.Handler therefore a Container can be a Handler in a http.Server
 func (c Container) ServeHTTP(httpwriter http.ResponseWriter, httpRequest *http.Request) {
-	c.serveMux.ServeHTTP(httpwriter, httpRequest)
+	c.ServeMux.ServeHTTP(httpwriter, httpRequest)
 }
 
 // Handle registers the handler for the given pattern. If a handler already exists for pattern, Handle panics.
 func (c Container) Handle(pattern string, handler http.Handler) {
-	c.serveMux.Handle(pattern, handler)
+	c.ServeMux.Handle(pattern, handler)
 }
 
 // Filter appends a container FilterFunction. These are called before dispatching

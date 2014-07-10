@@ -13,7 +13,7 @@ var DefaultContainer *Container
 
 func init() {
 	DefaultContainer = NewContainer()
-	DefaultContainer.serveMux = http.DefaultServeMux
+	DefaultContainer.ServeMux = http.DefaultServeMux
 }
 
 // If set the true then panics will not be caught to return HTTP 500.
