@@ -115,7 +115,10 @@ func staticPathFromRoute(r restful.Route) string {
 
 func enableCORS(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
 	if origin := req.HeaderParameter(restful.HEADER_Origin); origin != "" {
-		resp.AddHeader(restful.HEADER_AccessControlAllowOrigin, origin)
+		// prevent duplicate header
+		if len(resp.Header().Get(restful.HEADER_AccessControlAllowOrigin)) == 0 {
+			resp.AddHeader(restful.HEADER_AccessControlAllowOrigin, origin)
+		}
 	}
 	chain.ProcessFilter(req, resp)
 }
