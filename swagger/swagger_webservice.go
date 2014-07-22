@@ -73,7 +73,7 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 		swaggerPathSlash := config.SwaggerPath
 		// path must end with slash /
 		if "/" != config.SwaggerPath[len(config.SwaggerPath)-1:] {
-			LogInfo("[restful/swagger] use corrected SwaggerFilePath ; must end with slash (/)")
+			LogInfo("[restful/swagger] use corrected SwaggerPath ; must end with slash (/)")
 			swaggerPathSlash += "/"
 		}
 
