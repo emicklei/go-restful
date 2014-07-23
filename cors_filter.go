@@ -4,7 +4,10 @@ package restful
 // Use of this source code is governed by a license
 // that can be found in the LICENSE file.
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 // CrossOriginResourceSharing is used to create a Container Filter that implements CORS.
 // Cross-origin resource sharing (CORS) is a mechanism that allows JavaScript on a web page
@@ -17,6 +20,8 @@ type CrossOriginResourceSharing struct {
 	ExposeHeaders  []string // list of Header names
 	AllowedHeaders []string // list of Header names
 	AllowedDomains []string
+	AllowedMethods []string
+	MaxAge         int // number of seconds before requiring new Options request
 	CookiesAllowed bool
 	Container      *Container
 }
@@ -29,45 +34,52 @@ func (c CrossOriginResourceSharing) Filter(req *Request, resp *Response, chain *
 		return
 	}
 	if req.Request.Method != "OPTIONS" {
-		c.doActualRequest(req, resp, chain)
+		c.doActualRequest(req, resp)
+		chain.ProcessFilter(req, resp)
 		return
 	}
 	if acrm := req.Request.Header.Get(HEADER_AccessControlRequestMethod); acrm != "" {
-		c.doPreflightRequest(req, resp, chain)
+		c.doPreflightRequest(req, resp)
 	} else {
-		c.doActualRequest(req, resp, chain)
+		c.doActualRequest(req, resp)
 	}
 }
 
-func (c CrossOriginResourceSharing) doActualRequest(req *Request, resp *Response, chain *FilterChain) {
-	resp.AddHeader(HEADER_AccessControlExposeHeaders, toCommaSeparated(c.AllowedHeaders))
-	c.checkAndSetExposeHeaders(resp)
-	c.setAllowOriginHeader(req, resp)
-	c.checkAndSetAllowCredentials(resp)
+func (c CrossOriginResourceSharing) doActualRequest(req *Request, resp *Response) {
+	c.setOptionsHeaders(req, resp)
 	// continue processing the response
-	chain.ProcessFilter(req, resp)
 }
 
-func (c CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Response, chain *FilterChain) {
-	allowedMethods := c.Container.computeAllowedMethods(req)
-	if !c.isValidAccessControlRequestMethod(req.Request.Header.Get(HEADER_AccessControlRequestMethod), allowedMethods) {
-		chain.ProcessFilter(req, resp)
+func (c CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Response) {
+	if len(c.AllowedMethods) == 0 {
+		c.AllowedMethods = c.Container.computeAllowedMethods(req)
+	}
+
+	if !c.isValidAccessControlRequestMethod(req.Request.Header.Get(HEADER_AccessControlRequestMethod), c.AllowedMethods) {
 		return
 	}
 	acrhs := req.Request.Header.Get(HEADER_AccessControlRequestHeaders)
 	if len(acrhs) > 0 {
 		for _, each := range strings.Split(acrhs, ",") {
 			if !c.isValidAccessControlRequestHeader(strings.Trim(each, " ")) {
-				chain.ProcessFilter(req, resp)
 				return
 			}
 		}
 	}
-	resp.AddHeader(HEADER_AccessControlAllowMethods, toCommaSeparated(allowedMethods))
+	resp.AddHeader(HEADER_AccessControlAllowMethods, toCommaSeparated(c.AllowedMethods))
 	resp.AddHeader(HEADER_AccessControlAllowHeaders, acrhs)
+	c.setOptionsHeaders(req, resp)
+
+	// return http 200 response, no body
+}
+
+func (c CrossOriginResourceSharing) setOptionsHeaders(req *Request, resp *Response) {
+	c.checkAndSetExposeHeaders(resp)
 	c.setAllowOriginHeader(req, resp)
 	c.checkAndSetAllowCredentials(resp)
-	// return http 200 response, no body
+	if c.MaxAge > 0 {
+		resp.AddHeader(HEADER_AccessControlMaxAge, strconv.Itoa(c.MaxAge))
+	}
 }
 
 func (c CrossOriginResourceSharing) isOriginAllowed(origin string) bool {
