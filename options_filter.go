@@ -1,5 +1,7 @@
 package restful
 
+import "strings"
+
 // Copyright 2013 Ernest Micklei. All rights reserved.
 // Use of this source code is governed by a license
 // that can be found in the LICENSE file.
@@ -12,7 +14,7 @@ func (c Container) OPTIONSFilter(req *Request, resp *Response, chain *FilterChai
 		chain.ProcessFilter(req, resp)
 		return
 	}
-	resp.AddHeader(HEADER_Allow, toCommaSeparated(c.computeAllowedMethods(req)))
+	resp.AddHeader(HEADER_Allow, strings.Join(c.computeAllowedMethods(req), ","))
 }
 
 // OPTIONSFilter is a filter function that inspects the Http Request for the OPTIONS method

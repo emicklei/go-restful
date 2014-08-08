@@ -40,7 +40,7 @@ func (c CrossOriginResourceSharing) Filter(req *Request, resp *Response, chain *
 }
 
 func (c CrossOriginResourceSharing) doActualRequest(req *Request, resp *Response, chain *FilterChain) {
-	resp.AddHeader(HEADER_AccessControlExposeHeaders, toCommaSeparated(c.AllowedHeaders))
+	resp.AddHeader(HEADER_AccessControlExposeHeaders, strings.Join(c.AllowedHeaders, ","))
 	c.checkAndSetExposeHeaders(resp)
 	c.setAllowOriginHeader(req, resp)
 	c.checkAndSetAllowCredentials(resp)
@@ -63,7 +63,7 @@ func (c CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Respo
 			}
 		}
 	}
-	resp.AddHeader(HEADER_AccessControlAllowMethods, toCommaSeparated(allowedMethods))
+	resp.AddHeader(HEADER_AccessControlAllowMethods, strings.Join(allowedMethods, ","))
 	resp.AddHeader(HEADER_AccessControlAllowHeaders, acrhs)
 	c.setAllowOriginHeader(req, resp)
 	c.checkAndSetAllowCredentials(resp)
@@ -96,7 +96,7 @@ func (c CrossOriginResourceSharing) setAllowOriginHeader(req *Request, resp *Res
 
 func (c CrossOriginResourceSharing) checkAndSetExposeHeaders(resp *Response) {
 	if len(c.ExposeHeaders) > 0 {
-		resp.AddHeader(HEADER_AccessControlExposeHeaders, toCommaSeparated(c.ExposeHeaders))
+		resp.AddHeader(HEADER_AccessControlExposeHeaders, strings.Join(c.ExposeHeaders, ","))
 	}
 }
 
