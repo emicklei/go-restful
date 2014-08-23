@@ -68,9 +68,6 @@ func (c *Container) EnableContentEncoding(enabled bool) {
 
 // Add a WebService to the Container. It will detect duplicate root paths and panic in that case.
 func (c *Container) Add(service *WebService) *Container {
-	if service.pathExpr == nil {
-		service.Path("/") // lazy initialize path
-	}
 	// If registered on root then no additional specific mapping is needed
 	if !c.isRegisteredOnRoot {
 		pattern := c.fixedPrefixPath(service.RootPath())
@@ -233,7 +230,7 @@ func (c Container) computeAllowedMethods(req *Request) []string {
 	methods := []string{}
 	requestPath := req.Request.URL.Path
 	for _, ws := range c.RegisteredWebServices() {
-		matches := ws.pathExpr.Matcher.FindStringSubmatch(requestPath)
+		matches := ws.compiledPathExpression().Matcher.FindStringSubmatch(requestPath)
 		if matches != nil {
 			finalMatch := matches[len(matches)-1]
 			for _, rt := range ws.Routes() {

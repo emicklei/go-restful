@@ -32,7 +32,7 @@ func TestCurlyDetectWebService(t *testing.T) {
 	var wss = []*WebService{ws1, ws2, ws3, ws4, ws5, ws7}
 
 	for _, each := range wss {
-		t.Logf("path=%s,toks=%v\n", each.pathExpr.Source, each.pathExpr.tokens)
+		t.Logf("path=%s,toks=%v\n", each.compiledPathExpression().Source, each.compiledPathExpression().tokens)
 	}
 
 	router := CurlyRouter{}
@@ -79,7 +79,7 @@ func Test_detectWebService(t *testing.T) {
 		requestPath := fix.path
 		requestTokens := tokenizePath(requestPath)
 		for _, ws := range wss {
-			serviceTokens := ws.pathExpr.tokens
+			serviceTokens := ws.compiledPathExpression().tokens
 			matches, score := router.computeWebserviceScore(requestTokens, serviceTokens)
 			t.Logf("req=%s,toks:%v,ws=%s,toks:%v,score=%d,matches=%v", requestPath, requestTokens, ws.RootPath(), serviceTokens, score, matches)
 		}
@@ -166,7 +166,7 @@ func TestCurly_ISSUE_34(t *testing.T) {
 
 // clear && go test -v -test.run TestCurly_ISSUE_34_2 ...restful
 func TestCurly_ISSUE_34_2(t *testing.T) {
-	ws1 := new(WebService).Path("/")
+	ws1 := new(WebService)
 	ws1.Route(ws1.GET("/network/{id}").To(curlyDummy))
 	ws1.Route(ws1.GET("/{type}/{id}").To(curlyDummy))
 	routes := CurlyRouter{}.selectRoutes(ws1, tokenizePath("/network/12"))
@@ -180,7 +180,7 @@ func TestCurly_ISSUE_34_2(t *testing.T) {
 
 // clear && go test -v -test.run TestCurly_JsonHtml ...restful
 func TestCurly_JsonHtml(t *testing.T) {
-	ws1 := new(WebService).Path("/")
+	ws1 := new(WebService)
 	ws1.Route(ws1.GET("/some.html").To(curlyDummy).Consumes("*/*").Produces("text/html"))
 	req, _ := http.NewRequest("GET", "/some.html", nil)
 	req.Header.Set("Accept", "application/json")
@@ -188,6 +188,18 @@ func TestCurly_JsonHtml(t *testing.T) {
 	if err == nil {
 		t.Error("error expected")
 	}
+	if route != nil {
+		t.Error("no route expected")
+	}
+}
+
+// go test -v -test.run TestCurly_ISSUE_137 ...restful
+func TestCurly_ISSUE_137(t *testing.T) {
+	ws1 := new(WebService)
+	ws1.Route(ws1.GET("/hello").To(curlyDummy))
+	req, _ := http.NewRequest("GET", "/", nil)
+	_, route, _ := CurlyRouter{}.SelectRoute([]*WebService{ws1}, req)
+	t.Log(route)
 	if route != nil {
 		t.Error("no route expected")
 	}

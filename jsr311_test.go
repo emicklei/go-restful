@@ -106,6 +106,17 @@ func TestISSUE_34_2(t *testing.T) {
 	}
 }
 
+// go test -v -test.run TestISSUE_137 ...restful
+func TestISSUE_137(t *testing.T) {
+	ws1 := new(WebService)
+	ws1.Route(ws1.GET("/hello").To(dummy))
+	routes := RouterJSR311{}.selectRoutes(ws1, "/")
+	t.Log(routes)
+	if len(routes) > 0 {
+		t.Error("no route expected")
+	}
+}
+
 func TestSelectRoutesSlash(t *testing.T) {
 	ws1 := new(WebService).Path("/")
 	ws1.Route(ws1.GET("").To(dummy))
@@ -117,6 +128,9 @@ func TestSelectRoutesSlash(t *testing.T) {
 	ws1.Route(ws1.POST("/u/{w}/z").To(dummy))
 	routes := RouterJSR311{}.selectRoutes(ws1, "/u")
 	checkRoutesContains(routes, "/u", t)
+	checkRoutesContainsNo(routes, "/u/v", t)
+	checkRoutesContainsNo(routes, "/", t)
+	checkRoutesContainsNo(routes, "/u/{w}/z", t)
 }
 func TestSelectRoutesU(t *testing.T) {
 	ws1 := new(WebService).Path("/u")
@@ -143,6 +157,14 @@ func checkRoutesContains(routes []Route, path string, t *testing.T) {
 			t.Logf("route %v %v", r.Method, r.Path)
 		}
 		t.Fatalf("routes should include [%v]:", path)
+	}
+}
+func checkRoutesContainsNo(routes []Route, path string, t *testing.T) {
+	if containsRoutePath(routes, path, t) {
+		for _, r := range routes {
+			t.Logf("route %v %v", r.Method, r.Path)
+		}
+		t.Fatalf("routes should not include [%v]:", path)
 	}
 }
 func containsRoutePath(routes []Route, path string, t *testing.T) bool {

@@ -20,15 +20,25 @@ type WebService struct {
 	documentation  string
 }
 
+// compiledPathExpression ensures that the path is compiled into a RegEx for those routers that need it.
+func (w *WebService) compiledPathExpression() *pathExpression {
+	if w.pathExpr == nil {
+		if len(w.rootPath) == 0 {
+			w.Path("/") // lazy initialize path
+		}
+		compiled, err := newPathExpression(w.rootPath)
+		if err != nil {
+			log.Fatalf("[restful] Invalid path:%s because:%v", w.rootPath, err)
+		}
+		w.pathExpr = compiled
+	}
+	return w.pathExpr
+}
+
 // Path specifies the root URL template path of the WebService.
 // All Routes will be relative to this path.
 func (w *WebService) Path(root string) *WebService {
 	w.rootPath = root
-	compiled, err := newPathExpression(root)
-	if err != nil {
-		log.Fatalf("[restful] Invalid path:%s because:%v", root, err)
-	}
-	w.pathExpr = compiled
 	return w
 }
 

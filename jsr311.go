@@ -92,16 +92,13 @@ func (r RouterJSR311) bestMatchByMedia(routes []Route, contentType string, accep
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2  (step 2)
 func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string) []Route {
-	if pathRemainder == "" || pathRemainder == "/" {
-		return dispatcher.Routes()
-	}
 	filtered := &sortableRouteCandidates{}
 	for _, each := range dispatcher.Routes() {
 		pathExpr := each.pathExpr
 		matches := pathExpr.Matcher.FindStringSubmatch(pathRemainder)
 		if matches != nil {
 			lastMatch := matches[len(matches)-1]
-			if lastMatch == "" || lastMatch == "/" { // do not include if value is neither empty nor ‘/’.
+			if len(lastMatch) == 0 || lastMatch == "/" { // do not include if value is neither empty nor ‘/’.
 				filtered.candidates = append(filtered.candidates,
 					routeCandidate{each, len(matches) - 1, pathExpr.LiteralCount, pathExpr.VarCount})
 			}
@@ -123,11 +120,11 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 	return matchingRoutes
 }
 
-// http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
+// http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2 (step 1)
 func (r RouterJSR311) detectDispatcher(requestPath string, dispatchers []*WebService) (*WebService, string, error) {
 	filtered := &sortableDispatcherCandidates{}
 	for _, each := range dispatchers {
-		pathExpr := each.pathExpr
+		pathExpr := each.compiledPathExpression()
 		matches := pathExpr.Matcher.FindStringSubmatch(requestPath)
 		if matches != nil {
 			filtered.candidates = append(filtered.candidates,
