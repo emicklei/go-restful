@@ -135,3 +135,18 @@ func TestWriteHeaderNoContent_Issue124(t *testing.T) {
 		t.Errorf("got %d want %d", httpWriter.Code, http.StatusNoContent)
 	}
 }
+
+// go test -v -test.run TestWriteServiceError ...restful
+func TestWriteServiceError(t *testing.T) {
+	serviceError := ServiceError{1, "error message"}
+	httpWriter := httptest.NewRecorder()
+	t.Log(httpWriter.Code)
+	resp := Response{httpWriter, "application/json", []string{"application/json"}, 0, 0}
+	resp.WriteServiceError(serviceError)
+	if httpWriter.Code != serviceError.Code{
+		t.Errorf("got %d want %d", httpWriter.Code, serviceError.Code)
+	}
+	if httpWriter.Code != serviceError.Code{
+		t.Errorf("got %v want %v", httpWriter.Body.String(), serviceError.Error())
+	}
+}

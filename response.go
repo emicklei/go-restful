@@ -167,8 +167,8 @@ func (r *Response) WriteError(httpStatus int, err error) error {
 }
 
 // WriteServiceError is a convenience method for a responding with a ServiceError and a status
-func (r *Response) WriteServiceError(httpStatus int, err ServiceError) error {
-	r.WriteHeader(httpStatus) // for recording only
+func (r *Response) WriteServiceError(err ServiceError) error {
+	r.WriteHeader(err.Code) // for recording only
 	return r.WriteEntity(err)
 }
 
