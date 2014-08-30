@@ -26,7 +26,6 @@ func (r RouterJSR311) SelectRoute(
 	// Identify the root resource class (WebService)
 	dispatcher, finalMatch, err := r.detectDispatcher(httpRequest.URL.Path, webServices)
 	if err != nil {
-		// httpWriter.WriteHeader(http.StatusNotFound)
 		return nil, nil, NewError(http.StatusNotFound, "")
 	}
 	// Obtain the set of candidate methods (Routes)
@@ -50,6 +49,9 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 		}
 	}
 	if len(methodOk) == 0 {
+		if trace {
+			traceLogger.Printf("no Route found (in %d routes) that matches HTTP method %s\n", len(routes), httpRequest.Method)
+		}
 		return nil, NewError(http.StatusMethodNotAllowed, "405: Method Not Allowed")
 	}
 	inputMediaOk := methodOk
@@ -63,6 +65,9 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 			}
 		}
 		if len(inputMediaOk) == 0 {
+			if trace {
+				traceLogger.Printf("no Route found (from %d) that matches HTTP Content-Type: %s\n", len(methodOk), contentType)
+			}
 			return nil, NewError(http.StatusUnsupportedMediaType, "415: Unsupported Media Type")
 		}
 	}
@@ -78,6 +83,9 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 		}
 	}
 	if len(outputMediaOk) == 0 {
+		if trace {
+			traceLogger.Printf("no Route found (from %d) that matches HTTP Accept: %s\n", len(inputMediaOk), accept)
+		}
 		return nil, NewError(http.StatusNotAcceptable, "406: Not Acceptable")
 	}
 	return r.bestMatchByMedia(outputMediaOk, contentType, accept), nil
@@ -105,6 +113,9 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 		}
 	}
 	if len(filtered.candidates) == 0 {
+		if trace {
+			traceLogger.Printf("WebService on path %s has no routes that match URL path remainder:%s\n", dispatcher.rootPath, pathRemainder)
+		}
 		return []Route{}
 	}
 	sort.Sort(sort.Reverse(filtered))
@@ -132,6 +143,9 @@ func (r RouterJSR311) detectDispatcher(requestPath string, dispatchers []*WebSer
 		}
 	}
 	if len(filtered.candidates) == 0 {
+		if trace {
+			traceLogger.Printf("no WebService was found to match URL path:%s\n", requestPath)
+		}
 		return nil, "", errors.New("not found")
 	}
 	sort.Sort(sort.Reverse(filtered))

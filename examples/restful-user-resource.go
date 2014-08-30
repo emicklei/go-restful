@@ -80,7 +80,8 @@ func (u UserResource) findUser(request *restful.Request, response *restful.Respo
 	usr := u.users[id]
 	if len(usr.Id) == 0 {
 		response.AddHeader("Content-Type", "text/plain")
-		response.WriteErrorString(http.StatusNotFound, "User could not be found.")
+		response.WriteErrorString(http.StatusNotFound, "404: User could not be found.")
+		return
 	}
 	response.WriteEntity(usr)
 }
@@ -125,6 +126,9 @@ func (u *UserResource) removeUser(request *restful.Request, response *restful.Re
 }
 
 func main() {
+	// to see what happens in the package, uncomment the following
+	//restful.TraceLogger(log.New(os.Stdout, "[restful] ", log.LstdFlags|log.Lshortfile))
+
 	wsContainer := restful.NewContainer()
 	u := UserResource{map[string]User{}}
 	u.Register(wsContainer)

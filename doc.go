@@ -162,6 +162,13 @@ Default value is false; it will recover from panics. This has performance implic
 SetCacheReadEntity controls whether the response data ([]byte) is cached such that ReadEntity is repeatable.
 If you expect to read large amounts of payload data, and you do not use this feature, you should set it to false.
 
+Trouble shooting
+
+This package has the means to produce detail logging of the complete Http request matching process and filter invocation.
+Enabling this feature requires you to set a log.Logger instance such as:
+
+	restful.TraceLogger(log.New(os.Stdout, "[restful] ", log.LstdFlags|log.Lshortfile))
+
 Resources
 
 [project]: https://github.com/emicklei/go-restful

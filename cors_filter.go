@@ -25,6 +25,9 @@ type CrossOriginResourceSharing struct {
 // and http://www.html5rocks.com/static/images/cors_server_flowchart.png
 func (c CrossOriginResourceSharing) Filter(req *Request, resp *Response, chain *FilterChain) {
 	if origin := req.Request.Header.Get(HEADER_Origin); len(origin) == 0 {
+		if trace {
+			traceLogger.Println("no Http header Origin set")
+		}
 		chain.ProcessFilter(req, resp)
 		return
 	}
@@ -50,7 +53,14 @@ func (c CrossOriginResourceSharing) doActualRequest(req *Request, resp *Response
 
 func (c CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Response, chain *FilterChain) {
 	allowedMethods := c.Container.computeAllowedMethods(req)
-	if !c.isValidAccessControlRequestMethod(req.Request.Header.Get(HEADER_AccessControlRequestMethod), allowedMethods) {
+	acrm := req.Request.Header.Get(HEADER_AccessControlRequestMethod)
+	if !c.isValidAccessControlRequestMethod(acrm, allowedMethods) {
+		if trace {
+			traceLogger.Printf("Http header %s:%s is not in %v",
+				HEADER_AccessControlRequestMethod,
+				acrm,
+				allowedMethods)
+		}
 		chain.ProcessFilter(req, resp)
 		return
 	}
@@ -58,6 +68,12 @@ func (c CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Respo
 	if len(acrhs) > 0 {
 		for _, each := range strings.Split(acrhs, ",") {
 			if !c.isValidAccessControlRequestHeader(strings.Trim(each, " ")) {
+				if trace {
+					traceLogger.Printf("Http header %s:%s is not in %v",
+						HEADER_AccessControlRequestHeaders,
+						acrhs,
+						c.AllowedHeaders)
+				}
 				chain.ProcessFilter(req, resp)
 				return
 			}
