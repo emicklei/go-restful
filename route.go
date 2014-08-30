@@ -124,7 +124,7 @@ func (r Route) extractParameters(urlPath string) map[string]string {
 				regPart := key[colon+1 : len(key)-1]
 				keyPart := key[1:colon]
 				if regPart == "*" {
-					pathParameters[keyPart] = untokenizePath(i+1, urlParts)
+					pathParameters[keyPart] = untokenizePath(i, urlParts)
 					break
 				} else {
 					pathParameters[keyPart] = value

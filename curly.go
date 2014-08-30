@@ -82,7 +82,7 @@ func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []strin
 
 // regularMatchesPathToken tests whether the regular expression part of routeToken matches the requestToken or all remaining tokens
 // format routeToken is {someVar:someExpression}, e.g. {zipcode:[\d][\d][\d][\d][A-Z][A-Z]}
-func (c CurlyRouter) regularMatchesPathToken(routeToken string, colon int, requestToken string) (bool, bool) {
+func (c CurlyRouter) regularMatchesPathToken(routeToken string, colon int, requestToken string) (matchesToken bool, matchesRemainder bool) {
 	regPart := routeToken[colon+1 : len(routeToken)-1]
 	if regPart == "*" {
 		return true, true

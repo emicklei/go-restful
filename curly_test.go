@@ -137,16 +137,24 @@ func Test_matchesRouteByPathTokens(t *testing.T) {
 // clear && go test -v -test.run TestExtractParameters_Wildcard1 ...restful
 func TestExtractParameters_Wildcard1(t *testing.T) {
 	params := doExtractParams("/fixed/{var:*}", 2, "/fixed/remainder", t)
-	if params["var"] == "remainder" {
-		t.Errorf("parameter mismatch var")
+	if params["var"] != "remainder" {
+		t.Errorf("parameter mismatch var: %s", params["var"])
 	}
 }
 
 // clear && go test -v -test.run TestExtractParameters_Wildcard2 ...restful
 func TestExtractParameters_Wildcard2(t *testing.T) {
 	params := doExtractParams("/fixed/{var:*}", 2, "/fixed/remain/der", t)
-	if params["var"] == "remain/der" {
-		t.Errorf("parameter mismatch var")
+	if params["var"] != "remain/der" {
+		t.Errorf("parameter mismatch var: %s", params["var"])
+	}
+}
+
+// clear && go test -v -test.run TestExtractParameters_Wildcard3 ...restful
+func TestExtractParameters_Wildcard3(t *testing.T) {
+	params := doExtractParams("/static/{var:*}", 2, "/static/test/sub/hi.html", t)
+	if params["var"] != "test/sub/hi.html" {
+		t.Errorf("parameter mismatch var: %s", params["var"])
 	}
 }
 
