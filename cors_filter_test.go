@@ -87,3 +87,39 @@ func TestCORSFilter_Actual(t *testing.T) {
 		t.Fatal("expected: dummy but got:" + httpWriter.Body.String())
 	}
 }
+
+var allowedDomainInput = []struct {
+	domains  []string
+	origin   string
+	accepted bool
+}{
+	{[]string{}, "http://anything.com", true},
+}
+
+// go test -v -test.run TestCORSFilter_AllowedDomains ...restful
+func TestCORSFilter_AllowedDomains(t *testing.T) {
+	for _, each := range allowedDomainInput {
+		tearDown()
+		ws := new(WebService)
+		ws.Route(ws.PUT("/cors").To(dummy))
+		Add(ws)
+
+		cors := CrossOriginResourceSharing{
+			AllowedDomains: each.domains,
+			CookiesAllowed: true,
+			Container:      DefaultContainer}
+		Filter(cors.Filter)
+
+		httpRequest, _ := http.NewRequest("PUT", "http://api.his.com/cors", nil)
+		httpRequest.Header.Set(HEADER_Origin, each.origin)
+		httpWriter := httptest.NewRecorder()
+		DefaultContainer.dispatch(httpWriter, httpRequest)
+		actual := httpWriter.Header().Get(HEADER_AccessControlAllowOrigin)
+		if actual != each.origin && each.accepted {
+			t.Fatal("expected to be accepted")
+		}
+		if actual == each.origin && !each.accepted {
+			t.Fatal("did not expect to be accepted")
+		}
+	}
+}
