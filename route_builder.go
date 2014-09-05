@@ -24,6 +24,7 @@ type RouteBuilder struct {
 	operation               string
 	readSample, writeSample interface{}
 	parameters              []*Parameter
+	errorMap                map[int]responseError
 }
 
 // To bind the route to a function.
@@ -106,6 +107,28 @@ func (b *RouteBuilder) Param(parameter *Parameter) *RouteBuilder {
 func (b *RouteBuilder) Operation(name string) *RouteBuilder {
 	b.operation = name
 	return b
+}
+
+// ReturnsError allows you to document what error responses can be expected.
+// The model parameter is optional, use nil in that case.
+func (b *RouteBuilder) ReturnsError(code int, messsage string, model interface{}) *RouteBuilder {
+	err := responseError{
+		code:    code,
+		message: message,
+		model:   model,
+	}
+	// lazy init because there is no NewRouteBuilder (yet)
+	if b.errorMap == nil {
+		b.errorMap = map[string]responseError{}
+	}
+	b.errorMap[code] = err
+	return b
+}
+
+type responseError struct {
+	code    int
+	message string
+	model   interface{}
 }
 
 func (b *RouteBuilder) servicePath(path string) *RouteBuilder {
