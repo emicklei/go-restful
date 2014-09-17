@@ -1,7 +1,7 @@
 How to use Swagger UI with go-restful
 =
 
-Get the Swagger UI sources
+Get the Swagger UI sources (version 1.2 only)
 
 	git clone https://github.com/wordnik/swagger-ui.git
 	

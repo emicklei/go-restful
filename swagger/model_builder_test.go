@@ -27,9 +27,7 @@ func TestCustomMarshaller_Issue96(t *testing.T) {
    ],
    "properties": {
     "What": {
-     "type": "string",
-     "description": "",
-     "format": ""
+     "type": "string"
     }
    }
   }
@@ -52,12 +50,10 @@ func TestPrimitiveTypes(t *testing.T) {
    "properties": {
     "f": {
      "type": "number",
-     "description": "",
      "format": "double"
     },
     "t": {
      "type": "string",
-     "description": "",
      "format": "date-time"
     }
    }
@@ -78,9 +74,7 @@ func TestS1(t *testing.T) {
    ],
    "properties": {
     "Id": {
-     "type": "string",
-     "description": "",
-     "format": ""
+     "type": "string"
     }
    }
   }
@@ -101,11 +95,11 @@ func TestS2(t *testing.T) {
    "properties": {
     "Ids": {
      "type": "array",
-     "description": "",
-     "items": {
-      "$ref": "string"
-     },
-     "format": ""
+     "items": [
+      {
+       "$ref": "string"
+      }
+     ]
     }
    }
   }
@@ -128,9 +122,7 @@ func TestS3(t *testing.T) {
    ],
    "properties": {
     "Id": {
-     "type": "string",
-     "description": "",
-     "format": ""
+     "type": "string"
     }
    }
   },
@@ -141,9 +133,7 @@ func TestS3(t *testing.T) {
    ],
    "properties": {
     "Nested": {
-     "type": "swagger.NestedS3",
-     "description": "",
-     "format": ""
+     "type": "swagger.NestedS3"
     }
    }
   }
@@ -170,9 +160,7 @@ func TestSampleToModelAsJson(t *testing.T) {
    ],
    "properties": {
     "name": {
-     "type": "string",
-     "description": "",
-     "format": ""
+     "type": "string"
     }
    }
   },
@@ -185,22 +173,18 @@ func TestSampleToModelAsJson(t *testing.T) {
    ],
    "properties": {
     "id": {
-     "type": "string",
-     "description": "",
-     "format": ""
+     "type": "string"
     },
     "items": {
      "type": "array",
-     "description": "",
-     "items": {
-      "$ref": "swagger.item"
-     },
-     "format": ""
+     "items": [
+      {
+       "$ref": "swagger.item"
+      }
+     ]
     },
     "root": {
-     "type": "swagger.item",
-     "description": "",
-     "format": ""
+     "type": "swagger.item"
     }
    }
   }
@@ -225,18 +209,14 @@ func TestJsonTags(t *testing.T) {
    ],
    "properties": {
     "A": {
-     "type": "string",
-     "description": "",
-     "format": ""
+     "type": "string"
     },
     "C": {
      "type": "string",
-     "description": "(int as string)",
-     "format": ""
+     "description": "(int as string)"
     },
     "D": {
      "type": "integer",
-     "description": "",
      "format": "int32"
     }
    }
@@ -258,12 +238,10 @@ func TestJsonTagOmitempty(t *testing.T) {
    "properties": {
     "A": {
      "type": "integer",
-     "description": "",
      "format": "int32"
     },
     "C": {
      "type": "integer",
-     "description": "",
      "format": "int32"
     }
    }
@@ -286,9 +264,7 @@ func TestJsonTagName(t *testing.T) {
    ],
    "properties": {
     "B": {
-     "type": "string",
-     "description": "",
-     "format": ""
+     "type": "string"
     }
    }
   }
@@ -312,9 +288,7 @@ func TestAnonymousStruct(t *testing.T) {
    ],
    "properties": {
     "A": {
-     "type": "swagger.X.A",
-     "description": "",
-     "format": ""
+     "type": "swagger.X.A"
     }
    }
   },
@@ -326,7 +300,6 @@ func TestAnonymousStruct(t *testing.T) {
    "properties": {
     "B": {
      "type": "integer",
-     "description": "",
      "format": "int32"
     }
    }
@@ -351,9 +324,7 @@ func TestAnonymousPtrStruct(t *testing.T) {
    ],
    "properties": {
     "A": {
-     "type": "swagger.X.A",
-     "description": "",
-     "format": ""
+     "type": "swagger.X.A"
     }
    }
   },
@@ -365,7 +336,6 @@ func TestAnonymousPtrStruct(t *testing.T) {
    "properties": {
     "B": {
      "type": "integer",
-     "description": "",
      "format": "int32"
     }
    }
@@ -391,11 +361,11 @@ func TestAnonymousArrayStruct(t *testing.T) {
    "properties": {
     "A": {
      "type": "array",
-     "description": "",
-     "items": {
-      "$ref": "swagger.X.A"
-     },
-     "format": ""
+     "items": [
+      {
+       "$ref": "swagger.X.A"
+      }
+     ]
     }
    }
   },
@@ -407,7 +377,6 @@ func TestAnonymousArrayStruct(t *testing.T) {
    "properties": {
     "B": {
      "type": "integer",
-     "description": "",
      "format": "int32"
     }
    }
@@ -433,11 +402,11 @@ func TestAnonymousPtrArrayStruct(t *testing.T) {
    "properties": {
     "A": {
      "type": "array",
-     "description": "",
-     "items": {
-      "$ref": "swagger.X.A"
-     },
-     "format": ""
+     "items": [
+      {
+       "$ref": "swagger.X.A"
+      }
+     ]
     }
    }
   },
@@ -449,7 +418,6 @@ func TestAnonymousPtrArrayStruct(t *testing.T) {
    "properties": {
     "B": {
      "type": "integer",
-     "description": "",
      "format": "int32"
     }
    }
@@ -476,7 +444,6 @@ func TestEmbeddedStruct_Issue98(t *testing.T) {
    "properties": {
     "A": {
      "type": "integer",
-     "description": "",
      "format": "int32"
     }
    }
@@ -500,11 +467,11 @@ func TestIssue85(t *testing.T) {
    "properties": {
     "Datasets": {
      "type": "array",
-     "description": "",
-     "items": {
-      "$ref": "swagger.Dataset"
-     },
-     "format": ""
+     "items": [
+      {
+       "$ref": "swagger.Dataset"
+      }
+     ]
     }
    }
   },
@@ -516,11 +483,11 @@ func TestIssue85(t *testing.T) {
    "properties": {
     "Names": {
      "type": "array",
-     "description": "",
-     "items": {
-      "$ref": "string"
-     },
-     "format": ""
+     "items": [
+      {
+       "$ref": "string"
+      }
+     ]
     }
    }
   }
@@ -544,19 +511,19 @@ func TestRecursiveStructure(t *testing.T) {
    "properties": {
     "History": {
      "type": "array",
-     "description": "",
-     "items": {
-      "$ref": "swagger.File"
-     },
-     "format": ""
+     "items": [
+      {
+       "$ref": "swagger.File"
+      }
+     ]
     },
     "HistoryPtrs": {
      "type": "array",
-     "description": "",
-     "items": {
-      "$ref": "swagger.File.HistoryPtrs"
-     },
-     "format": ""
+     "items": [
+      {
+       "$ref": "swagger.File.HistoryPtrs"
+      }
+     ]
     }
    }
   },
@@ -583,9 +550,7 @@ func TestEmbeddedStructA1(t *testing.T) {
    ],
    "properties": {
     "B": {
-     "type": "swagger.A1.B",
-     "description": "",
-     "format": ""
+     "type": "swagger.A1.B"
     }
    }
   },
@@ -597,7 +562,6 @@ func TestEmbeddedStructA1(t *testing.T) {
    "properties": {
     "Id": {
      "type": "integer",
-     "description": "",
      "format": "int32"
     }
    }
@@ -623,7 +587,6 @@ func TestEmbeddedStructA2(t *testing.T) {
    "properties": {
     "B": {
      "type": "integer",
-     "description": "",
      "format": "int32"
     }
    }
@@ -649,9 +612,7 @@ func TestStructA3(t *testing.T) {
    ],
    "properties": {
     "B": {
-     "type": "swagger.D",
-     "description": "",
-     "format": ""
+     "type": "swagger.D"
     }
    }
   },
@@ -663,7 +624,6 @@ func TestStructA3(t *testing.T) {
    "properties": {
     "Id": {
      "type": "integer",
-     "description": "",
      "format": "int32"
     }
    }
@@ -696,21 +656,17 @@ func TestRegion_Issue113(t *testing.T) {
    "properties": {
     "id": {
      "type": "array",
-     "description": "",
-     "items": {
-      "$ref": "integer"
-     },
-     "format": ""
+     "items": [
+      {
+       "$ref": "integer"
+      }
+     ]
     },
     "name": {
-     "type": "string",
-     "description": "",
-     "format": ""
+     "type": "string"
     },
     "type": {
-     "type": "string",
-     "description": "",
-     "format": ""
+     "type": "string"
     }
    }
   },

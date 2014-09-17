@@ -38,19 +38,19 @@ func dummy(i *restful.Request, o *restful.Response) {}
 type Response struct {
 	Code  int
 	Users *[]User
-	Items *[]Item
+	Items *[]TestItem
 }
 type User struct {
 	Id, Name string
 }
-type Item struct {
+type TestItem struct {
 	Id, Name string
 }
 
 func TestIssue78(t *testing.T) {
 	sws := newSwaggerService(Config{})
 	models := map[string]Model{}
-	sws.addModelFromSampleTo(&Operation{}, true, Response{Items: &[]Item{}}, models)
+	sws.addModelFromSampleTo(&Operation{}, true, Response{Items: &[]TestItem{}}, models)
 	model, ok := models["swagger.Response"]
 	if !ok {
 		t.Fatal("missing response model")
@@ -62,25 +62,25 @@ func TestIssue78(t *testing.T) {
 	if !ok {
 		t.Fatal("missing code")
 	}
-	if "integer" != code.Type {
-		t.Fatal("wrong code type:" + code.Type)
+	if "integer" != *code.Type {
+		t.Fatal("wrong code type:" + *code.Type)
 	}
 	items, ok := model.Properties["Items"]
 	if !ok {
 		t.Fatal("missing items")
 	}
-	if "array" != items.Type {
-		t.Fatal("wrong items type:" + items.Type)
+	if "array" != *items.Type {
+		t.Fatal("wrong items type:" + *items.Type)
 	}
 	items_items := items.Items
-	if items_items == nil {
+	if len(items_items) == 0 {
 		t.Fatal("missing items->items")
 	}
-	ref := items_items["$ref"]
-	if ref == "" {
+	ref := items_items[0].Ref
+	if ref == nil {
 		t.Fatal("missing $ref")
 	}
-	if ref != "swagger.Item" {
-		t.Fatal("wrong $ref:" + ref)
+	if *ref != "swagger.TestItem" {
+		t.Fatal("wrong $ref:" + *ref)
 	}
 }

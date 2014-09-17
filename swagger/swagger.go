@@ -1,123 +1,184 @@
-// Package swagger implements the structures of the Swagger (https://github.com/wordnik/swagger-core/wiki) specification
+// Package swagger implements the structures of the Swagger
+// https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md
 package swagger
 
 const swaggerVersion = "1.2"
 
-type ResourceListing struct {
-	ApiVersion     string `json:"apiVersion"`
-	SwaggerVersion string `json:"swaggerVersion"` // e.g 1.2
-	// BasePath       string `json:"basePath"`  obsolete in 1.1
-	Apis []ApiRef `json:"apis"`
+// 4.3.3 Data Type Fields
+type DataTypeFields struct {
+	Type         *string  `json:"type,omitempty"` // if Ref not used
+	Ref          *string  `json:"$ref,omitempty"` // if Type not used
+	Format       string   `json:"format,omitempty"`
+	DefaultValue Special  `json:"defaultValue,omitempty"`
+	Enum         []string `json:"enum,omitempty"`
+	Minimum      string   `json:"minimum,omitempty"`
+	Maximum      string   `json:"maximum,omitempty"`
+	Items        []Item   `json:"items,omitempty"`
+	UniqueItems  *bool    `json:"uniqueItems,omitempty"`
 }
 
-type ApiRef struct {
+type Special string
+
+// 4.3.4 Items Object
+type Item struct {
+	Type   *string `json:"type,omitempty"`
+	Ref    *string `json:"$ref,omitempty"`
+	Format string  `json:"format,omitempty"`
+}
+
+// 5.1 Resource Listing
+type ResourceListing struct {
+	SwaggerVersion string          `json:"swaggerVersion"` // e.g 1.2
+	Apis           []Resource      `json:"apis"`
+	ApiVersion     string          `json:"apiVersion"`
+	Info           Info            `json:"info"`
+	Authorizations []Authorization `json:"authorizations,omitempty"`
+}
+
+// 5.1.2 Resource Object
+type Resource struct {
 	Path        string `json:"path"` // relative or absolute, must start with /
 	Description string `json:"description"`
 }
 
-// https://github.com/wordnik/swagger-core/blob/scala_2.10-1.3-RC3/schemas/api-declaration-schema.json
-type ApiDeclaration struct {
-	ApiVersion     string           `json:"apiVersion"`
-	SwaggerVersion string           `json:"swaggerVersion"`
-	BasePath       string           `json:"basePath"`
-	ResourcePath   string           `json:"resourcePath"` // must start with /
-	Consumes       []string         `json:"consumes,omitempty"`
-	Produces       []string         `json:"produces,omitempty"`
-	Apis           []Api            `json:"apis,omitempty"`
-	Models         map[string]Model `json:"models,omitempty"`
+// 5.1.3 Info Object
+type Info struct {
+	Title             string `json:"title"`
+	Description       string `json:"description"`
+	TermsOfServiceUrl string `json:"termsOfServiceUrl,omitempty"`
+	Contact           string `json:"contact,omitempty"`
+	License           string `json:"license,omitempty"`
+	LicensUrl         string `json:"licensUrl,omitempty"`
 }
 
+// 5.1.5
+type Authorization struct {
+	Type       string      `json:"type"`
+	PassAs     string      `json:"passAs"`
+	Keyname    string      `json:"keyname"`
+	Scopes     []Scope     `json:"scopes"`
+	GrantTypes []GrantType `json:"grandTypes"`
+}
+
+// 5.1.6, 5.2.11
+type Scope struct {
+	// Required. The name of the scope.
+	Scope string `json:"scope"`
+	// Recommended. A short description of the scope.
+	Description string `json:"description"`
+}
+
+// 5.1.7
+type GrantType struct {
+	Implicit          Implicit          `json:"implicit"`
+	AuthorizationCode AuthorizationCode `json:"authorization_code"`
+}
+
+// 5.1.8 Implicit Object
+type Implicit struct {
+	// Required. The login endpoint definition.
+	loginEndpoint LoginEndpoint `json:"loginEndpoint"`
+	// An optional alternative name to standard "access_token" OAuth2 parameter.
+	TokenName string `json:"tokenName"`
+}
+
+// 5.1.9 Authorization Code Object
+type AuthorizationCode struct {
+	TokenRequestEndpoint TokenRequestEndpoint `json:"tokenRequestEndpoint"`
+	TokenEndpoint        TokenEndpoint        `json:"tokenEndpoint"`
+}
+
+// 5.1.10 Login Endpoint Object
+type LoginEndpoint struct {
+	// Required. The URL of the authorization endpoint for the implicit grant flow. The value SHOULD be in a URL format.
+	Url string `json:"url"`
+}
+
+// 5.1.11 Token Request Endpoint Object
+type TokenRequestEndpoint struct {
+	// Required. The URL of the authorization endpoint for the authentication code grant flow. The value SHOULD be in a URL format.
+	Url string `json:"url"`
+	// An optional alternative name to standard "client_id" OAuth2 parameter.
+	ClientIdName string `json:"clientIdName"`
+	// An optional alternative name to the standard "client_secret" OAuth2 parameter.
+	ClientSecretName string `json:"clientSecretName"`
+}
+
+// 5.1.12 Token Endpoint Object
+type TokenEndpoint struct {
+	// Required. The URL of the token endpoint for the authentication code grant flow. The value SHOULD be in a URL format.
+	Url string `json:"url"`
+	// An optional alternative name to standard "access_token" OAuth2 parameter.
+	TokenName string `json:"tokenName"`
+}
+
+// 5.2 API Declaration
+type ApiDeclaration struct {
+	SwaggerVersion string           `json:"swaggerVersion"`
+	ApiVersion     string           `json:"apiVersion"`
+	BasePath       string           `json:"basePath"`
+	ResourcePath   string           `json:"resourcePath"` // must start with /
+	Apis           []Api            `json:"apis,omitempty"`
+	Models         map[string]Model `json:"models,omitempty"`
+	Produces       []string         `json:"produces,omitempty"`
+	Consumes       []string         `json:"consumes,omitempty"`
+	Authorizations []Authorization  `json:"authorizations,omitempty"`
+}
+
+// 5.2.2 API Object
 type Api struct {
 	Path        string      `json:"path"` // relative or absolute, must start with /
 	Description string      `json:"description"`
 	Operations  []Operation `json:"operations,omitempty"`
 }
 
+// 5.2.3 Operation Object
 type Operation struct {
-	HttpMethod string `json:"httpMethod"`
-	Nickname   string `json:"nickname"`
-	Type       string `json:"type"` // in 1.1 = DataType
-	// ResponseClass    string            `json:"responseClass"` obsolete in 1.2
+	Type             string            `json:"type"`
+	Method           string            `json:"method"`
 	Summary          string            `json:"summary,omitempty"`
 	Notes            string            `json:"notes,omitempty"`
+	Nickname         string            `json:"nickname"`
+	Authorizations   []Authorization   `json:"authorizations,omitempty"`
 	Parameters       []Parameter       `json:"parameters,omitempty"`
 	ResponseMessages []ResponseMessage `json:"responseMessages,omitempty"` // optional
-	Consumes         []string          `json:"consumes,omitempty"`
 	Produces         []string          `json:"produces,omitempty"`
-	Authorizations   []Authorization   `json:"authorizations,omitempty"`
-	Protocols        []Protocol        `json:"protocols,omitempty"`
+	Consumes         []string          `json:"consumes,omitempty"`
+	Deprecated       string            `json:"deprecated,omitempty"`
 }
 
-type Protocol struct {
+// 5.2.4 Parameter Object
+type Parameter struct {
+	DataTypeFields
+	ParamType     string `json:"paramType"` // path,query,body,header,form
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	Required      bool   `json:"required"`
+	AllowMultiple bool   `json:"allowMultiple"`
 }
 
+// 5.2.5 Response Message Object
 type ResponseMessage struct {
 	Code          int    `json:"code"`
 	Message       string `json:"message"`
 	ResponseModel string `json:"responseModel"`
 }
 
-type Parameter struct {
-	ParamType   string `json:"paramType"` // path,query,body,header,form
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	DataType    string `json:"dataType"` // 1.2 needed?
-	Type        string `json:"type"`     // integer
-	Format      string `json:"format"`   // int64
-	Required    bool   `json:"required"`
-	Minimum     int    `json:"minimum"`
-	Maximum     int    `json:"maximum"`
-}
-
-type ErrorResponse struct {
-	Code   int    `json:"code"`
-	Reason string `json:"reason"`
-}
-
+// 5.2.6, 5.2.7 Models Object
 type Model struct {
-	Id         string                   `json:"id"`
-	Required   []string                 `json:"required,omitempty"`
-	Properties map[string]ModelProperty `json:"properties"`
+	Id            string                   `json:"id"`
+	Description   string                   `json:"description,omitempty"`
+	Required      []string                 `json:"required,omitempty"`
+	Properties    map[string]ModelProperty `json:"properties"`
+	SubTypes      []string                 `json:"subTypes,omitempty"`
+	Discriminator string                   `json:"discriminator,omitempty"`
 }
 
+// 5.2.8 Properties Object
 type ModelProperty struct {
-	Type        string            `json:"type"`
-	Description string            `json:"description"`
-	Items       map[string]string `json:"items,omitempty"`
-	Format      string            `json:"format"`
+	DataTypeFields
+	Description string `json:"description,omitempty"`
 }
 
-// https://github.com/wordnik/swagger-core/wiki/authorizations
-type Authorization struct {
-	LocalOAuth OAuth  `json:"local-oauth"`
-	ApiKey     ApiKey `json:"apiKey"`
-}
-
-// https://github.com/wordnik/swagger-core/wiki/authorizations
-type OAuth struct {
-	Type       string               `json:"type"`   // e.g. oauth2
-	Scopes     []string             `json:"scopes"` // e.g. PUBLIC
-	GrantTypes map[string]GrantType `json:"grantTypes"`
-}
-
-// https://github.com/wordnik/swagger-core/wiki/authorizations
-type GrantType struct {
-	LoginEndpoint        Endpoint `json:"loginEndpoint"`
-	TokenName            string   `json:"tokenName"` // e.g. access_code
-	TokenRequestEndpoint Endpoint `json:"tokenRequestEndpoint"`
-	TokenEndpoint        Endpoint `json:"tokenEndpoint"`
-}
-
-// https://github.com/wordnik/swagger-core/wiki/authorizations
-type Endpoint struct {
-	Url              string `json:"url"`
-	ClientIdName     string `json:"clientIdName"`
-	ClientSecretName string `json:"clientSecretName"`
-	TokenName        string `json:"tokenName"`
-}
-
-// https://github.com/wordnik/swagger-core/wiki/authorizations
-type ApiKey struct {
-	Type   string `json:"type"`   // e.g. apiKey
-	PassAs string `json:"passAs"` // e.g. header
-}
+// 5.2.10
+type Authorizations map[string]Authorization

@@ -126,7 +126,7 @@ func enableCORS(req *restful.Request, resp *restful.Response, chain *restful.Fil
 func (sws SwaggerService) getListing(req *restful.Request, resp *restful.Response) {
 	listing := ResourceListing{SwaggerVersion: swaggerVersion}
 	for k, v := range sws.apiDeclarationMap {
-		ref := ApiRef{Path: k}
+		ref := Resource{Path: k}
 		if len(v.Apis) > 0 { // use description of first (could still be empty)
 			ref.Description = v.Apis[0].Description
 		}
@@ -162,7 +162,8 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix 
 	for path, routes := range pathToRoutes {
 		api := Api{Path: path, Description: ws.Documentation()}
 		for _, route := range routes {
-			operation := Operation{HttpMethod: route.Method,
+			operation := Operation{
+				Method:   route.Method,
 				Summary:  route.Doc,
 				Type:     asDataType(route.WriteSample),
 				Nickname: route.Operation}
@@ -223,13 +224,15 @@ func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse 
 
 func asSwaggerParameter(param restful.ParameterData) Parameter {
 	return Parameter{
+		DataTypeFields: DataTypeFields{
+			Type:   &param.DataType,
+			Format: asFormat(param.DataType),
+		},
 		Name:        param.Name,
 		Description: param.Description,
 		ParamType:   asParamType(param.Kind),
-		Type:        param.DataType,
-		DataType:    param.DataType,
-		Format:      asFormat(param.DataType),
-		Required:    param.Required}
+
+		Required: param.Required}
 }
 
 // Between 1..7 path parameters is supported
