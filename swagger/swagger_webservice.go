@@ -36,7 +36,9 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 	ws := new(restful.WebService)
 	ws.Path(config.ApiPath)
 	ws.Produces(restful.MIME_JSON)
-	ws.Filter(enableCORS)
+	if config.DisableCORS {
+		ws.Filter(enableCORS)
+	}
 	ws.Route(ws.GET("/").To(sws.getListing))
 	ws.Route(ws.GET("/{a}").To(sws.getDeclarations))
 	ws.Route(ws.GET("/{a}/{b}").To(sws.getDeclarations))

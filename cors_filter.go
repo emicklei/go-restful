@@ -16,7 +16,7 @@ import "strings"
 type CrossOriginResourceSharing struct {
 	ExposeHeaders  []string // list of Header names
 	AllowedHeaders []string // list of Header names
-	AllowedDomains []string
+	AllowedDomains []string // list of allowed values for Http Origin. If empty all are allowed.
 	CookiesAllowed bool
 	Container      *Container
 }
@@ -24,9 +24,29 @@ type CrossOriginResourceSharing struct {
 // Filter is a filter function that implements the CORS flow as documented on http://enable-cors.org/server.html
 // and http://www.html5rocks.com/static/images/cors_server_flowchart.png
 func (c CrossOriginResourceSharing) Filter(req *Request, resp *Response, chain *FilterChain) {
-	if origin := req.Request.Header.Get(HEADER_Origin); len(origin) == 0 {
+	origin := req.Request.Header.Get(HEADER_Origin)
+	if len(origin) == 0 {
+		if trace {
+			traceLogger.Println("no Http header Origin set")
+		}
 		chain.ProcessFilter(req, resp)
 		return
+	}
+	if len(c.AllowedDomains) > 0 { // if provided then origin must be included
+		included := false
+		for _, each := range c.AllowedDomains {
+			if each == origin {
+				included = true
+				break
+			}
+		}
+		if !included {
+			if trace {
+				traceLogger.Println("HTTP Origin:%s is not part of %v", origin, c.AllowedDomains)
+			}
+			chain.ProcessFilter(req, resp)
+			return
+		}
 	}
 	if req.Request.Method != "OPTIONS" {
 		c.doActualRequest(req, resp, chain)
@@ -50,7 +70,14 @@ func (c CrossOriginResourceSharing) doActualRequest(req *Request, resp *Response
 
 func (c CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Response, chain *FilterChain) {
 	allowedMethods := c.Container.computeAllowedMethods(req)
-	if !c.isValidAccessControlRequestMethod(req.Request.Header.Get(HEADER_AccessControlRequestMethod), allowedMethods) {
+	acrm := req.Request.Header.Get(HEADER_AccessControlRequestMethod)
+	if !c.isValidAccessControlRequestMethod(acrm, allowedMethods) {
+		if trace {
+			traceLogger.Printf("Http header %s:%s is not in %v",
+				HEADER_AccessControlRequestMethod,
+				acrm,
+				allowedMethods)
+		}
 		chain.ProcessFilter(req, resp)
 		return
 	}
@@ -58,6 +85,12 @@ func (c CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Respo
 	if len(acrhs) > 0 {
 		for _, each := range strings.Split(acrhs, ",") {
 			if !c.isValidAccessControlRequestHeader(strings.Trim(each, " ")) {
+				if trace {
+					traceLogger.Printf("Http header %s:%s is not in %v",
+						HEADER_AccessControlRequestHeaders,
+						acrhs,
+						c.AllowedHeaders)
+				}
 				chain.ProcessFilter(req, resp)
 				return
 			}

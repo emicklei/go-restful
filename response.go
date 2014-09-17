@@ -174,7 +174,7 @@ func (r *Response) WriteServiceError(httpStatus int, err ServiceError) error {
 
 // WriteErrorString is a convenience method for an error status with the actual error
 func (r *Response) WriteErrorString(status int, errorReason string) error {
-	r.WriteHeader(status) // for recording only
+	r.statusCode = status // for recording only
 	r.ResponseWriter.WriteHeader(status)
 	if _, err := r.Write([]byte(errorReason)); err != nil {
 		return err

@@ -24,10 +24,16 @@ func (c CurlyRouter) SelectRoute(
 
 	detectedService := c.detectWebService(requestTokens, webServices)
 	if detectedService == nil {
+		if trace {
+			traceLogger.Printf("no WebService was found to match URL path:%s\n", httpRequest.URL.Path)
+		}
 		return nil, nil, NewError(http.StatusNotFound, "404: Page Not Found")
 	}
 	candidateRoutes := c.selectRoutes(detectedService, requestTokens)
 	if len(candidateRoutes) == 0 {
+		if trace {
+			traceLogger.Printf("no Route in WebService with path %s was found to match URL path:%s\n", detectedService.rootPath, httpRequest.URL.Path)
+		}
 		return detectedService, nil, NewError(http.StatusNotFound, "404: Page Not Found")
 	}
 	selectedRoute, err := c.detectRoute(candidateRoutes, httpRequest)
@@ -85,6 +91,9 @@ func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []strin
 func (c CurlyRouter) regularMatchesPathToken(routeToken string, colon int, requestToken string) (matchesToken bool, matchesRemainder bool) {
 	regPart := routeToken[colon+1 : len(routeToken)-1]
 	if regPart == "*" {
+		if trace {
+			traceLogger.Printf("wildcard parameter detected in route token %s that matches %s\n", routeToken, requestToken)
+		}
 		return true, true
 	}
 	matched, err := regexp.MatchString(regPart, requestToken)
@@ -94,6 +103,7 @@ func (c CurlyRouter) regularMatchesPathToken(routeToken string, colon int, reque
 // detectRoute selectes from a list of Route the first match by inspecting both the Accept and Content-Type
 // headers of the Request. See also RouterJSR311 in jsr311.go
 func (c CurlyRouter) detectRoute(candidateRoutes []Route, httpRequest *http.Request) (*Route, error) {
+	// tracing is done inside detectRoute
 	return RouterJSR311{}.detectRoute(candidateRoutes, httpRequest)
 }
 
