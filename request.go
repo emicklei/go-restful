@@ -111,17 +111,18 @@ func (r *Request) cachingReadEntity(contentType string, entityPointer interface{
 		}
 		r.bodyContent = &buffer
 	}
-	if strings.Contains(contentType, MIME_XML) {
-		return xml.Unmarshal(buffer, entityPointer)
+	var e EntityEncoder
+	e = EntityEncoderForContentType(contentType)
+	if e != nil {
+		e = e.New()
+		e.SetRequest(r)
+		return e.Unmarshal(buffer, entityPointer)
 	}
-	if strings.Contains(contentType, MIME_JSON) {
-		return json.Unmarshal(buffer, entityPointer)
-	}
-	if MIME_XML == defaultRequestContentType {
-		return xml.Unmarshal(buffer, entityPointer)
-	}
-	if MIME_JSON == defaultRequestContentType {
-		return json.Unmarshal(buffer, entityPointer)
+	e = EntityEncoderForMIME(defaultRequestContentType)
+	if e != nil {
+		e = e.New()
+		e.SetRequest(r)
+		return e.Unmarshal(buffer, entityPointer)
 	}
 	return NewError(400, "Unable to unmarshal content of type:"+contentType)
 }
