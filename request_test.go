@@ -20,6 +20,11 @@ func TestQueryParameter(t *testing.T) {
 
 type Anything map[string]interface{}
 
+type Number struct {
+	ValueFloat float64
+	ValueInt   int64
+}
+
 type Sample struct {
 	Value string
 }
@@ -80,7 +85,7 @@ func TestReadEntityJsonCharset(t *testing.T) {
 	}
 }
 
-func TestReadEntityJsonLong(t *testing.T) {
+func TestReadEntityJsonNumber(t *testing.T) {
 	bodyReader := strings.NewReader(`{"Value" : 4899710515899924123}`)
 	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
 	httpRequest.Header.Set("Content-Type", "application/json")
@@ -104,6 +109,23 @@ func TestReadEntityJsonLong(t *testing.T) {
 	}
 	// match the default behaviour
 	vstring := strconv.FormatFloat(vfloat, 'e', 15, 64)
+	if vstring != "4.899710515899924e+18" {
+		t.Fatal("convert float64 failed")
+	}
+}
+
+func TestReadEntityJsonLong(t *testing.T) {
+	bodyReader := strings.NewReader(`{"ValueFloat" : 4899710515899924123, "ValueInt": 4899710515899924123}`)
+	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
+	httpRequest.Header.Set("Content-Type", "application/json")
+	request := &Request{Request: httpRequest}
+	number := new(Number)
+	request.ReadEntity(&number)
+	if number.ValueInt != 4899710515899924123 {
+		t.Fatal("read failed")
+	}
+	// match the default behaviour
+	vstring := strconv.FormatFloat(number.ValueFloat, 'e', 15, 64)
 	if vstring != "4.899710515899924e+18" {
 		t.Fatal("convert float64 failed")
 	}
