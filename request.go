@@ -88,14 +88,13 @@ func (r *Request) ReadEntity(entityPointer interface{}) (err error) {
 	if strings.Contains(contentType, MIME_XML) {
 		return xml.NewDecoder(r.Request.Body).Decode(entityPointer)
 	}
-	if strings.Contains(contentType, MIME_JSON) {
-		return json.NewDecoder(r.Request.Body).Decode(entityPointer)
+	if strings.Contains(contentType, MIME_JSON) || MIME_JSON == defaultRequestContentType {
+		decoder := json.NewDecoder(r.Request.Body)
+		decoder.UseNumber()
+		return decoder.Decode(entityPointer)
 	}
 	if MIME_XML == defaultRequestContentType {
 		return xml.NewDecoder(r.Request.Body).Decode(entityPointer)
-	}
-	if MIME_JSON == defaultRequestContentType {
-		return json.NewDecoder(r.Request.Body).Decode(entityPointer)
 	}
 	return NewError(400, "Unable to unmarshal content of type:"+contentType)
 }
