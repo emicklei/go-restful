@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/emicklei/go-restful"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/emicklei/go-restful"
 )
 
 // This example show how to test one particular RouteFunction (getIt)
@@ -15,12 +16,11 @@ func getIt(req *restful.Request, resp *restful.Response) {
 }
 
 func TestCallFunction(t *testing.T) {
-	req := new(restful.Request)
-	req.Request = new(http.Request)
+	httpReq, _ := http.NewRequest("GET", "/", nil)
+	req := restful.NewRequest(httpReq)
 
-	resp := new(restful.Response)
 	recorder := new(httptest.ResponseRecorder)
-	resp.ResponseWriter = recorder
+	resp := restful.NewResponse(recoder)
 
 	getIt(req, resp)
 	if recorder.Code != 404 {
