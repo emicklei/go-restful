@@ -165,10 +165,11 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix 
 		api := Api{Path: path, Description: ws.Documentation()}
 		for _, route := range routes {
 			operation := Operation{
-				Method:   route.Method,
-				Summary:  route.Doc,
-				Type:     asDataType(route.WriteSample),
-				Nickname: route.Operation}
+				Method:     route.Method,
+				Summary:    route.Doc,
+				Type:       asDataType(route.WriteSample),
+				Parameters: []Parameter{},
+				Nickname:   route.Operation}
 
 			operation.Consumes = route.Consumes
 			operation.Produces = route.Produces

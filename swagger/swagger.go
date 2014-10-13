@@ -140,7 +140,7 @@ type Operation struct {
 	Notes            string            `json:"notes,omitempty"`
 	Nickname         string            `json:"nickname"`
 	Authorizations   []Authorization   `json:"authorizations,omitempty"`
-	Parameters       []Parameter       `json:"parameters,omitempty"`
+	Parameters       []Parameter       `json:"parameters"`
 	ResponseMessages []ResponseMessage `json:"responseMessages,omitempty"` // optional
 	Produces         []string          `json:"produces,omitempty"`
 	Consumes         []string          `json:"consumes,omitempty"`

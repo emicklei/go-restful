@@ -2,6 +2,7 @@ package swagger
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/emicklei/go-restful"
@@ -26,10 +27,12 @@ func TestServiceToApi(t *testing.T) {
 		WebServices:    []*restful.WebService{ws}}
 	sws := newSwaggerService(cfg)
 	decl := sws.composeDeclaration(ws, "/tests")
-	_, err := json.MarshalIndent(decl, " ", " ")
+	data, err := json.MarshalIndent(decl, " ", " ")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
+	// for visual inspection only
+	fmt.Println(string(data))
 }
 
 func dummy(i *restful.Request, o *restful.Response) {}
