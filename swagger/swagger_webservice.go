@@ -1,6 +1,7 @@
 package swagger
 
 import (
+	"fmt"
 	"github.com/emicklei/go-restful"
 	// "github.com/emicklei/hopwatch"
 	"log"
@@ -138,7 +139,14 @@ func (sws SwaggerService) getListing(req *restful.Request, resp *restful.Respons
 }
 
 func (sws SwaggerService) getDeclarations(req *restful.Request, resp *restful.Response) {
-	resp.WriteAsJson(sws.apiDeclarationMap[composeRootPath(req)])
+	decl := sws.apiDeclarationMap[composeRootPath(req)]
+	// unless WebServicesUrl is given
+	if len(sws.config.WebServicesUrl) == 0 {
+		// update base path from the actual request
+		// TODO how to detect https? assume http for now
+		(&decl).BasePath = fmt.Sprintf("http://%s", req.Request.Host)
+	}
+	resp.WriteAsJson(decl)
 }
 
 func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix string) ApiDeclaration {

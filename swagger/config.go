@@ -7,11 +7,19 @@ import (
 )
 
 type Config struct {
-	WebServicesUrl  string                // url where the services are available, e.g. http://localhost:8080
-	ApiPath         string                // path where the JSON api is avaiable , e.g. /apidocs
-	SwaggerPath     string                // [optional] path where the swagger UI will be served, e.g. /swagger
-	SwaggerFilePath string                // [optional] location of folder containing Swagger HTML5 application index.html
-	WebServices     []*restful.WebService // api listing is constructed from this list of restful WebServices.
-	StaticHandler   http.Handler          // will serve all static content (scripts,pages,images)
-	DisableCORS     bool                  // [optional] on default CORS (Cross-Origin-Resource-Sharing) is enabled.
+	// url where the services are available, e.g. http://localhost:8080
+	// if left empty then the basePath of Swagger is taken from the actual request
+	WebServicesUrl string
+	// path where the JSON api is avaiable , e.g. /apidocs
+	ApiPath string
+	// [optional] path where the swagger UI will be served, e.g. /swagger
+	SwaggerPath string
+	// [optional] location of folder containing Swagger HTML5 application index.html
+	SwaggerFilePath string
+	// api listing is constructed from this list of restful WebServices.
+	WebServices []*restful.WebService
+	// will serve all static content (scripts,pages,images)
+	StaticHandler http.Handler
+	// [optional] on default CORS (Cross-Origin-Resource-Sharing) is enabled.
+	DisableCORS bool
 }
