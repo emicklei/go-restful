@@ -213,4 +213,16 @@ func TestCurly_ISSUE_137(t *testing.T) {
 	}
 }
 
+// go test -v -test.run TestCurly_ISSUE_137_2 ...restful
+func TestCurly_ISSUE_137_2(t *testing.T) {
+	ws1 := new(WebService)
+	ws1.Route(ws1.GET("/hello").To(curlyDummy))
+	req, _ := http.NewRequest("GET", "/hello/bob", nil)
+	_, route, _ := CurlyRouter{}.SelectRoute([]*WebService{ws1}, req)
+	t.Log(route)
+	if route != nil {
+		t.Errorf("no route expected, got %v", route)
+	}
+}
+
 func curlyDummy(req *Request, resp *Response) { io.WriteString(resp.ResponseWriter, "curlyDummy") }

@@ -58,6 +58,14 @@ func (c CurlyRouter) selectRoutes(ws *WebService, requestTokens []string) []Rout
 
 // matchesRouteByPathTokens computes whether it matches, howmany parameters do match and what the number of static path elements are.
 func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []string) (matches bool, paramCount int, staticCount int) {
+	if len(routeTokens) < len(requestTokens) {
+		// proceed in matching only if last routeToken is wildcard
+		count := len(routeTokens)
+		if count == 0 || !strings.HasSuffix(routeTokens[count-1], "*}") {
+			return false, 0, 0
+		}
+		// proceed
+	}
 	for i, routeToken := range routeTokens {
 		if i == len(requestTokens) {
 			// reached end of request path
