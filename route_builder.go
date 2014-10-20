@@ -24,7 +24,7 @@ type RouteBuilder struct {
 	operation               string
 	readSample, writeSample interface{}
 	parameters              []*Parameter
-	errorMap                map[int]responseError
+	errorMap                map[int]ResponseError
 }
 
 // To bind the route to a function.
@@ -112,23 +112,23 @@ func (b *RouteBuilder) Operation(name string) *RouteBuilder {
 // ReturnsError allows you to document what error responses can be expected.
 // The model parameter is optional, use nil in that case.
 func (b *RouteBuilder) ReturnsError(code int, message string, model interface{}) *RouteBuilder {
-	err := responseError{
-		code:    code,
-		message: message,
-		model:   model,
+	err := ResponseError{
+		Code:    code,
+		Message: message,
+		Model:   model,
 	}
 	// lazy init because there is no NewRouteBuilder (yet)
 	if b.errorMap == nil {
-		b.errorMap = map[int]responseError{}
+		b.errorMap = map[int]ResponseError{}
 	}
 	b.errorMap[code] = err
 	return b
 }
 
-type responseError struct {
-	code    int
-	message string
-	model   interface{}
+type ResponseError struct {
+	Code    int
+	Message string
+	Model   interface{}
 }
 
 func (b *RouteBuilder) servicePath(path string) *RouteBuilder {
@@ -164,19 +164,20 @@ func (b *RouteBuilder) Build() Route {
 		log.Fatalf("[restful] No function specified for route:" + b.currentPath)
 	}
 	route := Route{
-		Method:        b.httpMethod,
-		Path:          concatPath(b.rootPath, b.currentPath),
-		Produces:      b.produces,
-		Consumes:      b.consumes,
-		Function:      b.function,
-		Filters:       b.filters,
-		relativePath:  b.currentPath,
-		pathExpr:      pathExpr,
-		Doc:           b.doc,
-		Operation:     b.operation,
-		ParameterDocs: b.parameters,
-		ReadSample:    b.readSample,
-		WriteSample:   b.writeSample}
+		Method:         b.httpMethod,
+		Path:           concatPath(b.rootPath, b.currentPath),
+		Produces:       b.produces,
+		Consumes:       b.consumes,
+		Function:       b.function,
+		Filters:        b.filters,
+		relativePath:   b.currentPath,
+		pathExpr:       pathExpr,
+		Doc:            b.doc,
+		Operation:      b.operation,
+		ParameterDocs:  b.parameters,
+		ResponseErrors: b.errorMap,
+		ReadSample:     b.readSample,
+		WriteSample:    b.writeSample}
 	route.postBuild()
 	return route
 }

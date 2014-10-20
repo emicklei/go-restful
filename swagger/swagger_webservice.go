@@ -173,11 +173,12 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix 
 		api := Api{Path: path, Description: ws.Documentation()}
 		for _, route := range routes {
 			operation := Operation{
-				Method:     route.Method,
-				Summary:    route.Doc,
-				Type:       asDataType(route.WriteSample),
-				Parameters: []Parameter{},
-				Nickname:   route.Operation}
+				Method:           route.Method,
+				Summary:          route.Doc,
+				Type:             asDataType(route.WriteSample),
+				Parameters:       []Parameter{},
+				Nickname:         route.Operation,
+				ResponseMessages: composeResponseMessages(route, &decl)}
 
 			operation.Consumes = route.Consumes
 			operation.Produces = route.Produces
@@ -196,6 +197,28 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix 
 		decl.Apis = append(decl.Apis, api)
 	}
 	return decl
+}
+
+// composeResponseMessages takes the ResponseErrors (if any) and creates ResponseMessages from them.
+func composeResponseMessages(route restful.Route, decl *ApiDeclaration) (messages []ResponseMessage) {
+	if route.ResponseErrors == nil {
+		return messages
+	}
+	for code, each := range route.ResponseErrors {
+		message := ResponseMessage{
+			Code:    code,
+			Message: each.Message,
+		}
+		if each.Model != nil {
+			st := reflect.TypeOf(each.Model)
+			modelName := modelBuilder{}.keyFrom(st)
+			modelBuilder{decl.Models}.addModel(reflect.TypeOf(each.Model), "")
+			// reference the model
+			message.ResponseModel = modelName
+		}
+		messages = append(messages, message)
+	}
+	return
 }
 
 // addModelsFromRoute takes any read or write sample from the Route and creates a Swagger model from it.

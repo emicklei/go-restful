@@ -161,7 +161,7 @@ type Parameter struct {
 type ResponseMessage struct {
 	Code          int    `json:"code"`
 	Message       string `json:"message"`
-	ResponseModel string `json:"responseModel"`
+	ResponseModel string `json:"responseModel,omitempty"`
 }
 
 // 5.2.6, 5.2.7 Models Object

@@ -56,6 +56,7 @@ func (u UserResource) Register(container *restful.Container) {
 		Doc("update a user").
 		Operation("updateUser").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
+		ReturnsError(409, "duplicate user-id", nil).
 		Reads(User{})) // from the request
 
 	ws.Route(ws.POST("").To(u.createUser).
