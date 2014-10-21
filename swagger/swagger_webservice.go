@@ -211,7 +211,11 @@ func composeResponseMessages(route restful.Route, decl *ApiDeclaration) (message
 		}
 		if each.Model != nil {
 			st := reflect.TypeOf(each.Model)
+			isCollection, st := detectCollectionType(st)
 			modelName := modelBuilder{}.keyFrom(st)
+			if isCollection {
+				modelName = "array[" + modelName + "]"
+			}
 			modelBuilder{decl.Models}.addModel(reflect.TypeOf(each.Model), "")
 			// reference the model
 			message.ResponseModel = modelName
@@ -231,9 +235,7 @@ func (sws SwaggerService) addModelsFromRouteTo(operation *Operation, route restf
 	}
 }
 
-// addModelFromSample creates and adds (or overwrites) a Model from a sample resource
-func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse bool, sample interface{}, models map[string]Model) {
-	st := reflect.TypeOf(sample)
+func detectCollectionType(st reflect.Type) (bool, reflect.Type) {
 	isCollection := false
 	if st.Kind() == reflect.Slice || st.Kind() == reflect.Array {
 		st = st.Elem()
@@ -246,6 +248,13 @@ func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse 
 			}
 		}
 	}
+	return isCollection, st
+}
+
+// addModelFromSample creates and adds (or overwrites) a Model from a sample resource
+func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse bool, sample interface{}, models map[string]Model) {
+	st := reflect.TypeOf(sample)
+	isCollection, st := detectCollectionType(st)
 	modelName := modelBuilder{}.keyFrom(st)
 	if isResponse {
 		if isCollection {

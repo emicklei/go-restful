@@ -63,6 +63,19 @@ func TestComposeResponseMessages(t *testing.T) {
 	}
 }
 
+// clear && go test -v -test.run TestComposeResponseMessageArray ...swagger
+func TestComposeResponseMessageArray(t *testing.T) {
+	responseErrors := map[int]restful.ResponseError{}
+	responseErrors[400] = restful.ResponseError{Code: 400, Message: "Bad Request", Model: []TestItem{}}
+	route := restful.Route{ResponseErrors: responseErrors}
+	decl := new(ApiDeclaration)
+	decl.Models = map[string]Model{}
+	msgs := composeResponseMessages(route, decl)
+	if msgs[0].ResponseModel != "array[swagger.TestItem]" {
+		t.Errorf("got %s want swagger.TestItem", msgs[0].ResponseModel)
+	}
+}
+
 func TestIssue78(t *testing.T) {
 	sws := newSwaggerService(Config{})
 	models := map[string]Model{}
