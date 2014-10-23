@@ -66,3 +66,5 @@ func (u UserResource) findUser(request *restful.Request, response *restful.Respo
 [![Build Status](https://drone.io/github.com/emicklei/go-restful/status.png)](https://drone.io/github.com/emicklei/go-restful/latest)[![library users](https://sourcegraph.com/api/repos/github.com/emicklei/go-restful/badges/library-users.png)](https://sourcegraph.com/github.com/emicklei/go-restful) [![authors](https://sourcegraph.com/api/repos/github.com/emicklei/go-restful/badges/authors.png)](https://sourcegraph.com/github.com/emicklei/go-restful) [![xrefs](https://sourcegraph.com/api/repos/github.com/emicklei/go-restful/badges/xrefs.png)](https://sourcegraph.com/github.com/emicklei/go-restful)
 
 (c) 2012 - 2014, http://ernestmicklei.com. MIT License
+
+Type ```git shortlog -s``` for a full list of contributors.
