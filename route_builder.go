@@ -27,6 +27,19 @@ type RouteBuilder struct {
 	errorMap                map[int]ResponseError
 }
 
+// Do evaluates the argument with the RouteBuilder itself.
+// This allows you to follow DRY principles without breaking the fluent programming style.
+// Example:
+// 		ws.Route(ws.DELETE("/{name}").To(t.deletePerson).Do(Returns200).Do(Returns500))
+//
+//		func Returns500(b *RouteBuilder) {
+//			b.Returns(500, "Internal Server Error", restful.ServiceError{})
+//		}
+func (b *RouteBuilder) Do(oneArgBlock func(*RouteBuilder)) *RouteBuilder {
+	oneArgBlock(b)
+	return b
+}
+
 // To bind the route to a function.
 // If this route is matched with the incoming Http Request then call this function with the *Request,*Response pair. Required.
 func (b *RouteBuilder) To(function RouteFunction) *RouteBuilder {

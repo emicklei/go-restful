@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+	"sort"
 	"strings"
 )
 
@@ -204,7 +205,14 @@ func composeResponseMessages(route restful.Route, decl *ApiDeclaration) (message
 	if route.ResponseErrors == nil {
 		return messages
 	}
-	for code, each := range route.ResponseErrors {
+	// sort by code
+	codes := sort.IntSlice{}
+	for code, _ := range route.ResponseErrors {
+		codes = append(codes, code)
+	}
+	codes.Sort()
+	for _, code := range codes {
+		each := route.ResponseErrors[code]
 		message := ResponseMessage{
 			Code:    code,
 			Message: each.Message,

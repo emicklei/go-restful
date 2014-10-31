@@ -1,5 +1,11 @@
 Change history of go-restful
 =
+2014-10-31
+- (api change) ReturnsError -> Returns
+- (api add)    RouteBuilder.Do(aBuilder) for DRY use of RouteBuilder
+- fix swagger nested structs
+- sort Swagger response messages by code
+
 2014-10-23
 - (api add) ReturnsError allows you to document Http codes in swagger
 - fixed problem with greedy CurlyRouter
