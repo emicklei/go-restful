@@ -112,7 +112,7 @@ func (b *RouteBuilder) Operation(name string) *RouteBuilder {
 // ReturnsError is deprecated, use Returns instead.
 func (b *RouteBuilder) ReturnsError(code int, message string, model interface{}) *RouteBuilder {
 	log.Println("ReturnsError is deprecated, use Returns instead.")
-	return b.ReturnsError(code, message, model)
+	return b.Returns(code, message, model)
 }
 
 // Returns allows you to document what responses (errors or regular) can be expected.
