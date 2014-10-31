@@ -130,7 +130,7 @@ func (b modelBuilder) buildStructTypeProperty(field reflect.StructField, jsonNam
 		prop.Type = &anonType
 		return jsonName, prop
 	}
-	if field.Name == fieldType.Name() {
+	if field.Name == fieldType.Name() && field.Anonymous {
 		// embedded struct
 		sub := modelBuilder{map[string]Model{}}
 		sub.addModel(fieldType, "")

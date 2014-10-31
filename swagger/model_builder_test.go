@@ -676,3 +676,41 @@ func TestRegion_Issue113(t *testing.T) {
   }
  }`)
 }
+
+// clear && go test -v -test.run TestIssue158 ...swagger
+func TestIssue158(t *testing.T) {
+	type Address struct {
+		Country string `json:"country,omitempty"`
+	}
+
+	type Customer struct {
+		Name    string  `json:"name"`
+		Address Address `json:"address"`
+	}
+	expected := `{
+  "swagger.Address": {
+   "id": "swagger.Address",
+   "properties": {
+    "country": {
+     "type": "string"
+    }
+   }
+  },
+  "swagger.Customer": {
+   "id": "swagger.Customer",
+   "required": [
+    "name",
+    "address"
+   ],
+   "properties": {
+    "address": {
+     "type": "swagger.Address"
+    },
+    "name": {
+     "type": "string"
+    }
+   }
+  }
+ }`
+	testJsonFromStruct(t, Customer{}, expected)
+}
