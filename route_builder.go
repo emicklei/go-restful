@@ -109,9 +109,15 @@ func (b *RouteBuilder) Operation(name string) *RouteBuilder {
 	return b
 }
 
-// ReturnsError allows you to document what error responses can be expected.
-// The model parameter is optional, use nil in that case.
+// ReturnsError is deprecated, use Returns instead.
 func (b *RouteBuilder) ReturnsError(code int, message string, model interface{}) *RouteBuilder {
+	log.Println("ReturnsError is deprecated, use Returns instead.")
+	return b.ReturnsError(code, message, model)
+}
+
+// Returns allows you to document what responses (errors or regular) can be expected.
+// The model parameter is optional ; either pass a struct instance or use nil if not applicable.
+func (b *RouteBuilder) Returns(code int, message string, model interface{}) *RouteBuilder {
 	err := ResponseError{
 		Code:    code,
 		Message: message,
