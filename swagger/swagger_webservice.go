@@ -171,7 +171,7 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix 
 		}
 	}
 	for path, routes := range pathToRoutes {
-		api := Api{Path: path, Description: ws.Documentation()}
+		api := Api{Path: strings.TrimSuffix(path, "/"), Description: ws.Documentation()}
 		for _, route := range routes {
 			operation := Operation{
 				Method:           route.Method,
@@ -224,7 +224,7 @@ func composeResponseMessages(route restful.Route, decl *ApiDeclaration) (message
 			if isCollection {
 				modelName = "array[" + modelName + "]"
 			}
-			modelBuilder{decl.Models}.addModel(reflect.TypeOf(each.Model), "")
+			modelBuilder{decl.Models}.addModel(st, "")
 			// reference the model
 			message.ResponseModel = modelName
 		}

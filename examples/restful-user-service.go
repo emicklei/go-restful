@@ -27,6 +27,12 @@ func (u UserService) Register() {
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_JSON, restful.MIME_XML) // you can specify this per route as well
 
+	ws.Route(ws.GET("/").To(u.findAllUsers).
+		// docs
+		Doc("get all users").
+		Operation("findAllUsers").
+		Returns(200, "OK", []User{}))
+
 	ws.Route(ws.GET("/{user-id}").To(u.findUser).
 		// docs
 		Doc("get a user").
@@ -54,6 +60,12 @@ func (u UserService) Register() {
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")))
 
 	restful.Add(ws)
+}
+
+// GET http://localhost:8080/users
+//
+func (u UserService) findAllUsers(request *restful.Request, response *restful.Response) {
+	response.WriteEntity(u.users)
 }
 
 // GET http://localhost:8080/users/1
