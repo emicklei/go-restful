@@ -1,5 +1,9 @@
 Change history of go-restful
 =
+2014-11-10
+- (api change) struct fields tagged with "description" show up in Swagger UI
+
+=
 2014-10-31
 - (api change) ReturnsError -> Returns
 - (api add)    RouteBuilder.Do(aBuilder) for DRY use of RouteBuilder

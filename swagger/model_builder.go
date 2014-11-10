@@ -43,6 +43,9 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) {
 	for i := 0; i < st.NumField(); i++ {
 		field := st.Field(i)
 		jsonName, prop := b.buildProperty(field, &sm, modelName)
+		if descTag := field.Tag.Get("description"); descTag != "" {
+			prop.Description = descTag
+		}
 		// add if not ommitted
 		if len(jsonName) != 0 {
 			// update Required
@@ -80,7 +83,6 @@ func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, mod
 	if jsonTag := field.Tag.Get("json"); jsonTag != "" {
 		s := strings.Split(jsonTag, ",")
 		if len(s) > 1 && s[1] == "string" {
-			prop.Description = "(" + fieldType.String() + " as string)"
 			fieldType = reflect.TypeOf("")
 		}
 	}

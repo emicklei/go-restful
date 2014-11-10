@@ -143,7 +143,7 @@ func TestS3(t *testing.T) {
 type sample struct {
 	id       string `swagger:"required"` // TODO
 	items    []item
-	rootItem item `json:"root"`
+	rootItem item `json:"root" description:"root desc"`
 }
 
 type item struct {
@@ -184,7 +184,8 @@ func TestSampleToModelAsJson(t *testing.T) {
      ]
     },
     "root": {
-     "type": "swagger.item"
+     "type": "swagger.item",
+     "description": "root desc"
     }
    }
   }
@@ -212,8 +213,7 @@ func TestJsonTags(t *testing.T) {
      "type": "string"
     },
     "C": {
-     "type": "string",
-     "description": "(int as string)"
+     "type": "string"
     },
     "D": {
      "type": "integer",
