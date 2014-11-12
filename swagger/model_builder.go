@@ -141,7 +141,17 @@ func (b modelBuilder) buildStructTypeProperty(field reflect.StructField, jsonNam
 		subModel := sub.Models[subKey]
 		for k, v := range subModel.Properties {
 			model.Properties[k] = v
-			model.Required = append(model.Required, k)
+			// if subModel says this property is required then include it
+			required := false
+			for _, each := range subModel.Required {
+				if k == each {
+					required = true
+					break
+				}
+			}
+			if required {
+				model.Required = append(model.Required, k)
+			}
 		}
 		// empty name signals skip property
 		return "", prop
