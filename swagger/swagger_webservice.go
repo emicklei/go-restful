@@ -193,6 +193,9 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix 
 			for _, param := range route.ParameterDocs {
 				operation.Parameters = append(operation.Parameters, asSwaggerParameter(param.Data()))
 			}
+			// sort parameters
+			sort.Sort(ParameterSorter(operation.Parameters))
+
 			sws.addModelsFromRouteTo(&operation, route, &decl)
 			api.Operations = append(api.Operations, operation)
 		}
