@@ -198,7 +198,8 @@ func (r *Response) WriteErrorString(status int, errorReason string) error {
 func (r *Response) WriteHeader(httpStatus int) {
 	r.statusCode = httpStatus
 	// if 204 then WriteEntity will not be called so we need to pass this code
-	if http.StatusNoContent == httpStatus {
+	if http.StatusNoContent == httpStatus ||
+		http.StatusNotModified == httpStatus {
 		r.ResponseWriter.WriteHeader(httpStatus)
 	}
 }
