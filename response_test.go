@@ -135,3 +135,13 @@ func TestWriteHeaderNoContent_Issue124(t *testing.T) {
 		t.Errorf("got %d want %d", httpWriter.Code, http.StatusNoContent)
 	}
 }
+
+// go test -v -test.run TestStatusCreatedAndContentTypeJson_Issue163 ...restful
+func TestStatusCreatedAndContentTypeJson_Issue163(t *testing.T) {
+	httpWriter := httptest.NewRecorder()
+	resp := Response{httpWriter, "application/json", []string{"application/json"}, 0, 0}
+	resp.WriteHeader(http.StatusNotModified)
+	if httpWriter.Code != http.StatusNotModified {
+		t.Errorf("Got %d want %d", httpWriter.Code, http.StatusNotModified)
+	}
+}
