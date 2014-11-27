@@ -27,11 +27,12 @@ type Response struct {
 	routeProduces []string // mime-types what the Route says it can produce
 	statusCode    int      // HTTP status code that has been written explicity (if zero then net/http has written 200)
 	contentLength int      // number of bytes written for the response body
+	prettyPrint   bool     // controls the indentation feature of XML and JSON serialization. It is initialized using var PrettyPrintResponses.
 }
 
 // Creates a new response based on a http ResponseWriter.
 func NewResponse(httpWriter http.ResponseWriter) *Response {
-	return &Response{httpWriter, "", []string{}, http.StatusOK, 0} // empty content-types
+	return &Response{httpWriter, "", []string{}, http.StatusOK, 0, PrettyPrintResponses} // empty content-types
 }
 
 // If Accept header matching fails, fall back to this type, otherwise
@@ -48,6 +49,11 @@ func DefaultResponseContentType(mime string) {
 func (r Response) InternalServerError() Response {
 	r.WriteHeader(http.StatusInternalServerError)
 	return r
+}
+
+// PrettyPrint changes whether this response must produce pretty (line-by-line, indented) JSON or XML output.
+func (r *Response) PrettyPrint(bePretty bool) {
+	r.prettyPrint = bePretty
 }
 
 // AddHeader is a shortcut for .Header().Add(header,value)
@@ -119,7 +125,7 @@ func (r *Response) WriteAsXml(value interface{}) error {
 	if value == nil { // do not write a nil representation
 		return nil
 	}
-	if PrettyPrintResponses {
+	if r.prettyPrint {
 		output, err = xml.MarshalIndent(value, " ", " ")
 	} else {
 		output, err = xml.Marshal(value)
@@ -150,7 +156,7 @@ func (r *Response) WriteAsJson(value interface{}) error {
 	if value == nil { // do not write a nil representation
 		return nil
 	}
-	if PrettyPrintResponses {
+	if r.prettyPrint {
 		output, err = json.MarshalIndent(value, " ", " ")
 	} else {
 		output, err = json.Marshal(value)
