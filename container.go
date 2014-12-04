@@ -98,10 +98,9 @@ func (c *Container) Add(service *WebService) *Container {
 			log.Fatalf("[restful] WebService with duplicate root path detected:['%v']", each)
 		}
 	}
-	// compile regex; abort if it fails
-	if err := service.compilePathExpression(); err != nil {
-		log.Fatal(err.Error())
-		return nil
+	// if rootPath was not set then lazy initialize it
+	if len(service.rootPath) == 0 {
+		service.Path("/")
 	}
 	c.webServices = append(c.webServices, service)
 	return c
