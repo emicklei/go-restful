@@ -4,7 +4,7 @@ package restful
 // Use of this source code is governed by a license
 // that can be found in the LICENSE file.
 
-import "fmt"
+import "log"
 
 // WebService holds a collection of Route values that bind a Http Method + URL Path to a function.
 type WebService struct {
@@ -20,16 +20,15 @@ type WebService struct {
 }
 
 // compilePathExpression ensures that the path is compiled into a RegEx for those routers that need it.
-func (w *WebService) compilePathExpression() error {
+func (w *WebService) compilePathExpression() {
 	if len(w.rootPath) == 0 {
 		w.Path("/") // lazy initialize path
 	}
 	compiled, err := newPathExpression(w.rootPath)
 	if err != nil {
-		return fmt.Errorf("[restful] Invalid path:%s because:%v", w.rootPath, err)
+		log.Fatalf("[restful] invalid path:%s because:%v", w.rootPath, err)
 	}
 	w.pathExpr = compiled
-	return nil
 }
 
 // ApiVersion sets the API version for documentation purposes.
@@ -45,6 +44,7 @@ func (w WebService) Version() string { return w.apiVersion }
 // All Routes will be relative to this path.
 func (w *WebService) Path(root string) *WebService {
 	w.rootPath = root
+	w.compilePathExpression()
 	return w
 }
 
