@@ -2,6 +2,7 @@ package swagger
 
 import (
 	"fmt"
+
 	"github.com/emicklei/go-restful"
 	// "github.com/emicklei/hopwatch"
 	"log"
@@ -136,6 +137,7 @@ func (sws SwaggerService) getListing(req *restful.Request, resp *restful.Respons
 		}
 		listing.Apis = append(listing.Apis, ref)
 	}
+	sort.Sort(ResourceSorter(listing.Apis))
 	resp.WriteAsJson(listing)
 }
 
