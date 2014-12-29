@@ -147,7 +147,14 @@ func (sws SwaggerService) getDeclarations(req *restful.Request, resp *restful.Re
 	if len(sws.config.WebServicesUrl) == 0 {
 		// update base path from the actual request
 		// TODO how to detect https? assume http for now
-		(&decl).BasePath = fmt.Sprintf("http://%s", req.Request.Host)
+		var host string
+		hostvalues, ok := req.Request.Header["Host"]
+		if !ok || len(hostvalues) == 0 {
+			host = req.Request.Host
+		} else {
+			host = hostvalues[0]
+		}
+		(&decl).BasePath = fmt.Sprintf("http://%s", host)
 	}
 	resp.WriteAsJson(decl)
 }
