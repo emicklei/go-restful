@@ -148,9 +148,16 @@ func (sws SwaggerService) getDeclarations(req *restful.Request, resp *restful.Re
 		// update base path from the actual request
 		// TODO how to detect https? assume http for now
 		var host string
-		hostvalues, ok := req.Request.Header["Host"]
+		// X-Forwarded-Host or Host or Request.Host
+		hostvalues, ok := req.Request.Header["X-Forwarded-Host"] // apache specific?
 		if !ok || len(hostvalues) == 0 {
-			host = req.Request.Host
+			forwarded, ok := req.Request.Header["Host"] // without reverse-proxy
+			if !ok || len(forwarded) == 0 {
+				// fallback to Host field
+				host = req.Request.Host
+			} else {
+				host = forwarded[0]
+			}
 		} else {
 			host = hostvalues[0]
 		}
