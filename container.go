@@ -214,11 +214,13 @@ func (c Container) ServeHTTP(httpwriter http.ResponseWriter, httpRequest *http.R
 
 // Handle registers the handler for the given pattern. If a handler already exists for pattern, Handle panics.
 func (c Container) Handle(pattern string, handler http.Handler) {
-	c.ServeMux.Handle(pattern, c.filteredHandler(handler))
+	c.ServeMux.Handle(pattern, handler)
 }
 
-// filteredHandler wraps handler that filters requests before http.Handler process
-func (c *Container) filteredHandler(handler http.Handler) http.Handler {
+// HandleWithFilter registers the handler for the given pattern.
+// Container's filter chain is applied for handler.
+// If a handler already exists for pattern, HandleWithFilter panics.
+func (c Container) HandleWithFilter(pattern string, handler http.Handler) {
 	f := func(httpResponse http.ResponseWriter, httpRequest *http.Request) {
 		if len(c.containerFilters) == 0 {
 			handler.ServeHTTP(httpResponse, httpRequest)
@@ -231,7 +233,7 @@ func (c *Container) filteredHandler(handler http.Handler) http.Handler {
 		chain.ProcessFilter(NewRequest(httpRequest), NewResponse(httpResponse))
 	}
 
-	return http.HandlerFunc(f)
+	c.Handle(pattern, http.HandlerFunc(f))
 }
 
 // Filter appends a container FilterFunction. These are called before dispatching
