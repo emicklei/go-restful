@@ -217,6 +217,25 @@ func (c Container) Handle(pattern string, handler http.Handler) {
 	c.ServeMux.Handle(pattern, handler)
 }
 
+// HandleWithFilter registers the handler for the given pattern.
+// Container's filter chain is applied for handler.
+// If a handler already exists for pattern, HandleWithFilter panics.
+func (c Container) HandleWithFilter(pattern string, handler http.Handler) {
+	f := func(httpResponse http.ResponseWriter, httpRequest *http.Request) {
+		if len(c.containerFilters) == 0 {
+			handler.ServeHTTP(httpResponse, httpRequest)
+			return
+		}
+
+		chain := FilterChain{Filters: c.containerFilters, Target: func(req *Request, resp *Response) {
+			handler.ServeHTTP(httpResponse, httpRequest)
+		}}
+		chain.ProcessFilter(NewRequest(httpRequest), NewResponse(httpResponse))
+	}
+
+	c.Handle(pattern, http.HandlerFunc(f))
+}
+
 // Filter appends a container FilterFunction. These are called before dispatching
 // a http.Request to a WebService from the container
 func (c *Container) Filter(filter FilterFunction) {
