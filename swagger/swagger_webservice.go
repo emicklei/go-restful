@@ -193,6 +193,7 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix 
 			operation := Operation{
 				Method:           route.Method,
 				Summary:          route.Doc,
+				Notes:            route.Notes,
 				Type:             asDataType(route.WriteSample),
 				Parameters:       []Parameter{},
 				Nickname:         route.Operation,
