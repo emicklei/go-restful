@@ -709,7 +709,6 @@ func TestIssue158(t *testing.T) {
 func TestSlices(t *testing.T) {
 	type Address struct {
 		Country string `json:"country,omitempty"`
-
 	}
 	expected := `{
   "swagger.Address": {
@@ -742,14 +741,14 @@ func TestSlices(t *testing.T) {
 	// both slices (with pointer value and with type value) should have equal swagger representation
 	{
 		type Customer struct {
-			Name    string  `json:"name"`
+			Name      string    `json:"name"`
 			Addresses []Address `json:"addresses"`
 		}
 		testJsonFromStruct(t, Customer{}, expected)
 	}
 	{
 		type Customer struct {
-			Name    string  `json:"name"`
+			Name      string     `json:"name"`
 			Addresses []*Address `json:"addresses"`
 		}
 		testJsonFromStruct(t, Customer{}, expected)
