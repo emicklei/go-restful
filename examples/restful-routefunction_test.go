@@ -24,6 +24,6 @@ func TestCallFunction(t *testing.T) {
 
 	getIt(req, resp)
 	if recorder.Code != 404 {
-		t.Logf("Missing or wrong status code:%d", recorder.Code)
+		t.Fatalf("Missing or wrong status code:%d", recorder.Code)
 	}
 }
