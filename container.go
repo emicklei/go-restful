@@ -7,10 +7,11 @@ package restful
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"net/http"
 	"runtime"
 	"strings"
+
+	"github.com/emicklei/go-restful/log"
 )
 
 // Container holds a collection of WebServices and a http.ServeMux to dispatch http requests.

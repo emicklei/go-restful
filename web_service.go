@@ -1,10 +1,12 @@
 package restful
 
+import (
+	"github.com/emicklei/go-restful/log"
+)
+
 // Copyright 2013 Ernest Micklei. All rights reserved.
 // Use of this source code is governed by a license
 // that can be found in the LICENSE file.
-
-import "log"
 
 // WebService holds a collection of Route values that bind a Http Method + URL Path to a function.
 type WebService struct {

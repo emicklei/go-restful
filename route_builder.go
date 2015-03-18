@@ -5,10 +5,11 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
-	"log"
 	"reflect"
 	"runtime"
 	"strings"
+
+	"github.com/emicklei/go-restful/log"
 )
 
 // RouteBuilder is a helper to construct Routes.

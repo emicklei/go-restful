@@ -3,30 +3,30 @@ package restful
 // Copyright 2014 Ernest Micklei. All rights reserved.
 // Use of this source code is governed by a license
 // that can be found in the LICENSE file.
+import (
+	"github.com/emicklei/go-restful/log"
+)
 
 var trace bool = false
-var traceLogger Logger
+var traceLogger log.StdLogger
 
-// Logger corresponds to a subset of the interface satisfied by stdlib log.Logger
-type Logger interface {
-	Fatal(v ...interface{})
-	Fatalf(format string, v ...interface{})
-	Fatalln(v ...interface{})
-	// Flags() int
-	// Output(calldepth int, s string) error
-	// Panic(v ...interface{})
-	// Panicf(format string, v ...interface{})
-	// Panicln(v ...interface{})
-	// Prefix() string
-	Print(v ...interface{})
-	Printf(format string, v ...interface{})
-	Println(v ...interface{})
-	// SetFlags(flag int)
-	// SetPrefix(prefix string)
+func init() {
+	traceLogger = log.Logger // use the package logger by default
 }
 
 // TraceLogger enables detailed logging of Http request matching and filter invocation. Default no logger is set.
-func TraceLogger(logger Logger) {
+// You may call EnableTracing() directly to enable trace logging to the package-wide logger.
+func TraceLogger(logger log.StdLogger) {
 	traceLogger = logger
-	trace = logger != nil
+	EnableTracing(logger != nil)
+}
+
+// expose the setter for the global logger on the top-level package
+func SetLogger(customLogger log.StdLogger) {
+	log.SetLogger(customLogger)
+}
+
+// EnableTracing can be used to Trace logging on and off.
+func EnableTracing(enabled bool) {
+	trace = enabled
 }
