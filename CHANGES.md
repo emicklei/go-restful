@@ -1,5 +1,8 @@
 Change history of go-restful
 =
+2015-03-18
+- if not specified, the Operation is derived from the Route function
+
 2015-03-17
 - expose Parameter creation functions
 - make trace logger an interface
