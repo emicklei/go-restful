@@ -77,6 +77,11 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 		}
 	}
 
+	// if specified then call the PostBuilderHandler
+	if config.PostBuildHandler != nil {
+		config.PostBuildHandler(sws.apiDeclarationMap)
+	}
+
 	// Check paths for UI serving
 	if config.StaticHandler == nil && config.SwaggerFilePath != "" && config.SwaggerPath != "" {
 		swaggerPathSlash := config.SwaggerPath
