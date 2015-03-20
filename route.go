@@ -88,8 +88,12 @@ func (r Route) matchesAccept(mimeTypesWithQuality string) bool {
 	return false
 }
 
-// Return whether the mimeType matches to what this Route can consume.
+// Return whether the mimeTypes match to what this Route can consume.
 func (r Route) matchesContentType(mimeTypes string) bool {
+	// check for both defaults
+	if len(r.Consumes) == 0 && mimeTypes == MIME_OCTET {
+		return true
+	}
 	parts := strings.Split(mimeTypes, ",")
 	for _, each := range parts {
 		var contentType string
