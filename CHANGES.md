@@ -1,5 +1,8 @@
 Change history of go-restful
 =
+2015-03-20
+- add configurable logging
+
 2015-03-18
 - if not specified, the Operation is derived from the Route function
 
