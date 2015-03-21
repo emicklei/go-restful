@@ -44,9 +44,11 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) {
 		field := st.Field(i)
 		jsonName, prop := b.buildProperty(field, &sm, modelName)
 		if descTag := field.Tag.Get("description"); descTag != "" {
-			prop.Description = descTag
+			if prop.Description == "" {
+				prop.Description = descTag
+			}
 		}
-		// add if not ommitted
+		// add if not omitted
 		if len(jsonName) != 0 {
 			// update Required
 			if b.isPropertyRequired(field) {
@@ -71,6 +73,67 @@ func (b modelBuilder) isPropertyRequired(field reflect.StructField) bool {
 	return required
 }
 
+func (prop *ModelProperty) setType(field reflect.StructField) {
+	if tag := field.Tag.Get("swagger%type"); tag != "" {
+		prop.Type = &tag
+	}
+}
+
+func (prop *ModelProperty) setDescription(field reflect.StructField) {
+	if tag := field.Tag.Get("swagger%description"); tag != "" {
+		prop.Description = tag
+	}
+}
+
+func (prop *ModelProperty) setDefaultValue(field reflect.StructField) {
+	if tag := field.Tag.Get("swagger%default"); tag != "" {
+		prop.DefaultValue = Special(tag)
+	}
+}
+
+func (prop *ModelProperty) setEnumValues(field reflect.StructField) {
+	// We use | to separate the enum values.  This value is chosen
+	// since its unlikely to be useful in actual enumeration values.
+	if tag := field.Tag.Get("swagger%enum"); tag != "" {
+		prop.Enum = strings.Split(tag, "|")
+	}
+}
+
+func (prop *ModelProperty) setMaximum(field reflect.StructField) {
+	if tag := field.Tag.Get("swagger%maximum"); tag != "" {
+		prop.Maximum = tag
+	}
+}
+
+func (prop *ModelProperty) setMinimum(field reflect.StructField) {
+	if tag := field.Tag.Get("swagger%minimum"); tag != "" {
+		prop.Minimum = tag
+	}
+}
+
+func (prop *ModelProperty) setUniqueItems(field reflect.StructField) {
+	tag := field.Tag.Get("swagger%unique")
+	switch (tag) {
+	case "true":
+		v := true
+		prop.UniqueItems = &v
+	case "false":
+		v := false
+		prop.UniqueItems = &v
+	}
+}
+
+func (prop *ModelProperty) setProps(field reflect.StructField) {
+	prop.setType(field)
+	prop.setDescription(field)
+	prop.setEnumValues(field)
+	prop.setMinimum(field)
+	prop.setMaximum(field)
+	prop.setMaximum(field)
+	prop.setUniqueItems(field)
+	prop.setDefaultValue(field)
+}
+
 func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, modelName string) (jsonName string, prop ModelProperty) {
 	jsonName = b.jsonNameOfField(field)
 	if len(jsonName) == 0 {
@@ -79,12 +142,18 @@ func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, mod
 	}
 	fieldType := field.Type
 
+	prop.setProps(field)
+
 	// check if type is doing its own marshalling
 	marshalerType := reflect.TypeOf((*json.Marshaler)(nil)).Elem()
 	if fieldType.Implements(marshalerType) {
 		var pType = "string"
-		prop.Type = &pType
-		prop.Format = b.jsonSchemaFormat(fieldType.String())
+		if prop.Type == nil {
+			prop.Type = &pType
+		}
+		if prop.Format == "" {
+			prop.Format = b.jsonSchemaFormat(fieldType.String())
+		}
 		return jsonName, prop
 	}
 
@@ -127,6 +196,7 @@ func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, mod
 
 func (b modelBuilder) buildStructTypeProperty(field reflect.StructField, jsonName string, model *Model) (nameJson string, prop ModelProperty) {
 	fieldType := field.Type
+	prop.setProps(field)
 	// check for anonymous
 	if len(fieldType.Name()) == 0 {
 		// anonymous
@@ -168,6 +238,7 @@ func (b modelBuilder) buildStructTypeProperty(field reflect.StructField, jsonNam
 
 func (b modelBuilder) buildArrayTypeProperty(field reflect.StructField, jsonName, modelName string) (nameJson string, prop ModelProperty) {
 	fieldType := field.Type
+	prop.setProps(field)
 	var pType = "array"
 	prop.Type = &pType
 	elemTypeName := b.getElementTypeName(modelName, jsonName, fieldType.Elem())
