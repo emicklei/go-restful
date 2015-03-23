@@ -5,6 +5,7 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
+	"os"
 	"reflect"
 	"runtime"
 	"strings"
@@ -136,7 +137,7 @@ func (b *RouteBuilder) Operation(name string) *RouteBuilder {
 
 // ReturnsError is deprecated, use Returns instead.
 func (b *RouteBuilder) ReturnsError(code int, message string, model interface{}) *RouteBuilder {
-	log.Println("ReturnsError is deprecated, use Returns instead.")
+	log.Print("ReturnsError is deprecated, use Returns instead.")
 	return b.Returns(code, message, model)
 }
 
@@ -189,10 +190,12 @@ func (b *RouteBuilder) copyDefaults(rootProduces, rootConsumes []string) {
 func (b *RouteBuilder) Build() Route {
 	pathExpr, err := newPathExpression(b.currentPath)
 	if err != nil {
-		log.Fatalf("[restful] Invalid path:%s because:%v", b.currentPath, err)
+		log.Printf("[restful] Invalid path:%s because:%v", b.currentPath, err)
+		os.Exit(1)
 	}
 	if b.function == nil {
-		log.Fatalf("[restful] No function specified for route:" + b.currentPath)
+		log.Printf("[restful] No function specified for route:" + b.currentPath)
+		os.Exit(1)
 	}
 	operationName := b.operation
 	if len(operationName) == 0 && b.function != nil {

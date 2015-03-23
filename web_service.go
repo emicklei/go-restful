@@ -1,6 +1,8 @@
 package restful
 
 import (
+	"os"
+
 	"github.com/emicklei/go-restful/log"
 )
 
@@ -28,7 +30,8 @@ func (w *WebService) compilePathExpression() {
 	}
 	compiled, err := newPathExpression(w.rootPath)
 	if err != nil {
-		log.Fatalf("[restful] invalid path:%s because:%v", w.rootPath, err)
+		log.Printf("[restful] invalid path:%s because:%v", w.rootPath, err)
+		os.Exit(1)
 	}
 	w.pathExpr = compiled
 }

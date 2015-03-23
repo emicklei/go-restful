@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"os"
 	"runtime"
 	"strings"
 
@@ -108,7 +109,8 @@ func (c *Container) Add(service *WebService) *Container {
 	// cannot have duplicate root paths
 	for _, each := range c.webServices {
 		if each.RootPath() == service.RootPath() {
-			log.Fatalf("[restful] WebService with duplicate root path detected:['%v']", each)
+			log.Printf("[restful] WebService with duplicate root path detected:['%v']", each)
+			os.Exit(1)
 		}
 	}
 	// if rootPath was not set then lazy initialize it
@@ -133,7 +135,7 @@ func logStackOnRecover(panicReason interface{}, httpWriter http.ResponseWriter) 
 		}
 		buffer.WriteString(fmt.Sprintf("    %s:%d\r\n", file, line))
 	}
-	log.Println(buffer.String())
+	log.Print(buffer.String())
 	httpWriter.WriteHeader(http.StatusInternalServerError)
 	httpWriter.Write(buffer.Bytes())
 }
@@ -172,7 +174,7 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 			var err error
 			writer, err = NewCompressingResponseWriter(httpWriter, encoding)
 			if err != nil {
-				log.Println("[restful] unable to install compressor:", err)
+				log.Print("[restful] unable to install compressor: ", err)
 				httpWriter.WriteHeader(http.StatusInternalServerError)
 				return
 			}
