@@ -90,6 +90,13 @@ func (r Route) matchesAccept(mimeTypesWithQuality string) bool {
 
 // Return whether the mimeTypes match to what this Route can consume.
 func (r Route) matchesContentType(mimeTypes string) bool {
+
+	// idempotent methods with empty content always match Content-Type
+	m := r.Method
+	if m == "GET" || m == "HEAD" || m == "OPTIONS" || m == "DELETE" {
+		return true
+	}
+
 	// check for both defaults
 	if len(r.Consumes) == 0 && mimeTypes == MIME_OCTET {
 		return true
