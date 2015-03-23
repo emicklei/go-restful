@@ -88,19 +88,24 @@ func (r Route) matchesAccept(mimeTypesWithQuality string) bool {
 	return false
 }
 
-// Return whether the mimeTypes match to what this Route can consume.
+// Return whether this Route can consume content with a type specified by mimeTypes (can be empty).
 func (r Route) matchesContentType(mimeTypes string) bool {
 
-	// idempotent methods with empty content always match Content-Type
-	m := r.Method
-	if m == "GET" || m == "HEAD" || m == "OPTIONS" || m == "DELETE" {
+	if len(r.Consumes) == 0 {
+		// did not specify what it can consume ;  any media type (“*/*”) is assumed
 		return true
 	}
 
-	// check for both defaults
-	if len(r.Consumes) == 0 && mimeTypes == MIME_OCTET {
-		return true
+	if len(mimeTypes) == 0 {
+		// idempotent methods with (most-likely or garanteed) empty content match missing Content-Type
+		m := r.Method
+		if m == "GET" || m == "HEAD" || m == "OPTIONS" || m == "DELETE" || m == "TRACE" {
+			return true
+		}
+		// proceed with default
+		mimeTypes = MIME_OCTET
 	}
+
 	parts := strings.Split(mimeTypes, ",")
 	for _, each := range parts {
 		var contentType string
@@ -111,8 +116,8 @@ func (r Route) matchesContentType(mimeTypes string) bool {
 		}
 		// trim before compare
 		contentType = strings.Trim(contentType, " ")
-		for _, other := range r.Consumes {
-			if other == "*/*" || other == contentType {
+		for _, consumeableType := range r.Consumes {
+			if consumeableType == "*/*" || consumeableType == contentType {
 				return true
 			}
 		}

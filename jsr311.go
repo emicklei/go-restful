@@ -58,12 +58,6 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 
 	// content-type
 	contentType := httpRequest.Header.Get(HEADER_ContentType)
-	if len(contentType) == 0 {
-		if trace {
-			traceLogger.Printf("no Content-Type set, default to : %s\n", MIME_OCTET)
-		}
-		contentType = MIME_OCTET
-	}
 	inputMediaOk = []Route{}
 	for _, each := range methodOk {
 		if each.matchesContentType(contentType) {
