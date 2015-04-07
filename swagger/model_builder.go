@@ -107,12 +107,12 @@ func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, mod
 	case fieldKind == reflect.Ptr:
 		return b.buildPointerTypeProperty(field, jsonName, modelName)
 	case fieldKind == reflect.String:
-	     	stringt := "string"
+		stringt := "string"
 		prop.Type = &stringt
 		return jsonName, prop
 	case fieldKind == reflect.Map:
-                // if it's a map, it's unstructured, and swagger 1.2 can't handle it
-	        anyt := "any"
+		// if it's a map, it's unstructured, and swagger 1.2 can't handle it
+		anyt := "any"
 		prop.Type = &anyt
 		return jsonName, prop
 	}
@@ -246,8 +246,9 @@ func (b modelBuilder) keyFrom(st reflect.Type) string {
 	return key
 }
 
+// see also https://golang.org/ref/spec#Numeric_types
 func (b modelBuilder) isPrimitiveType(modelName string) bool {
-	return strings.Contains("uint8 int int32 int64 float32 float64 bool string byte time.Time", modelName)
+	return strings.Contains("uint8 uint16 uint32 uint64 int int8 int16 int32 int64 float32 float64 bool string byte rune time.Time", modelName)
 }
 
 // jsonNameOfField returns the name of the field as it should appear in JSON format
@@ -265,25 +266,31 @@ func (b modelBuilder) jsonNameOfField(field reflect.StructField) string {
 	return field.Name
 }
 
+// see also http://json-schema.org/latest/json-schema-core.html#anchor8
 func (b modelBuilder) jsonSchemaType(modelName string) string {
 	schemaMap := map[string]string{
-		"uint8":     "integer",
-		"int":       "integer",
-		"int32":     "integer",
-		"int64":     "integer",
-                "uint64":    "integer",
-		"byte":      "string",
+		"uint8":  "integer",
+		"uint16": "integer",
+		"uint32": "integer",
+		"uint64": "integer",
+
+		"int":   "integer",
+		"int8":  "integer",
+		"int16": "integer",
+		"int32": "integer",
+		"int64": "integer",
+
+		"byte":      "integer",
 		"float64":   "number",
 		"float32":   "number",
 		"bool":      "boolean",
 		"time.Time": "string",
 	}
 	mapped, ok := schemaMap[modelName]
-	if ok {
-		return mapped
-	} else {
+	if !ok {
 		return modelName // use as is (custom or struct)
 	}
+	return mapped
 }
 
 func (b modelBuilder) jsonSchemaFormat(modelName string) string {
@@ -298,9 +305,8 @@ func (b modelBuilder) jsonSchemaFormat(modelName string) string {
 		"time.Time": "date-time",
 	}
 	mapped, ok := schemaMap[modelName]
-	if ok {
-		return mapped
-	} else {
+	if !ok {
 		return "" // no format
 	}
+	return mapped
 }
