@@ -6,22 +6,40 @@ import (
 	"strings"
 )
 
+// ModelBuildable is used for extending Structs that need more control over
+// how the Model appears in the Swagger api declaration.
+type ModelBuildable interface {
+	PostBuildModel(m *Model) *Model
+}
+
 type modelBuilder struct {
 	Models map[string]Model
 }
 
-func (b modelBuilder) addModel(st reflect.Type, nameOverride string) {
+// addModelFrom creates and adds a Model to the builder and detects and calls
+// the post build hook for customizations
+func (b modelBuilder) addModelFrom(sample interface{}) {
+	if modelOrNil := b.addModel(reflect.TypeOf(sample), ""); modelOrNil != nil {
+		// allow customizations
+		if buildable, ok := sample.(ModelBuildable); ok {
+			modelOrNil = buildable.PostBuildModel(modelOrNil)
+			b.Models[modelOrNil.Id] = *modelOrNil
+		}
+	}
+}
+
+func (b modelBuilder) addModel(st reflect.Type, nameOverride string) *Model {
 	modelName := b.keyFrom(st)
 	if nameOverride != "" {
 		modelName = nameOverride
 	}
 	// no models needed for primitive types
 	if b.isPrimitiveType(modelName) {
-		return
+		return nil
 	}
 	// see if we already have visited this model
 	if _, ok := b.Models[modelName]; ok {
-		return
+		return nil
 	}
 	sm := Model{
 		Id:         modelName,
@@ -34,11 +52,11 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) {
 	// check for slice or array
 	if st.Kind() == reflect.Slice || st.Kind() == reflect.Array {
 		b.addModel(st.Elem(), "")
-		return
+		return &sm
 	}
 	// check for structure or primitive type
 	if st.Kind() != reflect.Struct {
-		return
+		return &sm
 	}
 	for i := 0; i < st.NumField(); i++ {
 		field := st.Field(i)
@@ -55,9 +73,10 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) {
 			sm.Properties[jsonName] = prop
 		}
 	}
-
 	// update model builder with completed model
 	b.Models[modelName] = sm
+
+	return &sm
 }
 
 func (b modelBuilder) isPropertyRequired(field reflect.StructField) bool {
