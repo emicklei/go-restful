@@ -153,6 +153,19 @@ func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, mod
 	return jsonName, prop
 }
 
+func hasNamedJSONTag(field reflect.StructField) bool {
+	parts := strings.Split(field.Tag.Get("json"), ",")
+	if len(parts) == 0 {
+		return false
+	}
+	for _, s := range parts[1:] {
+		if s == "inline" {
+			return false
+		}
+	}
+	return len(parts[0]) > 0
+}
+
 func (b modelBuilder) buildStructTypeProperty(field reflect.StructField, jsonName string, model *Model) (nameJson string, prop ModelProperty) {
 	fieldType := field.Type
 	// check for anonymous
@@ -163,7 +176,8 @@ func (b modelBuilder) buildStructTypeProperty(field reflect.StructField, jsonNam
 		prop.Ref = &anonType
 		return jsonName, prop
 	}
-	if field.Name == fieldType.Name() && field.Anonymous {
+
+	if field.Name == fieldType.Name() && field.Anonymous && !hasNamedJSONTag(field) {
 		// embedded struct
 		sub := modelBuilder{map[string]Model{}}
 		sub.addModel(fieldType, "")
