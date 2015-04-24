@@ -84,6 +84,49 @@ func TestPrimitiveTypes(t *testing.T) {
  }`)
 }
 
+// clear && go test -v -test.run TestPrimitivePtrTypes ...swagger
+func TestPrimitivePtrTypes(t *testing.T) {
+ type Prims struct {
+  f *float64
+  t *time.Time
+  b *bool
+  s *string
+  i *int
+ }
+ testJsonFromStruct(t, Prims{}, `{
+  "swagger.Prims": {
+   "id": "swagger.Prims",
+   "required": [
+    "f",
+    "t",
+    "b",
+    "s",
+    "i"
+   ],
+   "properties": {
+    "b": {
+     "type": "boolean"
+    },
+    "f": {
+     "type": "number",
+     "format": "double"
+    },
+    "i": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "s": {
+     "type": "string"
+    },
+    "t": {
+     "type": "string",
+     "format": "date-time"
+    }
+   }
+  }
+ }`)
+}
+
 // clear && go test -v -test.run TestS1 ...swagger
 func TestS1(t *testing.T) {
 	type S1 struct {
