@@ -198,10 +198,12 @@ func (b modelBuilder) buildStructTypeProperty(field reflect.StructField, jsonNam
 				model.Required = append(model.Required, k)
 			}
 		}
-		// add all referenced model
+		// add all new referenced models
 		for key, sub := range sub.Models {
 			if key != subKey {
-				b.Models[key] = sub
+				if _, ok := b.Models[key]; !ok {
+					b.Models[key] = sub
+				}
 			}
 		}
 		// empty name signals skip property
@@ -335,14 +337,14 @@ func (b modelBuilder) jsonSchemaType(modelName string) string {
 
 func (b modelBuilder) jsonSchemaFormat(modelName string) string {
 	schemaMap := map[string]string{
-		"int":       "int32",
-		"int32":     "int32",
-		"int64":     "int64",
-		"byte":      "byte",
-		"uint8":     "byte",
-		"float64":   "double",
-		"float32":   "float",
-		"time.Time": "date-time",
+		"int":        "int32",
+		"int32":      "int32",
+		"int64":      "int64",
+		"byte":       "byte",
+		"uint8":      "byte",
+		"float64":    "double",
+		"float32":    "float",
+		"time.Time":  "date-time",
 		"*time.Time": "date-time",
 	}
 	mapped, ok := schemaMap[modelName]
