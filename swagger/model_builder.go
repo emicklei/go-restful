@@ -197,9 +197,11 @@ func (b modelBuilder) buildStructTypeProperty(field reflect.StructField, jsonNam
 			if required {
 				model.Required = append(model.Required, k)
 			}
-			// Add the model type to the global model list
-			if v.Ref != nil {
-				b.Models[*v.Ref] = sub.Models[*v.Ref]
+		}
+		// add all referenced model
+		for key, sub := range sub.Models {
+			if key != subKey {
+				b.Models[key] = sub
 			}
 		}
 		// empty name signals skip property

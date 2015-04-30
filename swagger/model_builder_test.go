@@ -745,6 +745,52 @@ func TestEmbeddedStructA5(t *testing.T) {
  }`)
 }
 
+type D2 struct {
+  id int
+  D []D
+}
+
+type A6 struct {
+  D2 "json:,inline"
+}
+
+// clear && go test -v -test.run TestStructA4 ...swagger
+func TestEmbeddedStructA6(t *testing.T) {
+  testJsonFromStruct(t, A6{}, `{
+  "swagger.A6": {
+   "id": "swagger.A6",
+   "required": [
+    "id",
+    "D"
+   ],
+   "properties": {
+    "D": {
+     "type": "array",
+     "items": {
+      "$ref": "swagger.D"
+     }
+    },
+    "id": {
+     "type": "integer",
+     "format": "int32"
+    }
+   }
+  },
+  "swagger.D": {
+   "id": "swagger.D",
+   "required": [
+    "Id"
+   ],
+   "properties": {
+    "Id": {
+     "type": "integer",
+     "format": "int32"
+    }
+   }
+  }
+ }`)
+}
+
 type ObjectId []byte
 
 type Region struct {
