@@ -5,8 +5,6 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
-	"encoding/json"
-	"encoding/xml"
 	"net/http"
 	"strings"
 )
@@ -76,25 +74,22 @@ func (r *Response) WriteEntity(value interface{}) error {
 	if value == nil { // do not write a nil representation
 		return nil
 	}
+	var e EntityEncoder
 	for _, qualifiedMime := range strings.Split(r.requestAccept, ",") {
 		mime := strings.Trim(strings.Split(qualifiedMime, ";")[0], " ")
 		if 0 == len(mime) || mime == "*/*" {
 			for _, each := range r.routeProduces {
-				if MIME_JSON == each {
-					return r.WriteAsJson(value)
-				}
-				if MIME_XML == each {
-					return r.WriteAsXml(value)
+				e = EntityEncoderForMIME(each)
+				if e != nil {
+					return r.WriteEntityThroughEncoder(value, e)
 				}
 			}
 		} else { // mime is not blank; see if we have a match in Produces
 			for _, each := range r.routeProduces {
 				if mime == each {
-					if MIME_JSON == each {
-						return r.WriteAsJson(value)
-					}
-					if MIME_XML == each {
-						return r.WriteAsXml(value)
+					e = EntityEncoderForMIME(each)
+					if e != nil {
+						return r.WriteEntityThroughEncoder(value, e)
 					}
 				}
 			}
@@ -117,67 +112,50 @@ func (r *Response) WriteEntity(value interface{}) error {
 	return nil
 }
 
-// WriteAsXml is a convenience method for writing a value in xml (requires Xml tags on the value)
-func (r *Response) WriteAsXml(value interface{}) error {
+// WriteEntityThroughEncoder writes a value through the provided EntityEncoder
+func (r *Response) WriteEntityThroughEncoder(value interface{}, e EntityEncoder) error {
 	var output []byte
 	var err error
 
-	if value == nil { // do not write a nil representation
+	if value == nil {
+		// do not write a nil representation
 		return nil
 	}
+	e.SetResponse(r)
 	if r.prettyPrint {
-		output, err = xml.MarshalIndent(value, " ", " ")
+		output, err = e.MarshalIndent(value, " ", " ")
 	} else {
-		output, err = xml.Marshal(value)
+		output, err = e.Marshal(value)
 	}
-
 	if err != nil {
 		return r.WriteError(http.StatusInternalServerError, err)
 	}
-	r.Header().Set(HEADER_ContentType, MIME_XML)
+	r.Header().Set(HEADER_ContentType, e.MIME())
 	if r.statusCode > 0 { // a WriteHeader was intercepted
 		r.ResponseWriter.WriteHeader(r.statusCode)
-	}
-	_, err = r.Write([]byte(xml.Header))
-	if err != nil {
-		return err
 	}
 	if _, err = r.Write(output); err != nil {
 		return err
 	}
 	return nil
+}
+
+// WriteAsXml is a convenience method for writing a value in xml (requires Xml tags on the value)
+func (r *Response) WriteAsXml(value interface{}) error {
+	e := EntityEncoderForMIME(MIME_XML)
+	if e == nil {
+		panic("builtin XML encoder not registered")
+	}
+	return r.WriteEntityThroughEncoder(value, e)
 }
 
 // WriteAsJson is a convenience method for writing a value in json
 func (r *Response) WriteAsJson(value interface{}) error {
-	return r.WriteJson(value, MIME_JSON) // no charset
-}
-
-// WriteJson is a convenience method for writing a value in Json with a given Content-Type
-func (r *Response) WriteJson(value interface{}, contentType string) error {
-	var output []byte
-	var err error
-
-	if value == nil { // do not write a nil representation
-		return nil
+	e := EntityEncoderForMIME(MIME_JSON)
+	if e == nil {
+		panic("builtin JSON encoder not registered")
 	}
-	if r.prettyPrint {
-		output, err = json.MarshalIndent(value, " ", " ")
-	} else {
-		output, err = json.Marshal(value)
-	}
-
-	if err != nil {
-		return r.WriteErrorString(http.StatusInternalServerError, err.Error())
-	}
-	r.Header().Set(HEADER_ContentType, contentType)
-	if r.statusCode > 0 { // a WriteHeader was intercepted
-		r.ResponseWriter.WriteHeader(r.statusCode)
-	}
-	if _, err = r.Write(output); err != nil {
-		return err
-	}
-	return nil
+	return r.WriteEntityThroughEncoder(value, e)
 }
 
 // WriteError write the http status and the error string on the response.
