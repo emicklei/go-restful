@@ -305,8 +305,9 @@ func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse 
 func asSwaggerParameter(param restful.ParameterData) Parameter {
 	return Parameter{
 		DataTypeFields: DataTypeFields{
-			Type:   &param.DataType,
-			Format: asFormat(param.DataType),
+			Type:         &param.DataType,
+			Format:       asFormat(param.DataType),
+			DefaultValue: Special(param.DefaultValue),
 		},
 		Name:        param.Name,
 		Description: param.Description,
