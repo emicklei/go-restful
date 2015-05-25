@@ -16,28 +16,6 @@ type ModelPropertyList struct {
 	List []NamedModelProperty
 }
 
-// NewModelPropertyList returns a new empty ModelPropertyList
-func NewModelPropertyList() *ModelPropertyList {
-	return &ModelPropertyList{[]NamedModelProperty{}}
-}
-
-// MarshalJSON writes the ModelPropertyList as if it was a map[string]ModelProperty
-func (l ModelPropertyList) MarshalJSON() ([]byte, error) {
-	var buf bytes.Buffer
-	buf.WriteString("{\n")
-	for i, each := range l.List {
-		buf.WriteString("\"")
-		buf.WriteString(each.Name)
-		buf.WriteString("\": ")
-		json.NewEncoder(&buf).Encode(each.Property)
-		if i < len(l.List)-1 {
-			buf.WriteString(",\n")
-		}
-	}
-	buf.WriteString("}")
-	return buf.Bytes(), nil
-}
-
 // At returns the ModelPropety by its name unless absent, then ok is false
 func (l *ModelPropertyList) At(name string) (p ModelProperty, ok bool) {
 	for _, each := range l.List {
@@ -67,4 +45,38 @@ func (l *ModelPropertyList) Do(block func(name string, value ModelProperty)) {
 	for _, each := range l.List {
 		block(each.Name, each.Property)
 	}
+}
+
+// MarshalJSON writes the ModelPropertyList as if it was a map[string]ModelProperty
+func (l ModelPropertyList) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	buf.WriteString("{\n")
+	for i, each := range l.List {
+		buf.WriteString("\"")
+		buf.WriteString(each.Name)
+		buf.WriteString("\": ")
+		json.NewEncoder(&buf).Encode(each.Property)
+		if i < len(l.List)-1 {
+			buf.WriteString(",\n")
+		}
+	}
+	buf.WriteString("}")
+	return buf.Bytes(), nil
+}
+
+// UnmarshalJSON reads back a ModelList. This is an expensive operation.
+func (l *ModelPropertyList) UnmarshalJSON(data []byte) error {
+	raw := map[string]interface{}{}
+	json.NewDecoder(bytes.NewReader(data)).Decode(&raw)
+	for k, v := range raw {
+		// produces JSON bytes for each value
+		data, err := json.Marshal(v)
+		if err != nil {
+			return err
+		}
+		var m ModelProperty
+		json.NewDecoder(bytes.NewReader(data)).Decode(&m)
+		l.Put(k, m)
+	}
+	return nil
 }

@@ -114,15 +114,15 @@ type TokenEndpoint struct {
 
 // 5.2 API Declaration
 type ApiDeclaration struct {
-	SwaggerVersion string           `json:"swaggerVersion"`
-	ApiVersion     string           `json:"apiVersion"`
-	BasePath       string           `json:"basePath"`
-	ResourcePath   string           `json:"resourcePath"` // must start with /
-	Apis           []Api            `json:"apis,omitempty"`
-	Models         map[string]Model `json:"models,omitempty"`
-	Produces       []string         `json:"produces,omitempty"`
-	Consumes       []string         `json:"consumes,omitempty"`
-	Authorizations []Authorization  `json:"authorizations,omitempty"`
+	SwaggerVersion string          `json:"swaggerVersion"`
+	ApiVersion     string          `json:"apiVersion"`
+	BasePath       string          `json:"basePath"`
+	ResourcePath   string          `json:"resourcePath"` // must start with /
+	Apis           []Api           `json:"apis,omitempty"`
+	Models         ModelList       `json:"models,omitempty"`
+	Produces       []string        `json:"produces,omitempty"`
+	Consumes       []string        `json:"consumes,omitempty"`
+	Authorizations []Authorization `json:"authorizations,omitempty"`
 }
 
 // 5.2.2 API Object

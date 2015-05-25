@@ -73,7 +73,7 @@ func TestComposeResponseMessages(t *testing.T) {
 	responseErrors[400] = restful.ResponseError{Code: 400, Message: "Bad Request", Model: TestItem{}}
 	route := restful.Route{ResponseErrors: responseErrors}
 	decl := new(ApiDeclaration)
-	decl.Models = map[string]Model{}
+	decl.Models = ModelList{}
 	msgs := composeResponseMessages(route, decl)
 	if msgs[0].ResponseModel != "swagger.TestItem" {
 		t.Errorf("got %s want swagger.TestItem", msgs[0].ResponseModel)
@@ -86,7 +86,7 @@ func TestComposeResponseMessageArray(t *testing.T) {
 	responseErrors[400] = restful.ResponseError{Code: 400, Message: "Bad Request", Model: []TestItem{}}
 	route := restful.Route{ResponseErrors: responseErrors}
 	decl := new(ApiDeclaration)
-	decl.Models = map[string]Model{}
+	decl.Models = ModelList{}
 	msgs := composeResponseMessages(route, decl)
 	if msgs[0].ResponseModel != "array[swagger.TestItem]" {
 		t.Errorf("got %s want swagger.TestItem", msgs[0].ResponseModel)
@@ -95,9 +95,9 @@ func TestComposeResponseMessageArray(t *testing.T) {
 
 func TestIssue78(t *testing.T) {
 	sws := newSwaggerService(Config{})
-	models := map[string]Model{}
+	models := new(ModelList)
 	sws.addModelFromSampleTo(&Operation{}, true, Response{Items: &[]TestItem{}}, models)
-	model, ok := models["swagger.Response"]
+	model, ok := models.At("swagger.Response")
 	if !ok {
 		t.Fatal("missing response model")
 	}
