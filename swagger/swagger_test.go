@@ -104,14 +104,14 @@ func TestIssue78(t *testing.T) {
 	if "swagger.Response" != model.Id {
 		t.Fatal("wrong model id:" + model.Id)
 	}
-	code, ok := model.Properties["Code"]
+	code, ok := model.Properties.At("Code")
 	if !ok {
 		t.Fatal("missing code")
 	}
 	if "integer" != *code.Type {
 		t.Fatal("wrong code type:" + *code.Type)
 	}
-	items, ok := model.Properties["Items"]
+	items, ok := model.Properties.At("Items")
 	if !ok {
 		t.Fatal("missing items")
 	}

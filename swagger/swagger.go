@@ -166,12 +166,12 @@ type ResponseMessage struct {
 
 // 5.2.6, 5.2.7 Models Object
 type Model struct {
-	Id            string                   `json:"id"`
-	Description   string                   `json:"description,omitempty"`
-	Required      []string                 `json:"required,omitempty"`
-	Properties    map[string]ModelProperty `json:"properties"`
-	SubTypes      []string                 `json:"subTypes,omitempty"`
-	Discriminator string                   `json:"discriminator,omitempty"`
+	Id            string            `json:"id"`
+	Description   string            `json:"description,omitempty"`
+	Required      []string          `json:"required,omitempty"`
+	Properties    ModelPropertyList `json:"properties"`
+	SubTypes      []string          `json:"subTypes,omitempty"`
+	Discriminator string            `json:"discriminator,omitempty"`
 }
 
 // 5.2.8 Properties Object

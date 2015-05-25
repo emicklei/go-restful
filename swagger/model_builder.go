@@ -44,7 +44,7 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) *Model {
 	sm := Model{
 		Id:         modelName,
 		Required:   []string{},
-		Properties: map[string]ModelProperty{}}
+		Properties: ModelPropertyList{}}
 
 	// reference the model before further initializing (enables recursive structs)
 	b.Models[modelName] = sm
@@ -70,7 +70,7 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) *Model {
 			if b.isPropertyRequired(field) {
 				sm.Required = append(sm.Required, jsonName)
 			}
-			sm.Properties[jsonName] = prop
+			sm.Properties.Put(jsonName, prop)
 		}
 	}
 	// update model builder with completed model
@@ -184,8 +184,8 @@ func (b modelBuilder) buildStructTypeProperty(field reflect.StructField, jsonNam
 		subKey := sub.keyFrom(fieldType)
 		// merge properties from sub
 		subModel := sub.Models[subKey]
-		for k, v := range subModel.Properties {
-			model.Properties[k] = v
+		subModel.Properties.Do(func(k string, v ModelProperty) {
+			model.Properties.Put(k, v)
 			// if subModel says this property is required then include it
 			required := false
 			for _, each := range subModel.Required {
@@ -197,7 +197,7 @@ func (b modelBuilder) buildStructTypeProperty(field reflect.StructField, jsonNam
 			if required {
 				model.Required = append(model.Required, k)
 			}
-		}
+		})
 		// add all new referenced models
 		for key, sub := range sub.Models {
 			if key != subKey {
