@@ -5,15 +5,18 @@ import (
 	"encoding/json"
 )
 
+// NamedModel associates a name with a Model (not using its Id)
 type NamedModel struct {
 	Name  string
 	Model Model
 }
 
+// ModelList encapsulates a list of NamedModel (association)
 type ModelList struct {
 	List []NamedModel
 }
 
+// Put adds or replaces a Model by its name
 func (l *ModelList) Put(name string, model Model) {
 	for i, each := range l.List {
 		if each.Name == name {
@@ -26,6 +29,7 @@ func (l *ModelList) Put(name string, model Model) {
 	l.List = append(l.List, NamedModel{name, model})
 }
 
+// At returns a Model by its name iff ok is true
 func (l *ModelList) At(name string) (m Model, ok bool) {
 	for _, each := range l.List {
 		if each.Name == name {

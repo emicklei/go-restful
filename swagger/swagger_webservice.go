@@ -15,13 +15,13 @@ import (
 
 type SwaggerService struct {
 	config            Config
-	apiDeclarationMap map[string]ApiDeclaration
+	apiDeclarationMap *ApiDeclarationList
 }
 
 func newSwaggerService(config Config) *SwaggerService {
 	return &SwaggerService{
 		config:            config,
-		apiDeclarationMap: map[string]ApiDeclaration{}}
+		apiDeclarationMap: new(ApiDeclarationList)}
 }
 
 // LogInfo is the function that is called when this package needs to log. It defaults to log.Printf
@@ -66,13 +66,13 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 				// use routes
 				for _, route := range each.Routes() {
 					entry := staticPathFromRoute(route)
-					_, exists := sws.apiDeclarationMap[entry]
+					_, exists := sws.apiDeclarationMap.At(entry)
 					if !exists {
-						sws.apiDeclarationMap[entry] = sws.composeDeclaration(each, entry)
+						sws.apiDeclarationMap.Put(entry, sws.composeDeclaration(each, entry))
 					}
 				}
 			} else { // use root path
-				sws.apiDeclarationMap[each.RootPath()] = sws.composeDeclaration(each, each.RootPath())
+				sws.apiDeclarationMap.Put(each.RootPath(), sws.composeDeclaration(each, each.RootPath()))
 			}
 		}
 	}
@@ -139,19 +139,23 @@ func enableCORS(req *restful.Request, resp *restful.Response, chain *restful.Fil
 
 func (sws SwaggerService) getListing(req *restful.Request, resp *restful.Response) {
 	listing := ResourceListing{SwaggerVersion: swaggerVersion, ApiVersion: sws.config.ApiVersion}
-	for k, v := range sws.apiDeclarationMap {
+	sws.apiDeclarationMap.Do(func(k string, v ApiDeclaration) {
 		ref := Resource{Path: k}
 		if len(v.Apis) > 0 { // use description of first (could still be empty)
 			ref.Description = v.Apis[0].Description
 		}
 		listing.Apis = append(listing.Apis, ref)
-	}
-	sort.Sort(ResourceSorter(listing.Apis))
+	})
+	// sort.Sort(ResourceSorter(listing.Apis))
 	resp.WriteAsJson(listing)
 }
 
 func (sws SwaggerService) getDeclarations(req *restful.Request, resp *restful.Response) {
-	decl := sws.apiDeclarationMap[composeRootPath(req)]
+	decl, ok := sws.apiDeclarationMap.At(composeRootPath(req))
+	if !ok {
+		resp.WriteErrorString(http.StatusNotFound, "ApiDeclaration not found")
+		return
+	}
 	// unless WebServicesUrl is given
 	if len(sws.config.WebServicesUrl) == 0 {
 		// update base path from the actual request
@@ -219,7 +223,7 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix 
 				operation.Parameters = append(operation.Parameters, asSwaggerParameter(param.Data()))
 			}
 			// sort parameters
-			sort.Sort(ParameterSorter(operation.Parameters))
+			// sort.Sort(ParameterSorter(operation.Parameters))
 
 			sws.addModelsFromRouteTo(&operation, route, &decl)
 			api.Operations = append(api.Operations, operation)

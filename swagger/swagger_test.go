@@ -26,7 +26,7 @@ func TestServiceToApi(t *testing.T) {
 		WebServicesUrl:   "http://here.com",
 		ApiPath:          "/apipath",
 		WebServices:      []*restful.WebService{ws},
-		PostBuildHandler: func(in map[string]ApiDeclaration) {},
+		PostBuildHandler: func(in *ApiDeclarationList) {},
 	}
 	sws := newSwaggerService(cfg)
 	decl := sws.composeDeclaration(ws, "/tests")

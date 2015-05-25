@@ -26,7 +26,7 @@ func (l *ModelPropertyList) At(name string) (p ModelProperty, ok bool) {
 	return p, false
 }
 
-// Put add or replaces a ModelProperty with this name
+// Put adds or replaces a ModelProperty with this name
 func (l *ModelPropertyList) Put(name string, prop ModelProperty) {
 	// maybe replace existing
 	for i, each := range l.List {
@@ -64,7 +64,7 @@ func (l ModelPropertyList) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// UnmarshalJSON reads back a ModelList. This is an expensive operation.
+// UnmarshalJSON reads back a ModelPropertyList. This is an expensive operation.
 func (l *ModelPropertyList) UnmarshalJSON(data []byte) error {
 	raw := map[string]interface{}{}
 	json.NewDecoder(bytes.NewReader(data)).Decode(&raw)
