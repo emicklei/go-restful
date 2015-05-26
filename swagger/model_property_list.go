@@ -1,5 +1,9 @@
 package swagger
 
+// Copyright 2015 Ernest Micklei. All rights reserved.
+// Use of this source code is governed by a license
+// that can be found in the LICENSE file.
+
 import (
 	"bytes"
 	"encoding/json"
@@ -50,12 +54,13 @@ func (l *ModelPropertyList) Do(block func(name string, value ModelProperty)) {
 // MarshalJSON writes the ModelPropertyList as if it was a map[string]ModelProperty
 func (l ModelPropertyList) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
+	encoder := json.NewEncoder(&buf)
 	buf.WriteString("{\n")
 	for i, each := range l.List {
 		buf.WriteString("\"")
 		buf.WriteString(each.Name)
 		buf.WriteString("\": ")
-		json.NewEncoder(&buf).Encode(each.Property)
+		encoder.Encode(each.Property)
 		if i < len(l.List)-1 {
 			buf.WriteString(",\n")
 		}

@@ -1,10 +1,15 @@
 package swagger
 
+// Copyright 2015 Ernest Micklei. All rights reserved.
+// Use of this source code is governed by a license
+// that can be found in the LICENSE file.
+
 import (
 	"bytes"
 	"encoding/json"
 )
 
+// ApiDeclarationList maintains an ordered list of ApiDeclaration.
 type ApiDeclarationList struct {
 	List []ApiDeclaration
 }
@@ -43,12 +48,13 @@ func (l *ApiDeclarationList) Do(block func(path string, decl ApiDeclaration)) {
 // MarshalJSON writes the ModelPropertyList as if it was a map[string]ModelProperty
 func (l ApiDeclarationList) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
+	encoder := json.NewEncoder(&buf)
 	buf.WriteString("{\n")
 	for i, each := range l.List {
 		buf.WriteString("\"")
 		buf.WriteString(each.ResourcePath)
 		buf.WriteString("\": ")
-		json.NewEncoder(&buf).Encode(each)
+		encoder.Encode(each)
 		if i < len(l.List)-1 {
 			buf.WriteString(",\n")
 		}

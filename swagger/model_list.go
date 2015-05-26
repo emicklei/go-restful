@@ -1,5 +1,9 @@
 package swagger
 
+// Copyright 2015 Ernest Micklei. All rights reserved.
+// Use of this source code is governed by a license
+// that can be found in the LICENSE file.
+
 import (
 	"bytes"
 	"encoding/json"
@@ -29,7 +33,7 @@ func (l *ModelList) Put(name string, model Model) {
 	l.List = append(l.List, NamedModel{name, model})
 }
 
-// At returns a Model by its name iff ok is true
+// At returns a Model by its name, ok is false if absent
 func (l *ModelList) At(name string) (m Model, ok bool) {
 	for _, each := range l.List {
 		if each.Name == name {
@@ -49,12 +53,13 @@ func (l *ModelList) Do(block func(name string, value Model)) {
 // MarshalJSON writes the ModelList as if it was a map[string]Model
 func (l ModelList) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
+	encoder := json.NewEncoder(&buf)
 	buf.WriteString("{\n")
 	for i, each := range l.List {
 		buf.WriteString("\"")
 		buf.WriteString(each.Name)
 		buf.WriteString("\": ")
-		json.NewEncoder(&buf).Encode(each.Model)
+		encoder.Encode(each.Model)
 		if i < len(l.List)-1 {
 			buf.WriteString(",\n")
 		}
