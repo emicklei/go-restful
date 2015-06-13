@@ -211,7 +211,8 @@ func (r *Response) WriteHeader(httpStatus int) {
 	r.statusCode = httpStatus
 	// if 204 then WriteEntity will not be called so we need to pass this code
 	if http.StatusNoContent == httpStatus ||
-		http.StatusNotModified == httpStatus {
+		http.StatusNotModified == httpStatus ||
+		http.StatusPartialContent == httpStatus {
 		r.ResponseWriter.WriteHeader(httpStatus)
 	}
 }
