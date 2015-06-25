@@ -54,7 +54,6 @@ func (prop *ModelProperty) setPropertyMetadata(field reflect.StructField) {
 	prop.setEnumValues(field)
 	prop.setMinimum(field)
 	prop.setMaximum(field)
-	prop.setMaximum(field)
 	prop.setUniqueItems(field)
 	prop.setDefaultValue(field)
 }
