@@ -58,9 +58,13 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) *Model {
 	if st.Kind() != reflect.Struct {
 		return &sm
 	}
+	modelDescriptions := []string{}
 	for i := 0; i < st.NumField(); i++ {
 		field := st.Field(i)
-		jsonName, prop := b.buildProperty(field, &sm, modelName)
+		jsonName, modelDescription, prop := b.buildProperty(field, &sm, modelName)
+		if len(modelDescription) > 0 {
+			modelDescriptions = append(modelDescriptions, modelDescription)
+		}
 		// add if not omitted
 		if len(jsonName) != 0 {
 			// update Required
@@ -69,6 +73,9 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) *Model {
 			}
 			sm.Properties.Put(jsonName, prop)
 		}
+	}
+	if len(modelDescriptions) != 0 {
+		sm.Description = strings.Join(modelDescriptions, "\n")
 	}
 	// update model builder with completed model
 	b.Models.Put(modelName, sm)
@@ -87,12 +94,17 @@ func (b modelBuilder) isPropertyRequired(field reflect.StructField) bool {
 	return required
 }
 
-func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, modelName string) (jsonName string, prop ModelProperty) {
+func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, modelName string) (jsonName, modelDescription string, prop ModelProperty) {
 	jsonName = b.jsonNameOfField(field)
 	if len(jsonName) == 0 {
 		// empty name signals skip property
-		return "", prop
+		return "", "", prop
 	}
+
+	if tag := field.Tag.Get("modelDescription"); tag != "" {
+		modelDescription = tag
+	}
+
 	fieldType := field.Type
 
 	prop.setPropertyMetadata(field)
@@ -107,7 +119,7 @@ func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, mod
 		if prop.Format == "" {
 			prop.Format = b.jsonSchemaFormat(fieldType.String())
 		}
-		return jsonName, prop
+		return jsonName, modelDescription, prop
 	}
 
 	// check if annotation says it is a string
@@ -116,34 +128,37 @@ func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, mod
 		if len(s) > 1 && s[1] == "string" {
 			stringt := "string"
 			prop.Type = &stringt
-			return jsonName, prop
+			return jsonName, modelDescription, prop
 		}
 	}
 
 	fieldKind := fieldType.Kind()
 	switch {
 	case fieldKind == reflect.Struct:
-		return b.buildStructTypeProperty(field, jsonName, model)
+		jsonName, prop := b.buildStructTypeProperty(field, jsonName, model)
+		return jsonName, modelDescription, prop
 	case fieldKind == reflect.Slice || fieldKind == reflect.Array:
-		return b.buildArrayTypeProperty(field, jsonName, modelName)
+		jsonName, prop := b.buildArrayTypeProperty(field, jsonName, modelName)
+		return jsonName, modelDescription, prop
 	case fieldKind == reflect.Ptr:
-		return b.buildPointerTypeProperty(field, jsonName, modelName)
+		jsonName, prop := b.buildPointerTypeProperty(field, jsonName, modelName)
+		return jsonName, modelDescription, prop
 	case fieldKind == reflect.String:
 		stringt := "string"
 		prop.Type = &stringt
-		return jsonName, prop
+		return jsonName, modelDescription, prop
 	case fieldKind == reflect.Map:
 		// if it's a map, it's unstructured, and swagger 1.2 can't handle it
 		anyt := "any"
 		prop.Type = &anyt
-		return jsonName, prop
+		return jsonName, modelDescription, prop
 	}
 
 	if b.isPrimitiveType(fieldType.String()) {
 		mapped := b.jsonSchemaType(fieldType.String())
 		prop.Type = &mapped
 		prop.Format = b.jsonSchemaFormat(fieldType.String())
-		return jsonName, prop
+		return jsonName, modelDescription, prop
 	}
 	modelType := fieldType.String()
 	prop.Ref = &modelType
@@ -153,7 +168,7 @@ func (b modelBuilder) buildProperty(field reflect.StructField, model *Model, mod
 		prop.Ref = &nestedTypeName
 		b.addModel(fieldType, nestedTypeName)
 	}
-	return jsonName, prop
+	return jsonName, modelDescription, prop
 }
 
 func hasNamedJSONTag(field reflect.StructField) bool {

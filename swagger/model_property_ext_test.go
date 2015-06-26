@@ -5,9 +5,9 @@ import "testing"
 // clear && go test -v -test.run TestThatExtraTagsAreReadIntoModel ...swagger
 func TestThatExtraTagsAreReadIntoModel(t *testing.T) {
 	type Anything struct {
-		Name     string `description:"name"`
+		Name     string `description:"name" modelDescription:"a test"`
 		Size     int    `minimum:"0" maximum:"10"`
-		Stati    string `enum:"off|on" default:"on"`
+		Stati    string `enum:"off|on" default:"on" modelDescription:"more description"`
 		ID       string `unique:"true"`
 		Password string
 	}
@@ -37,6 +37,10 @@ func TestThatExtraTagsAreReadIntoModel(t *testing.T) {
 	}
 	p5, _ := props.Properties.At("Password")
 	if got, want := *p5.Type, "string"; got != want {
+		t.Errorf("got %v want %v", got, want)
+	}
+
+	if got, want := props.Description, "a test\nmore description"; got != want {
 		t.Errorf("got %v want %v", got, want)
 	}
 }
