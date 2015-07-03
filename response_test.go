@@ -73,7 +73,6 @@ func TestStatusIsPassedToResponse(t *testing.T) {
 	for _, each := range []struct {
 		write, read int
 	}{
-		{write: 201, read: 201},
 		{write: 204, read: 204},
 		{write: 304, read: 304},
 		{write: 200, read: 200},
