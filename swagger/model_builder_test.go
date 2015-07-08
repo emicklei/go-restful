@@ -978,3 +978,37 @@ func TestEmbeddedStructPull204(t *testing.T) {
  }
 `)
 }
+
+type AddressWithMethod struct {
+	Country  string `json:"country,omitempty"`
+	PostCode int    `json:"postcode,omitempty"`
+}
+
+func (AddressWithMethod) SwaggerDoc() map[string]string {
+	return map[string]string{
+		"":         "Address doc",
+		"country":  "Country doc",
+		"postcode": "PostCode doc",
+	}
+}
+
+func TestDocInMethodSwaggerDoc(t *testing.T) {
+	expected := `{
+		  "swagger.AddressWithMethod": {
+		   "id": "swagger.AddressWithMethod",
+		   "description": "Address doc",
+		   "properties": {
+		    "country": {
+		     "type": "string",
+		     "description": "Country doc"
+		    },
+		    "postcode": {
+		     "type": "integer",
+		     "format": "int32",
+		     "description": "PostCode doc"
+		    }
+		   }
+		  }
+		 }`
+	testJsonFromStruct(t, AddressWithMethod{}, expected)
+}
