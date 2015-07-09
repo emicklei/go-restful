@@ -16,6 +16,10 @@ type modelBuilder struct {
 	Models *ModelList
 }
 
+type documentable interface {
+	SwaggerDoc() map[string]string
+}
+
 // addModelFrom creates and adds a Model to the builder and detects and calls
 // the post build hook for customizations
 func (b modelBuilder) addModelFrom(sample interface{}) {
@@ -23,6 +27,22 @@ func (b modelBuilder) addModelFrom(sample interface{}) {
 		// allow customizations
 		if buildable, ok := sample.(ModelBuildable); ok {
 			modelOrNil = buildable.PostBuildModel(modelOrNil)
+			b.Models.Put(modelOrNil.Id, *modelOrNil)
+		}
+		// Check if SwaggerDoc method exists and overwrite documentation
+		if docble, ok := sample.(documentable); ok {
+			fullDoc := docble.SwaggerDoc()
+
+			if modelDoc, ok := fullDoc[""]; ok {
+				modelOrNil.Description = modelDoc
+			}
+
+			for i := range modelOrNil.Properties.List {
+				prop := &modelOrNil.Properties.List[i]
+				if propDoc, ok := fullDoc[prop.Name]; ok {
+					prop.Property.Description = propDoc
+				}
+			}
 			b.Models.Put(modelOrNil.Id, *modelOrNil)
 		}
 	}
@@ -58,6 +78,7 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) *Model {
 	if st.Kind() != reflect.Struct {
 		return &sm
 	}
+
 	modelDescriptions := []string{}
 	for i := 0; i < st.NumField(); i++ {
 		field := st.Field(i)
@@ -65,6 +86,7 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) *Model {
 		if len(modelDescription) > 0 {
 			modelDescriptions = append(modelDescriptions, modelDescription)
 		}
+
 		// add if not omitted
 		if len(jsonName) != 0 {
 			// update Required
@@ -74,9 +96,11 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) *Model {
 			sm.Properties.Put(jsonName, prop)
 		}
 	}
+
 	if len(modelDescriptions) != 0 {
 		sm.Description = strings.Join(modelDescriptions, "\n")
 	}
+
 	// update model builder with completed model
 	b.Models.Put(modelName, sm)
 
