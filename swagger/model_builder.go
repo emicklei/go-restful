@@ -282,6 +282,7 @@ func (b modelBuilder) buildArrayTypeProperty(field reflect.StructField, jsonName
 
 func (b modelBuilder) buildPointerTypeProperty(field reflect.StructField, jsonName, modelName string) (nameJson string, prop ModelProperty) {
 	fieldType := field.Type
+	prop.setPropertyMetadata(field)
 
 	// override type of pointer to list-likes
 	if fieldType.Elem().Kind() == reflect.Slice || fieldType.Elem().Kind() == reflect.Array {

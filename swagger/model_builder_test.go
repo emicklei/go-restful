@@ -1012,3 +1012,27 @@ func TestDocInMethodSwaggerDoc(t *testing.T) {
 		 }`
 	testJsonFromStruct(t, AddressWithMethod{}, expected)
 }
+
+type RefDesc struct {
+	f1 *int64 `description:"desc"`
+}
+
+func TestPtrDescription(t *testing.T) {
+	b := RefDesc{}
+	expected := `{
+   "swagger.RefDesc": {
+    "id": "swagger.RefDesc",
+    "required": [
+     "f1"
+    ],
+    "properties": {
+     "f1": {
+      "type": "integer",
+      "format": "int64",
+			"description": "desc"
+     }
+    }
+   }
+  }`
+	testJsonFromStruct(t, b, expected)
+}
