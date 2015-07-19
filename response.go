@@ -28,11 +28,12 @@ type Response struct {
 	statusCode    int      // HTTP status code that has been written explicity (if zero then net/http has written 200)
 	contentLength int      // number of bytes written for the response body
 	prettyPrint   bool     // controls the indentation feature of XML and JSON serialization. It is initialized using var PrettyPrintResponses.
+	err           error    // err property is kept when WriteError is called
 }
 
 // Creates a new response based on a http ResponseWriter.
 func NewResponse(httpWriter http.ResponseWriter) *Response {
-	return &Response{httpWriter, "", []string{}, http.StatusOK, 0, PrettyPrintResponses} // empty content-types
+	return &Response{httpWriter, "", []string{}, http.StatusOK, 0, PrettyPrintResponses, nil} // empty content-types
 }
 
 // If Accept header matching fails, fall back to this type, otherwise
@@ -182,6 +183,7 @@ func (r *Response) WriteJson(value interface{}, contentType string) error {
 
 // WriteError write the http status and the error string on the response.
 func (r *Response) WriteError(httpStatus int, err error) error {
+	r.err = err
 	return r.WriteErrorString(httpStatus, err.Error())
 }
 
@@ -244,4 +246,9 @@ func (r Response) ContentLength() int {
 // CloseNotify is part of http.CloseNotifier interface
 func (r Response) CloseNotify() <-chan bool {
 	return r.ResponseWriter.(http.CloseNotifier).CloseNotify()
+}
+
+// Error returns the err created by WriteError
+func (r Response) Error() error {
+	return r.err
 }
