@@ -20,6 +20,15 @@ type documentable interface {
 	SwaggerDoc() map[string]string
 }
 
+// Check if this structure has a method with signature func (<theModel>) SwaggerDoc() map[string]string
+// If it exists, retrive the documentation and overwrite all struct tag descriptions
+func getDocFromMethodSwaggerDoc2(model reflect.Type) map[string]string {
+	if docable, ok := reflect.New(model).Elem().Interface().(documentable); ok {
+		return docable.SwaggerDoc()
+	}
+	return make(map[string]string)
+}
+
 // addModelFrom creates and adds a Model to the builder and detects and calls
 // the post build hook for customizations
 func (b modelBuilder) addModelFrom(sample interface{}) {
@@ -27,22 +36,6 @@ func (b modelBuilder) addModelFrom(sample interface{}) {
 		// allow customizations
 		if buildable, ok := sample.(ModelBuildable); ok {
 			modelOrNil = buildable.PostBuildModel(modelOrNil)
-			b.Models.Put(modelOrNil.Id, *modelOrNil)
-		}
-		// Check if SwaggerDoc method exists and overwrite documentation
-		if docble, ok := sample.(documentable); ok {
-			fullDoc := docble.SwaggerDoc()
-
-			if modelDoc, ok := fullDoc[""]; ok {
-				modelOrNil.Description = modelDoc
-			}
-
-			for i := range modelOrNil.Properties.List {
-				prop := &modelOrNil.Properties.List[i]
-				if propDoc, ok := fullDoc[prop.Name]; ok {
-					prop.Property.Description = propDoc
-				}
-			}
 			b.Models.Put(modelOrNil.Id, *modelOrNil)
 		}
 	}
@@ -79,7 +72,9 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) *Model {
 		return &sm
 	}
 
+	fullDoc := getDocFromMethodSwaggerDoc2(st)
 	modelDescriptions := []string{}
+
 	for i := 0; i < st.NumField(); i++ {
 		field := st.Field(i)
 		jsonName, modelDescription, prop := b.buildProperty(field, &sm, modelName)
@@ -89,6 +84,10 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) *Model {
 
 		// add if not omitted
 		if len(jsonName) != 0 {
+			// update description
+			if fieldDoc, ok := fullDoc[jsonName]; ok {
+				prop.Description = fieldDoc
+			}
 			// update Required
 			if b.isPropertyRequired(field) {
 				sm.Required = append(sm.Required, jsonName)
@@ -97,7 +96,11 @@ func (b modelBuilder) addModel(st reflect.Type, nameOverride string) *Model {
 		}
 	}
 
-	if len(modelDescriptions) != 0 {
+	// We always overwrite documentation if SwaggerDoc method exists
+	// "" is special for documenting the struct itself
+	if modelDoc, ok := fullDoc[""]; ok {
+		sm.Description = modelDoc
+	} else if len(modelDescriptions) != 0 {
 		sm.Description = strings.Join(modelDescriptions, "\n")
 	}
 
