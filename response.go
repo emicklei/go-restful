@@ -206,10 +206,10 @@ func (r *Response) WriteErrorString(status int, errorReason string) error {
 // - calling WriteEntity,
 // - or directly calling WriteAsXml or WriteAsJson,
 // - or if the status is one for which no response is allowed (i.e.,
-//   204 (http.StatusNoContent) or 304 (http.StatusNotModified))
+//   204 (http.StatusNoContent) or 304 (http.StatusNotModified) or 206 (http.StatusPartialContent)
 func (r *Response) WriteHeader(httpStatus int) {
 	r.statusCode = httpStatus
-	// if 201,204,304 then WriteEntity will not be called so we need to pass this code
+	// if 206,204,304 then WriteEntity will not be called so we need to pass this code
 	if http.StatusNoContent == httpStatus ||
 		http.StatusNotModified == httpStatus ||
 		http.StatusPartialContent == httpStatus {
