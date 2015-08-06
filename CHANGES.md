@@ -1,5 +1,9 @@
 Change history of go-restful
 =
+2015-08-06
+- use sync.Pool for compressors of http response body
+- add Description to Parameter for documentation in Swagger UI
+
 2015-03-20
 - add configurable logging
 
