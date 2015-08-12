@@ -126,11 +126,11 @@ func (r *Request) decodeEntity(reader io.Reader, contentType string, contentEnco
 		return decoder.Decode(entityPointer)
 	}
 
-	// decode XML	
-	if strings.Contains(contentType, MIME_XML) || MIME_XML == defaultRequestContentType
+	// decode XML
+	if strings.Contains(contentType, MIME_XML) || MIME_XML == defaultRequestContentType {
 		return xml.NewDecoder(entityReader).Decode(entityPointer)
-	}	
-	
+	}
+
 	return NewError(http.StatusBadRequest, "Unable to unmarshal content of type:"+contentType)
 }
 
