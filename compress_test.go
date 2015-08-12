@@ -1,8 +1,10 @@
 package restful
 
 import (
+	"bytes"
 	"compress/gzip"
 	"compress/zlib"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -74,6 +76,25 @@ func TestDeflate(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	if got, want := string(data), "Hello World"; got != want {
+		t.Errorf("got %v want %v", got, want)
+	}
+}
+
+func TestGzipDecompressRequestBody(t *testing.T) {
+	b := new(bytes.Buffer)
+	w := newGzipWriter()
+	w.Reset(b)
+	io.WriteString(w, "hello") // -> [31 139 8 0 0 9 110 136 4 255]
+	w.Flush()
+	w.Close()
+
+	gzipReader := gzipReaderPool.Get().(*gzip.Reader)
+	gzipReader.Reset(bytes.NewReader(b.Bytes()))
+	s, err := ioutil.ReadAll(gzipReader)
+	if err != nil {
+		t.Error(err)
+	}
+	if got, want := string(s), "hello"; got != want {
 		t.Errorf("got %v want %v", got, want)
 	}
 }

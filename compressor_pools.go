@@ -31,8 +31,13 @@ var gzipReaderPool = &sync.Pool{
 }
 
 func newGzipReader() *gzip.Reader {
-	// create with an empty bytes reader; it will be replaced before using the gzipReader
-	reader, err := gzip.NewReader(bytes.NewReader([]byte{0x1f}))
+	// create with an empty reader (but with GZIP header); it will be replaced before using the gzipReader
+	w := gzipWriterPool.Get().(*gzip.Writer)
+	b := new(bytes.Buffer)
+	w.Reset(b)
+	w.Flush()
+	w.Close()
+	reader, err := gzip.NewReader(bytes.NewReader(b.Bytes()))
 	if err != nil {
 		panic(err.Error())
 	}
