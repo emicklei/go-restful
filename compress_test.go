@@ -89,9 +89,37 @@ func TestGzipDecompressRequestBody(t *testing.T) {
 	w.Close()
 
 	req := new(Request)
-	doc := make(map[string]interface{})
+	httpRequest, _ := http.NewRequest("GET", "/", bytes.NewReader(b.Bytes()))
+	httpRequest.Header.Set("Content-Type", "application/json")
+	httpRequest.Header.Set("Content-Encoding", "gzip")
+	req.Request = httpRequest
 
-	req.decodeEntity(bytes.NewReader(b.Bytes()), "application/json", "gzip", &doc)
+	doCacheReadEntityBytes = false
+	doc := make(map[string]interface{})
+	req.ReadEntity(&doc)
+
+	if got, want := doc["msg"], "hi"; got != want {
+		t.Errorf("got %v want %v", got, want)
+	}
+}
+
+func TestZlibDecompressRequestBody(t *testing.T) {
+	b := new(bytes.Buffer)
+	w := newZlibWriter()
+	w.Reset(b)
+	io.WriteString(w, `{"msg":"hi"}`)
+	w.Flush()
+	w.Close()
+
+	req := new(Request)
+	httpRequest, _ := http.NewRequest("GET", "/", bytes.NewReader(b.Bytes()))
+	httpRequest.Header.Set("Content-Type", "application/json")
+	httpRequest.Header.Set("Content-Encoding", "deflate")
+	req.Request = httpRequest
+
+	doCacheReadEntityBytes = false
+	doc := make(map[string]interface{})
+	req.ReadEntity(&doc)
 
 	if got, want := doc["msg"], "hi"; got != want {
 		t.Errorf("got %v want %v", got, want)

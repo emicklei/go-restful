@@ -24,6 +24,7 @@ func newGzipWriter() *gzip.Writer {
 }
 
 // gzipReaderPool is used to get reusable zippers.
+// The Get() result must be type asserted to *gzip.Reader.
 var gzipReaderPool = &sync.Pool{
 	New: func() interface{} {
 		return newGzipReader()
@@ -45,6 +46,7 @@ func newGzipReader() *gzip.Reader {
 }
 
 // zlibWriterPool is used to get reusable zippers.
+// The Get() result must be type asserted to *zlib.Writer.
 var zlibWriterPool = &sync.Pool{
 	New: func() interface{} {
 		return newZlibWriter()

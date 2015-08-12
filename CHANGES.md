@@ -1,6 +1,7 @@
 Change history of go-restful
 =
 2015-08-06
+- add support for reading entities from compressed request content
 - use sync.Pool for compressors of http response and request body
 - add Description to Parameter for documentation in Swagger UI
 

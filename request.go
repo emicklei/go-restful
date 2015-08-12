@@ -7,6 +7,7 @@ package restful
 import (
 	"bytes"
 	"compress/gzip"
+	"compress/zlib"
 	"encoding/json"
 	"encoding/xml"
 	"io"
@@ -116,7 +117,11 @@ func (r *Request) decodeEntity(reader io.Reader, contentType string, contentEnco
 		gzipReader.Reset(reader)
 		entityReader = gzipReader
 	} else if ENCODING_DEFLATE == contentEncoding {
-		// TODO
+		zlibReader, err := zlib.NewReader(reader)
+		if err != nil {
+			return err
+		}
+		entityReader = zlibReader
 	}
 
 	// decode JSON
