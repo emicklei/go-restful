@@ -118,19 +118,19 @@ func (r *Request) decodeEntity(reader io.Reader, contentType string, contentEnco
 	} else if ENCODING_DEFLATE == contentEncoding {
 		// TODO
 	}
-	if strings.Contains(contentType, MIME_XML) {
-		return xml.NewDecoder(entityReader).Decode(entityPointer)
-	}
 
-	// decode JSON or XML
+	// decode JSON
 	if strings.Contains(contentType, MIME_JSON) || MIME_JSON == defaultRequestContentType {
 		decoder := json.NewDecoder(entityReader)
 		decoder.UseNumber()
 		return decoder.Decode(entityPointer)
 	}
-	if MIME_XML == defaultRequestContentType {
+
+	// decode XML	
+	if strings.Contains(contentType, MIME_XML) || MIME_XML == defaultRequestContentType
 		return xml.NewDecoder(entityReader).Decode(entityPointer)
-	}
+	}	
+	
 	return NewError(http.StatusBadRequest, "Unable to unmarshal content of type:"+contentType)
 }
 

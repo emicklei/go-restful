@@ -84,17 +84,16 @@ func TestGzipDecompressRequestBody(t *testing.T) {
 	b := new(bytes.Buffer)
 	w := newGzipWriter()
 	w.Reset(b)
-	io.WriteString(w, "hello") // -> [31 139 8 0 0 9 110 136 4 255]
+	io.WriteString(w, `{"msg":"hi"}`)
 	w.Flush()
 	w.Close()
 
-	gzipReader := gzipReaderPool.Get().(*gzip.Reader)
-	gzipReader.Reset(bytes.NewReader(b.Bytes()))
-	s, err := ioutil.ReadAll(gzipReader)
-	if err != nil {
-		t.Error(err)
-	}
-	if got, want := string(s), "hello"; got != want {
+	req := new(Request)
+	doc := make(map[string]interface{})
+
+	req.decodeEntity(bytes.NewReader(b.Bytes()), "application/json", "gzip", &doc)
+
+	if got, want := doc["msg"], "hi"; got != want {
 		t.Errorf("got %v want %v", got, want)
 	}
 }
