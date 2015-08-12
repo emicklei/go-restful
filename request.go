@@ -6,6 +6,7 @@ package restful
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"encoding/xml"
 	"io"
@@ -111,9 +112,11 @@ func (r *Request) decodeEntity(reader io.Reader, contentType string, contentEnco
 
 	// check if the request body needs decompression
 	if ENCODING_GZIP == contentEncoding {
-		entityReader = gzipReaderPool.Get().(io.Reader)
+		gzipReader := gzipReaderPool.Get().(gzip.Reader)
+		gzipReader.Reset(reader)
+		entityReader = gzipReader
 	} else if ENCODING_DEFLATE == contentEncoding {
-		entityReader = gzipReaderPool.Get().(io.Reader)
+		// TODO
 	}
 	if strings.Contains(contentType, MIME_XML) {
 		return xml.NewDecoder(entityReader).Decode(entityPointer)
