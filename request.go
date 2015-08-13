@@ -6,12 +6,9 @@ package restful
 
 import (
 	"bytes"
-	"encoding/json"
-	"encoding/xml"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strings"
 )
 
 var defaultRequestContentType string
@@ -105,17 +102,21 @@ func (r *Request) cachingReadEntity(contentType string, entityPointer interface{
 }
 
 func (r *Request) decodeEntity(reader io.Reader, contentType string, entityPointer interface{}) (err error) {
-	if strings.Contains(contentType, MIME_XML) {
-		return xml.NewDecoder(reader).Decode(entityPointer)
+	var e EntityEncoder
+	b, err := ioutil.ReadAll(reader)
+	e = EntityEncoderForContentType(contentType)
+	if e != nil {
+		e = e.New()
+		e.SetRequest(r)
+		return e.Unmarshal(b, entityPointer)
 	}
-	if strings.Contains(contentType, MIME_JSON) || MIME_JSON == defaultRequestContentType {
-		decoder := json.NewDecoder(reader)
-		decoder.UseNumber()
-		return decoder.Decode(entityPointer)
+	e = EntityEncoderForMIME(defaultRequestContentType)
+	if e != nil {
+		e = e.New()
+		e.SetRequest(r)
+		return e.Unmarshal(b, entityPointer)
 	}
-	if MIME_XML == defaultRequestContentType {
-		return xml.NewDecoder(reader).Decode(entityPointer)
-	}
+
 	return NewError(400, "Unable to unmarshal content of type:"+contentType)
 }
 
