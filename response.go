@@ -205,21 +205,30 @@ func (r *Response) WriteErrorString(status int, errorReason string) error {
 
 // WriteHeader is overridden to remember the Status Code that has been written.
 // Note that using this method, the status value is only written when
-// - calling WriteEntity,
-// - or directly calling WriteAsXml or WriteAsJson,
-// - or if the status is one for which no response is allowed (i.e.,
-//   204 (http.StatusNoContent) or 304 (http.StatusNotModified) or 206 (http.StatusPartialContent)
+//  calling WriteEntity,
+//  or directly calling WriteAsXml or WriteAsJson,
+//  or if the status is one for which no response is allowed:
+//
+//  202 = http.StatusAccepted
+//  204 = http.StatusNoContent
+//  206 = http.StatusPartialContent
+//  304 = http.StatusNotModified
+//
+// If this behavior does not fit your need then you can write to the underlying response, such as:
+//   response.ResponseWriter.WriteHeader(http.StatusAccepted)
 func (r *Response) WriteHeader(httpStatus int) {
 	r.statusCode = httpStatus
-	// if 206,204,304 then WriteEntity will not be called so we need to pass this code
+	// if 202,204,206,304 then WriteEntity will not be called so we need to pass this code
 	if http.StatusNoContent == httpStatus ||
 		http.StatusNotModified == httpStatus ||
-		http.StatusPartialContent == httpStatus {
+		http.StatusPartialContent == httpStatus ||
+		http.StatusAccepted == httpStatus {
 		r.ResponseWriter.WriteHeader(httpStatus)
 	}
 }
 
 // StatusCode returns the code that has been written using WriteHeader.
+// If WriteHeader, WriteEntity or WriteAsXml has not been called (yet) then return 200 OK.
 func (r Response) StatusCode() int {
 	if 0 == r.statusCode {
 		// no status code has been written yet; assume OK
