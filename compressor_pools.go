@@ -7,8 +7,9 @@ import (
 	"sync"
 )
 
-// gzipWriterPool is used to get reusable zippers.
-var gzipWriterPool = &sync.Pool{
+// GzipWriterPool is used to get reusable zippers.
+// The Get() result must be type asserted to *gzip.Writer.
+var GzipWriterPool = &sync.Pool{
 	New: func() interface{} {
 		return newGzipWriter()
 	},
@@ -23,9 +24,9 @@ func newGzipWriter() *gzip.Writer {
 	return writer
 }
 
-// gzipReaderPool is used to get reusable zippers.
+// GzipReaderPool is used to get reusable zippers.
 // The Get() result must be type asserted to *gzip.Reader.
-var gzipReaderPool = &sync.Pool{
+var GzipReaderPool = &sync.Pool{
 	New: func() interface{} {
 		return newGzipReader()
 	},
@@ -33,7 +34,7 @@ var gzipReaderPool = &sync.Pool{
 
 func newGzipReader() *gzip.Reader {
 	// create with an empty reader (but with GZIP header); it will be replaced before using the gzipReader
-	w := gzipWriterPool.Get().(*gzip.Writer)
+	w := GzipWriterPool.Get().(*gzip.Writer)
 	b := new(bytes.Buffer)
 	w.Reset(b)
 	w.Flush()
@@ -45,9 +46,9 @@ func newGzipReader() *gzip.Reader {
 	return reader
 }
 
-// zlibWriterPool is used to get reusable zippers.
+// ZlibWriterPool is used to get reusable zippers.
 // The Get() result must be type asserted to *zlib.Writer.
-var zlibWriterPool = &sync.Pool{
+var ZlibWriterPool = &sync.Pool{
 	New: func() interface{} {
 		return newZlibWriter()
 	},

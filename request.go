@@ -113,7 +113,7 @@ func (r *Request) decodeEntity(reader io.Reader, contentType string, contentEnco
 
 	// check if the request body needs decompression
 	if ENCODING_GZIP == contentEncoding {
-		gzipReader := gzipReaderPool.Get().(*gzip.Reader)
+		gzipReader := GzipReaderPool.Get().(*gzip.Reader)
 		gzipReader.Reset(reader)
 		entityReader = gzipReader
 	} else if ENCODING_DEFLATE == contentEncoding {
