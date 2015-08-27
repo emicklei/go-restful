@@ -213,13 +213,15 @@ func (r *Response) WriteErrorString(status int, errorReason string) error {
 //  204 = http.StatusNoContent
 //  206 = http.StatusPartialContent
 //  304 = http.StatusNotModified
+//  404 = http.StatusNotFound
 //
 // If this behavior does not fit your need then you can write to the underlying response, such as:
 //   response.ResponseWriter.WriteHeader(http.StatusAccepted)
 func (r *Response) WriteHeader(httpStatus int) {
 	r.statusCode = httpStatus
-	// if 202,204,206,304 then WriteEntity will not be called so we need to pass this code
-	if http.StatusNoContent == httpStatus ||
+	// if 202,204,206,304,404 then WriteEntity will not be called so we need to pass this code
+	if http.StatusNotFound == httpStatus ||
+		http.StatusNoContent == httpStatus ||
 		http.StatusNotModified == httpStatus ||
 		http.StatusPartialContent == httpStatus ||
 		http.StatusAccepted == httpStatus {
