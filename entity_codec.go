@@ -3,6 +3,7 @@ package restful
 import (
 	"encoding/json"
 	"encoding/xml"
+	"strings"
 	"sync"
 )
 
@@ -91,6 +92,13 @@ type entityAccessorRegistry struct {
 	writers    map[string]EntityWriter
 }
 
+func init() {
+	jsonRW := entityJSON{}
+	xmlRW := entityXML{}
+	entityRegistry.RegisterEntityAccessors(MIME_JSON, jsonRW, jsonRW)
+	entityRegistry.RegisterEntityAccessors(MIME_XML, xmlRW, xmlRW)
+}
+
 func (r *entityAccessorRegistry) RegisterEntityAccessors(mime string, reader EntityReader, writer EntityWriter) {
 	r.protection.Lock()
 	defer r.protection.Unlock()
@@ -102,6 +110,15 @@ func (r *entityAccessorRegistry) ReaderAt(mime string) (EntityReader, bool) {
 	r.protection.RLock()
 	defer r.protection.RUnlock()
 	er, ok := r.readers[mime]
+	if !ok {
+		// retry with reverse lookup
+		// more expensive but we are in an error situation anyway
+		for k, v := range r.readers {
+			if strings.Contains(mime, k) {
+				return v, true
+			}
+		}
+	}
 	return er, ok
 }
 
@@ -109,5 +126,14 @@ func (r *entityAccessorRegistry) WriterAt(mime string) (EntityWriter, bool) {
 	r.protection.RLock()
 	defer r.protection.RUnlock()
 	ew, ok := r.writers[mime]
+	if !ok {
+		// retry with reverse lookup
+		// more expensive but we are in an error situation anyway
+		for k, v := range r.writers {
+			if strings.Contains(mime, k) {
+				return v, true
+			}
+		}
+	}
 	return ew, ok
 }
