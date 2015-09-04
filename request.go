@@ -79,7 +79,6 @@ func (r *Request) HeaderParameter(name string) string {
 
 // ReadEntity checks the Accept header and reads the content into the entityPointer.
 func (r *Request) ReadEntity(entityPointer interface{}) (err error) {
-	defer r.Request.Body.Close()
 	contentType := r.Request.Header.Get(HEADER_ContentType)
 	contentEncoding := r.Request.Header.Get(HEADER_ContentEncoding)
 

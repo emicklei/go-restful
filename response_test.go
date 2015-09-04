@@ -53,7 +53,7 @@ func TestMeasureContentLengthJsonNotPretty(t *testing.T) {
 	httpWriter := httptest.NewRecorder()
 	resp := Response{httpWriter, "*/*", []string{"*/*"}, 0, 0, false, nil}
 	resp.WriteAsJson(food{"apple"})
-	if resp.ContentLength() != 16 {
+	if resp.ContentLength() != 17 { // 16+1 using the Encoder directly yields another /n
 		t.Errorf("Incorrect measured length:%d", resp.ContentLength())
 	}
 }

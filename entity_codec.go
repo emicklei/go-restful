@@ -16,10 +16,12 @@ type EntityReader interface {
 type EntityWriter interface {
 	// Write an serialized version of the value on the response.
 	// The Response may have a compressing writer.
-	Write(req *Request, resp *Response, v interface{}) error
+	Write(resp *Response, v interface{}) error
 }
 
-type entityJSON struct{}
+type entityJSON struct {
+	contentType string
+}
 
 // Read unmarshalls the value from JSON
 func (e entityJSON) Read(req *Request, v interface{}) error {
@@ -29,7 +31,7 @@ func (e entityJSON) Read(req *Request, v interface{}) error {
 }
 
 // Write marshalls the value to JSON and set the Content-Type Header.
-func (e entityJSON) Write(req *Request, resp *Response, v interface{}) error {
+func (e entityJSON) Write(resp *Response, v interface{}) error {
 	if v == nil {
 		// do not write a nil representation
 		return nil
@@ -40,16 +42,18 @@ func (e entityJSON) Write(req *Request, resp *Response, v interface{}) error {
 		if err != nil {
 			return err
 		}
-		resp.Header().Set(HEADER_ContentType, MIME_JSON)
+		resp.Header().Set(HEADER_ContentType, e.contentType)
 		_, err = resp.Write(output)
 		return err
 	}
 	// not-so-pretty
-	resp.Header().Set(HEADER_ContentType, MIME_JSON)
+	resp.Header().Set(HEADER_ContentType, e.contentType)
 	return json.NewEncoder(resp).Encode(v)
 }
 
-type entityXML struct{}
+type entityXML struct {
+	contentType string
+}
 
 // Read unmarshalls the value from XML
 func (e entityXML) Read(req *Request, v interface{}) error {
@@ -57,7 +61,7 @@ func (e entityXML) Read(req *Request, v interface{}) error {
 }
 
 // Write marshalls the value to JSON and set the Content-Type Header.
-func (e entityXML) Write(req *Request, resp *Response, v interface{}) error {
+func (e entityXML) Write(resp *Response, v interface{}) error {
 	if v == nil { // do not write a nil representation
 		return nil
 	}
@@ -67,7 +71,7 @@ func (e entityXML) Write(req *Request, resp *Response, v interface{}) error {
 		if err != nil {
 			return err
 		}
-		resp.Header().Set(HEADER_ContentType, MIME_XML)
+		resp.Header().Set(HEADER_ContentType, e.contentType)
 		_, err = resp.Write([]byte(xml.Header))
 		if err != nil {
 			return err
@@ -76,7 +80,7 @@ func (e entityXML) Write(req *Request, resp *Response, v interface{}) error {
 		return err
 	}
 	// not-so-pretty
-	resp.Header().Set(HEADER_ContentType, MIME_XML)
+	resp.Header().Set(HEADER_ContentType, e.contentType)
 	return xml.NewEncoder(resp).Encode(v)
 }
 
@@ -93,8 +97,8 @@ type entityAccessorRegistry struct {
 }
 
 func init() {
-	jsonRW := entityJSON{}
-	xmlRW := entityXML{}
+	jsonRW := entityJSON{contentType: MIME_JSON}
+	xmlRW := entityXML{contentType: MIME_XML}
 	entityRegistry.RegisterEntityAccessors(MIME_JSON, jsonRW, jsonRW)
 	entityRegistry.RegisterEntityAccessors(MIME_XML, xmlRW, xmlRW)
 }

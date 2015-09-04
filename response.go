@@ -5,8 +5,6 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
-	"encoding/json"
-	"encoding/xml"
 	"net/http"
 	"strings"
 )
@@ -120,65 +118,20 @@ func (r *Response) WriteEntity(value interface{}) error {
 
 // WriteAsXml is a convenience method for writing a value in xml (requires Xml tags on the value)
 func (r *Response) WriteAsXml(value interface{}) error {
-	var output []byte
-	var err error
-
-	if value == nil { // do not write a nil representation
-		return nil
-	}
-	if r.prettyPrint {
-		output, err = xml.MarshalIndent(value, " ", " ")
-	} else {
-		output, err = xml.Marshal(value)
-	}
-
-	if err != nil {
-		return r.WriteError(http.StatusInternalServerError, err)
-	}
-	r.Header().Set(HEADER_ContentType, MIME_XML)
-	if r.statusCode > 0 { // a WriteHeader was intercepted
-		r.ResponseWriter.WriteHeader(r.statusCode)
-	}
-	_, err = r.Write([]byte(xml.Header))
-	if err != nil {
-		return err
-	}
-	if _, err = r.Write(output); err != nil {
-		return err
-	}
-	return nil
+	r.ResponseWriter.WriteHeader(r.statusCode)
+	return entityXML{MIME_XML}.Write(r, value)
 }
 
 // WriteAsJson is a convenience method for writing a value in json
 func (r *Response) WriteAsJson(value interface{}) error {
-	return r.WriteJson(value, MIME_JSON) // no charset
+	r.ResponseWriter.WriteHeader(r.statusCode)
+	return entityJSON{MIME_JSON}.Write(r, value)
 }
 
 // WriteJson is a convenience method for writing a value in Json with a given Content-Type
 func (r *Response) WriteJson(value interface{}, contentType string) error {
-	var output []byte
-	var err error
-
-	if value == nil { // do not write a nil representation
-		return nil
-	}
-	if r.prettyPrint {
-		output, err = json.MarshalIndent(value, " ", " ")
-	} else {
-		output, err = json.Marshal(value)
-	}
-
-	if err != nil {
-		return r.WriteErrorString(http.StatusInternalServerError, err.Error())
-	}
-	r.Header().Set(HEADER_ContentType, contentType)
-	if r.statusCode > 0 { // a WriteHeader was intercepted
-		r.ResponseWriter.WriteHeader(r.statusCode)
-	}
-	if _, err = r.Write(output); err != nil {
-		return err
-	}
-	return nil
+	r.ResponseWriter.WriteHeader(r.statusCode)
+	return entityJSON{contentType: contentType}.Write(r, value)
 }
 
 // WriteError write the http status and the error string on the response.
@@ -189,7 +142,8 @@ func (r *Response) WriteError(httpStatus int, err error) error {
 
 // WriteServiceError is a convenience method for a responding with a ServiceError and a status
 func (r *Response) WriteServiceError(httpStatus int, err ServiceError) error {
-	r.WriteHeader(httpStatus) // for recording only
+	r.statusCode = httpStatus // for recording only
+	// WriteEntity will write the Header
 	return r.WriteEntity(err)
 }
 
