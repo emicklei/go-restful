@@ -104,6 +104,11 @@ func (r *Response) WriteEntity(value interface{}) error {
 	} else if DefaultResponseMimeType == MIME_XML {
 		return r.WriteAsXml(value)
 	} else {
+		// as the entity registry for a writer
+		writer, ok := entityAccessRegistry.AccessorAt(r.requestAccept)
+		if ok {
+			return writer.Write(r, value)
+		}
 		if trace {
 			traceLogger.Printf("mismatch in mime-types and no defaults; (http)Accept=%v,(route)Produces=%v\n", r.requestAccept, r.routeProduces)
 		}
@@ -119,19 +124,19 @@ func (r *Response) WriteEntity(value interface{}) error {
 // WriteAsXml is a convenience method for writing a value in xml (requires Xml tags on the value)
 func (r *Response) WriteAsXml(value interface{}) error {
 	r.ResponseWriter.WriteHeader(r.statusCode)
-	return entityXML{MIME_XML}.Write(r, value)
+	return XMLEntityCodec{MIME_XML}.Write(r, value)
 }
 
 // WriteAsJson is a convenience method for writing a value in json
 func (r *Response) WriteAsJson(value interface{}) error {
 	r.ResponseWriter.WriteHeader(r.statusCode)
-	return entityJSON{MIME_JSON}.Write(r, value)
+	return JSONEntityCodec{MIME_JSON}.Write(r, value)
 }
 
 // WriteJson is a convenience method for writing a value in Json with a given Content-Type
 func (r *Response) WriteJson(value interface{}, contentType string) error {
 	r.ResponseWriter.WriteHeader(r.statusCode)
-	return entityJSON{contentType: contentType}.Write(r, value)
+	return JSONEntityCodec{ContentType: contentType}.Write(r, value)
 }
 
 // WriteError write the http status and the error string on the response.
