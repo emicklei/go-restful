@@ -124,19 +124,19 @@ func (r *Response) WriteEntity(value interface{}) error {
 // WriteAsXml is a convenience method for writing a value in xml (requires Xml tags on the value)
 func (r *Response) WriteAsXml(value interface{}) error {
 	r.ResponseWriter.WriteHeader(r.statusCode)
-	return XMLEntityCodec{MIME_XML}.Write(r, value)
+	return entityXMLAccess{MIME_XML}.Write(r, value)
 }
 
 // WriteAsJson is a convenience method for writing a value in json
 func (r *Response) WriteAsJson(value interface{}) error {
 	r.ResponseWriter.WriteHeader(r.statusCode)
-	return JSONEntityCodec{MIME_JSON}.Write(r, value)
+	return entityJSONAccess{MIME_JSON}.Write(r, value)
 }
 
 // WriteJson is a convenience method for writing a value in Json with a given Content-Type
 func (r *Response) WriteJson(value interface{}, contentType string) error {
 	r.ResponseWriter.WriteHeader(r.statusCode)
-	return JSONEntityCodec{ContentType: contentType}.Write(r, value)
+	return entityJSONAccess{ContentType: contentType}.Write(r, value)
 }
 
 // WriteError write the http status and the error string on the response.
