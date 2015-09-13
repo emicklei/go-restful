@@ -76,6 +76,11 @@ func (e entityXMLAccess) Read(req *Request, v interface{}) error {
 
 // Write marshalls the value to JSON and set the Content-Type Header.
 func (e entityXMLAccess) Write(resp *Response, v interface{}) error {
+	return writeXML(resp, e.ContentType, v)
+}
+
+// writeXML marshalls the value to JSON and set the Content-Type Header.
+func writeXML(resp *Response, contentType string, v interface{}) error {
 	if v == nil { // do not write a nil representation
 		return nil
 	}
@@ -85,7 +90,7 @@ func (e entityXMLAccess) Write(resp *Response, v interface{}) error {
 		if err != nil {
 			return err
 		}
-		resp.Header().Set(HEADER_ContentType, e.ContentType)
+		resp.Header().Set(HEADER_ContentType, contentType)
 		_, err = resp.Write([]byte(xml.Header))
 		if err != nil {
 			return err
@@ -94,7 +99,7 @@ func (e entityXMLAccess) Write(resp *Response, v interface{}) error {
 		return err
 	}
 	// not-so-pretty
-	resp.Header().Set(HEADER_ContentType, e.ContentType)
+	resp.Header().Set(HEADER_ContentType, contentType)
 	return xml.NewEncoder(resp).Encode(v)
 }
 
@@ -113,6 +118,11 @@ func (e entityJSONAccess) Read(req *Request, v interface{}) error {
 
 // Write marshalls the value to JSON and set the Content-Type Header.
 func (e entityJSONAccess) Write(resp *Response, v interface{}) error {
+	return writeJSON(resp, e.ContentType, v)
+}
+
+// write marshalls the value to JSON and set the Content-Type Header.
+func writeJSON(resp *Response, contentType string, v interface{}) error {
 	if v == nil {
 		// do not write a nil representation
 		return nil
@@ -123,11 +133,11 @@ func (e entityJSONAccess) Write(resp *Response, v interface{}) error {
 		if err != nil {
 			return err
 		}
-		resp.Header().Set(HEADER_ContentType, e.ContentType)
+		resp.Header().Set(HEADER_ContentType, contentType)
 		_, err = resp.Write(output)
 		return err
 	}
 	// not-so-pretty
-	resp.Header().Set(HEADER_ContentType, e.ContentType)
+	resp.Header().Set(HEADER_ContentType, contentType)
 	return json.NewEncoder(resp).Encode(v)
 }

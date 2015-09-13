@@ -76,13 +76,13 @@ func TestStatusIsPassedToResponse(t *testing.T) {
 		{write: 204, read: 204},
 		{write: 304, read: 304},
 		{write: 200, read: 200},
-		{write: 400, read: 200},
+		{write: 400, read: 400},
 	} {
 		httpWriter := httptest.NewRecorder()
 		resp := Response{httpWriter, "*/*", []string{"*/*"}, 0, 0, true, nil}
 		resp.WriteHeader(each.write)
 		if got, want := httpWriter.Code, each.read; got != want {
-			t.Error("got %v want %v", got, want)
+			t.Errorf("got %v want %v", got, want)
 		}
 	}
 }
