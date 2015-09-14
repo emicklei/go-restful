@@ -1,5 +1,9 @@
 Change history of go-restful
 =
+2015-09-14
+- changed behavior of WriteHeader (immediate write) and WriteEntity (no status write)
+- added support for custom EntityReaderWriters.
+
 2015-08-06
 - add support for reading entities from compressed request content
 - use sync.Pool for compressors of http response and request body

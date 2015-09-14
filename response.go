@@ -35,8 +35,7 @@ func NewResponse(httpWriter http.ResponseWriter) *Response {
 	return &Response{httpWriter, "", []string{}, http.StatusOK, 0, PrettyPrintResponses, nil} // empty content-types
 }
 
-// If Accept header matching fails, fall back to this type, otherwise
-// a "406: Not Acceptable" response is returned.
+// If Accept header matching fails, fall back to this type.
 // Valid values are restful.MIME_JSON and restful.MIME_XML
 // Example:
 // 	restful.DefaultResponseContentType(restful.MIME_JSON)
@@ -103,6 +102,9 @@ func (r *Response) EntityWriter() (EntityReaderWriter, bool) {
 		}
 		if DefaultResponseMimeType == MIME_XML {
 			return entityAccessRegistry.AccessorAt(MIME_XML)
+		}
+		if trace {
+			traceLogger.Printf("no registered EntityReaderWriter found for %s", r.requestAccept)
 		}
 	}
 	return writer, ok
