@@ -6,7 +6,6 @@ package restful
 
 import (
 	"bytes"
-	"compress/gzip"
 	"compress/zlib"
 	"io/ioutil"
 	"net/http"
@@ -96,7 +95,8 @@ func (r *Request) ReadEntity(entityPointer interface{}) (err error) {
 
 	// check if the request body needs decompression
 	if ENCODING_GZIP == contentEncoding {
-		gzipReader := GzipReaderPool.Get().(*gzip.Reader)
+		gzipReader := DefaultCompressorProvider.AcquireGzipReader()
+		defer DefaultCompressorProvider.ReleaseGzipReader(gzipReader)
 		gzipReader.Reset(r.Request.Body)
 		r.Request.Body = gzipReader
 	} else if ENCODING_DEFLATE == contentEncoding {

@@ -1,5 +1,9 @@
 package restful
 
+// Copyright 2015 Ernest Micklei. All rights reserved.
+// Use of this source code is governed by a license
+// that can be found in the LICENSE file.
+
 import (
 	"bytes"
 	"compress/gzip"
@@ -7,12 +11,45 @@ import (
 	"sync"
 )
 
-// GzipWriterPool is used to get reusable zippers.
-// The Get() result must be type asserted to *gzip.Writer.
-var GzipWriterPool = &sync.Pool{
-	New: func() interface{} {
-		return newGzipWriter()
-	},
+type SyncPoolCompessors struct {
+	GzipWriterPool *sync.Pool
+	GzipReaderPool *sync.Pool
+	ZlibWriterPool *sync.Pool
+}
+
+func NewSyncPoolCompessors() *SyncPoolCompessors {
+	return &SyncPoolCompessors{
+		GzipWriterPool: &sync.Pool{
+			New: func() interface{} { return newGzipWriter() },
+		},
+		GzipReaderPool: &sync.Pool{
+			New: func() interface{} { return newGzipReader() },
+		},
+		ZlibWriterPool: &sync.Pool{
+			New: func() interface{} { return newZlibWriter() },
+		},
+	}
+}
+
+func (s *SyncPoolCompessors) AcquireGzipWriter() *gzip.Writer {
+	return s.GzipWriterPool.Get().(*gzip.Writer)
+}
+
+func (s *SyncPoolCompessors) ReleaseGzipWriter(w *gzip.Writer) {
+}
+
+func (s *SyncPoolCompessors) AcquireGzipReader() *gzip.Reader {
+	return s.GzipReaderPool.Get().(*gzip.Reader)
+}
+
+func (s *SyncPoolCompessors) ReleaseGzipReader(r *gzip.Reader) {
+}
+
+func (s *SyncPoolCompessors) AcquireZlibWriter() *zlib.Writer {
+	return s.ZlibWriterPool.Get().(*zlib.Writer)
+}
+
+func (s *SyncPoolCompessors) ReleaseZlibWriter(w *zlib.Writer) {
 }
 
 func newGzipWriter() *gzip.Writer {
@@ -24,17 +61,10 @@ func newGzipWriter() *gzip.Writer {
 	return writer
 }
 
-// GzipReaderPool is used to get reusable zippers.
-// The Get() result must be type asserted to *gzip.Reader.
-var GzipReaderPool = &sync.Pool{
-	New: func() interface{} {
-		return newGzipReader()
-	},
-}
-
 func newGzipReader() *gzip.Reader {
 	// create with an empty reader (but with GZIP header); it will be replaced before using the gzipReader
-	w := GzipWriterPool.Get().(*gzip.Writer)
+	w := DefaultCompressorProvider.AcquireGzipWriter()
+	defer DefaultCompressorProvider.ReleaseGzipWriter(w)
 	b := new(bytes.Buffer)
 	w.Reset(b)
 	w.Flush()
@@ -44,14 +74,6 @@ func newGzipReader() *gzip.Reader {
 		panic(err.Error())
 	}
 	return reader
-}
-
-// ZlibWriterPool is used to get reusable zippers.
-// The Get() result must be type asserted to *zlib.Writer.
-var ZlibWriterPool = &sync.Pool{
-	New: func() interface{} {
-		return newZlibWriter()
-	},
 }
 
 func newZlibWriter() *zlib.Writer {
