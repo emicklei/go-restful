@@ -63,8 +63,8 @@ func newGzipWriter() *gzip.Writer {
 
 func newGzipReader() *gzip.Reader {
 	// create with an empty reader (but with GZIP header); it will be replaced before using the gzipReader
-	w := DefaultCompressorProvider.AcquireGzipWriter()
-	defer DefaultCompressorProvider.ReleaseGzipWriter(w)
+	w := currentCompressorProvider.AcquireGzipWriter()
+	defer currentCompressorProvider.ReleaseGzipWriter(w)
 	b := new(bytes.Buffer)
 	w.Reset(b)
 	w.Flush()

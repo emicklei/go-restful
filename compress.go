@@ -48,10 +48,10 @@ func (c *CompressingResponseWriter) CloseNotify() <-chan bool {
 func (c *CompressingResponseWriter) Close() {
 	c.compressor.Close()
 	if ENCODING_GZIP == c.encoding {
-		DefaultCompressorProvider.ReleaseGzipWriter(c.compressor.(*gzip.Writer))
+		currentCompressorProvider.ReleaseGzipWriter(c.compressor.(*gzip.Writer))
 	}
 	if ENCODING_DEFLATE == c.encoding {
-		DefaultCompressorProvider.ReleaseZlibWriter(c.compressor.(*zlib.Writer))
+		currentCompressorProvider.ReleaseZlibWriter(c.compressor.(*zlib.Writer))
 	}
 	// gc hint needed?
 	c.compressor = nil
@@ -82,12 +82,12 @@ func NewCompressingResponseWriter(httpWriter http.ResponseWriter, encoding strin
 	c.writer = httpWriter
 	var err error
 	if ENCODING_GZIP == encoding {
-		w := DefaultCompressorProvider.AcquireGzipWriter()
+		w := currentCompressorProvider.AcquireGzipWriter()
 		w.Reset(httpWriter)
 		c.compressor = w
 		c.encoding = ENCODING_GZIP
 	} else if ENCODING_DEFLATE == encoding {
-		w := DefaultCompressorProvider.AcquireZlibWriter()
+		w := currentCompressorProvider.AcquireZlibWriter()
 		w.Reset(httpWriter)
 		c.compressor = w
 		c.encoding = ENCODING_DEFLATE

@@ -32,8 +32,17 @@ type CompressorProvider interface {
 }
 
 // DefaultCompressorProvider is the actual provider of compressors (zlib or gzip).
-var DefaultCompressorProvider CompressorProvider
+var currentCompressorProvider CompressorProvider
 
 func init() {
-	DefaultCompressorProvider = NewSyncPoolCompessors()
+	currentCompressorProvider = NewSyncPoolCompessors()
+}
+
+func CurrentCompressorProvider() CompressorProvider {
+	return currentCompressorProvider
+}
+
+// CompressorProvider sets the actual provider of compressors (zlib or gzip).
+func SetCompressorProvider(p CompressorProvider) {
+	currentCompressorProvider = p
 }

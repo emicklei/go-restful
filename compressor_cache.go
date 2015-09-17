@@ -18,13 +18,21 @@ type BoundedCachedCompressors struct {
 }
 
 func NewBoundedCachedCompressors(writersCapacity, readersCapacity int) *BoundedCachedCompressors {
-	return &BoundedCachedCompressors{
+	b := &BoundedCachedCompressors{
 		gzipWriters:     make(chan *gzip.Writer, writersCapacity),
 		gzipReaders:     make(chan *gzip.Reader, readersCapacity),
 		zlibWriters:     make(chan *zlib.Writer, writersCapacity),
 		writersCapacity: writersCapacity,
 		readersCapacity: readersCapacity,
 	}
+	for ix := 0; ix < writersCapacity; ix++ {
+		b.gzipWriters <- newGzipWriter()
+		b.zlibWriters <- newZlibWriter()
+	}
+	for ix := 0; ix < readersCapacity; ix++ {
+		b.gzipReaders <- newGzipReader()
+	}
+	return b
 }
 
 func (b *BoundedCachedCompressors) AcquireGzipWriter() *gzip.Writer {
