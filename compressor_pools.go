@@ -11,12 +11,14 @@ import (
 	"sync"
 )
 
+// SyncPoolCompessors is a CompressorProvider that use the standard sync.Pool.
 type SyncPoolCompessors struct {
 	GzipWriterPool *sync.Pool
 	GzipReaderPool *sync.Pool
 	ZlibWriterPool *sync.Pool
 }
 
+// NewSyncPoolCompessors returns a new ("empty") SyncPoolCompessors.
 func NewSyncPoolCompessors() *SyncPoolCompessors {
 	return &SyncPoolCompessors{
 		GzipWriterPool: &sync.Pool{
@@ -63,6 +65,7 @@ func newGzipWriter() *gzip.Writer {
 
 func newGzipReader() *gzip.Reader {
 	// create with an empty reader (but with GZIP header); it will be replaced before using the gzipReader
+	// we can safely use currentCompressProvider because it is set on package initialization.
 	w := currentCompressorProvider.AcquireGzipWriter()
 	defer currentCompressorProvider.ReleaseGzipWriter(w)
 	b := new(bytes.Buffer)
