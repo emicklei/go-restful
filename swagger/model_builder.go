@@ -338,7 +338,7 @@ func (b modelBuilder) keyFrom(st reflect.Type) string {
 
 // see also https://golang.org/ref/spec#Numeric_types
 func (b modelBuilder) isPrimitiveType(modelName string) bool {
-	return strings.Contains("uint8 uint16 uint32 uint64 int int8 int16 int32 int64 float32 float64 bool string byte rune time.Time", modelName)
+	return strings.Contains("uint uint8 uint16 uint32 uint64 int int8 int16 int32 int64 float32 float64 bool string byte rune time.Time", modelName)
 }
 
 // jsonNameOfField returns the name of the field as it should appear in JSON format
@@ -359,6 +359,7 @@ func (b modelBuilder) jsonNameOfField(field reflect.StructField) string {
 // see also http://json-schema.org/latest/json-schema-core.html#anchor8
 func (b modelBuilder) jsonSchemaType(modelName string) string {
 	schemaMap := map[string]string{
+		"uint":   "integer",
 		"uint8":  "integer",
 		"uint16": "integer",
 		"uint32": "integer",
@@ -389,6 +390,7 @@ func (b modelBuilder) jsonSchemaFormat(modelName string) string {
 		"int32":      "int32",
 		"int64":      "int64",
 		"byte":       "byte",
+		"uint":       "integer",
 		"uint8":      "byte",
 		"float64":    "double",
 		"float32":    "float",
