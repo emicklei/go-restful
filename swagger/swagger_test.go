@@ -1,10 +1,44 @@
 package swagger
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/emicklei/go-restful"
 )
+
+func TestInfoStruct_Issue231(t *testing.T) {
+	config := Config{
+		Info: Info{
+			Title:             "Title",
+			Description:       "Description",
+			TermsOfServiceUrl: "http://example.com",
+			Contact:           "example@example.com",
+			License:           "License",
+			LicenseUrl:        "http://example.com/license.txt",
+		},
+	}
+	sws := newSwaggerService(config)
+	str, err := json.Marshal(sws.produceListing())
+	if err != nil {
+		t.Fatal(err)
+	}
+	compareJson(t, string(str), `
+	{
+		"apiVersion": "",
+		"swaggerVersion": "1.2",
+		"apis": null,
+		"info": {
+			"title": "Title",
+			"description": "Description",
+			"termsOfServiceUrl": "http://example.com",
+			"contact": "example@example.com",
+			"license": "License",
+			"licenseUrl": "http://example.com/license.txt"
+		}
+	}
+	`)
+}
 
 // go test -v -test.run TestThatMultiplePathsOnRootAreHandled ...swagger
 func TestThatMultiplePathsOnRootAreHandled(t *testing.T) {
