@@ -48,7 +48,7 @@ type Info struct {
 	TermsOfServiceUrl string `json:"termsOfServiceUrl,omitempty"`
 	Contact           string `json:"contact,omitempty"`
 	License           string `json:"license,omitempty"`
-	LicensUrl         string `json:"licensUrl,omitempty"`
+	LicenseUrl        string `json:"licenseUrl,omitempty"`
 }
 
 // 5.1.5
