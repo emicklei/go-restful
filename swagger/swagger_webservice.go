@@ -214,11 +214,11 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix 
 	pathToRoutes.Do(func(path string, routes []restful.Route) {
 		api := Api{Path: strings.TrimSuffix(path, "/"), Description: ws.Documentation()}
 		for _, route := range routes {
+			// this gets overwritten if there is a write sample
 			operation := Operation{
 				Method:           route.Method,
 				Summary:          route.Doc,
 				Notes:            route.Notes,
-				Type:             asDataType(route.WriteSample),
 				Parameters:       []Parameter{},
 				Nickname:         route.Operation,
 				ResponseMessages: composeResponseMessages(route, &decl)}
@@ -283,6 +283,9 @@ func (sws SwaggerService) addModelsFromRouteTo(operation *Operation, route restf
 	}
 	if route.WriteSample != nil {
 		sws.addModelFromSampleTo(operation, true, route.WriteSample, &decl.Models)
+	} else {
+		tmp := "void"
+		operation.Type = &tmp
 	}
 }
 
@@ -304,14 +307,10 @@ func detectCollectionType(st reflect.Type) (bool, reflect.Type) {
 
 // addModelFromSample creates and adds (or overwrites) a Model from a sample resource
 func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse bool, sample interface{}, models *ModelList) {
-	st := reflect.TypeOf(sample)
-	isCollection, st := detectCollectionType(st)
-	modelName := modelBuilder{}.keyFrom(st)
 	if isResponse {
-		if isCollection {
-			modelName = "array[" + modelName + "]"
-		}
-		operation.Type = modelName
+		type_, items := asDataType(sample)
+		operation.Type = type_
+		operation.Items = items
 	}
 	modelBuilder{models}.addModelFrom(sample)
 }
@@ -385,9 +384,30 @@ func asParamType(kind int) string {
 	return ""
 }
 
-func asDataType(any interface{}) string {
-	if any == nil {
-		return "void"
+func asDataType(any interface{}) (*string, *Item) {
+	// If it's not a collection, return the suggested model name
+	st := reflect.TypeOf(any)
+	isCollection, st := detectCollectionType(st)
+	modelName := modelBuilder{}.keyFrom(st)
+	// if it's not a collection we are done
+	if !isCollection {
+		return &modelName, nil
 	}
-	return reflect.TypeOf(any).Name()
+
+	// XXX: This is not very elegant
+	// We create an Item object referring to the given model
+	models := ModelList{}
+	mb := modelBuilder{&models}
+	mb.addModelFrom(any)
+
+	elemTypeName := mb.getElementTypeName(modelName, "", st)
+	item := new(Item)
+	if mb.isPrimitiveType(elemTypeName) {
+		mapped := mb.jsonSchemaType(elemTypeName)
+		item.Type = &mapped
+	} else {
+		item.Ref = &elemTypeName
+	}
+	tmp := "array"
+	return &tmp, item
 }

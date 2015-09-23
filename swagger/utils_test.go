@@ -23,14 +23,24 @@ func modelsFromStruct(sample interface{}) *ModelList {
 }
 
 func compareJson(t *testing.T, actualJsonAsString string, expectedJsonAsString string) bool {
+	success := false
 	var actualMap map[string]interface{}
 	json.Unmarshal([]byte(actualJsonAsString), &actualMap)
 	var expectedMap map[string]interface{}
 	err := json.Unmarshal([]byte(expectedJsonAsString), &expectedMap)
 	if err != nil {
-		t.Fatalf("Unparsable expected JSON: %s", err)
+		var actualArray []interface{}
+		json.Unmarshal([]byte(actualJsonAsString), &actualArray)
+		var expectedArray []interface{}
+		err := json.Unmarshal([]byte(expectedJsonAsString), &expectedArray)
+		success = reflect.DeepEqual(actualArray, expectedArray)
+		if err != nil {
+			t.Fatalf("Unparsable expected JSON: %s", err)
+		}
+	} else {
+		success = reflect.DeepEqual(actualMap, expectedMap)
 	}
-	if !reflect.DeepEqual(actualMap, expectedMap) {
+	if !success {
 		t.Log("---- expected -----")
 		t.Log(withLineNumbers(expectedJsonAsString))
 		t.Log("---- actual -----")
