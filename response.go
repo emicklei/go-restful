@@ -5,6 +5,7 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 )
@@ -109,18 +110,18 @@ func (r *Response) EntityWriter() (EntityReaderWriter, bool) {
 	return writer, ok
 }
 
-// WriteEntity calls WriteStatusWithEntity with Http Status OK (200) (DEPRECATED)
+// WriteEntity calls WriteStatusWithEntity with Http Status OK (200)
 func (r *Response) WriteEntity(value interface{}) error {
 	return r.WriteStatusAndEntity(http.StatusOK, value)
 }
 
-// WriteEntity marshals the value using the representation denoted by the Accept Header and the registered EntityWriters.
+// WriteStatusAndEntity marshals the value using the representation denoted by the Accept Header and the registered EntityWriters.
 // If no Accept header is specified (or */*) then respond with the Content-Type as specified by the first in the Route.Produces.
 // If an Accept header is specified then respond with the Content-Type as specified by the first in the Route.Produces that is matched with the Accept header.
 // If the value is nil then no response is send except for the Http status. You may want to call WriteHeader(http.StatusNotFound) instead.
-// If there is no writer available that can represent the value in the request MIME type then Http Status NotAcceptable is written.
+// If there is no writer available that can represent the value in the requested MIME type then Http Status NotAcceptable is written.
 // Current implementation ignores any q-parameters in the Accept Header.
-// Returns an error if the value could not be send as the response.
+// Returns an error if the value could not be written on the response.
 func (r *Response) WriteStatusAndEntity(status int, value interface{}) error {
 	writer, ok := r.EntityWriter()
 	if !ok {
@@ -173,6 +174,10 @@ func (r *Response) WriteServiceError(httpStatus int, err ServiceError) error {
 
 // WriteErrorString is a convenience method for an error status with the actual error
 func (r *Response) WriteErrorString(httpStatus int, errorReason string) error {
+	if r.err == nil {
+		// if not called from WriteError
+		r.err = errors.New(errorReason)
+	}
 	r.WriteHeader(httpStatus)
 	if _, err := r.Write([]byte(errorReason)); err != nil {
 		return err

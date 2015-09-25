@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -172,5 +173,23 @@ func TestStatusCreatedAndContentTypeJson_Issue163(t *testing.T) {
 	resp.WriteHeader(http.StatusNotModified)
 	if httpWriter.Code != http.StatusNotModified {
 		t.Errorf("Got %d want %d", httpWriter.Code, http.StatusNotModified)
+	}
+}
+
+func TestWriteHeaderAndEntity_Issue235(t *testing.T) {
+	httpWriter := httptest.NewRecorder()
+	resp := Response{httpWriter, "application/json", []string{"application/json"}, 0, 0, true, nil}
+	var pong = struct {
+		Foo string `json:"foo"`
+	}{Foo: "123"}
+	resp.WriteStatusAndEntity(404, pong)
+	if httpWriter.Code != http.StatusNotFound {
+		t.Errorf("got %d want %d", httpWriter.Code, http.StatusNoContent)
+	}
+	if got, want := httpWriter.Header().Get("Content-Type"), "application/json"; got != want {
+		t.Errorf("got %v want %v", got, want)
+	}
+	if !strings.HasPrefix(httpWriter.Body.String(), "{") {
+		t.Errorf("expected pong struct in json:%s", httpWriter.Body.String())
 	}
 }
