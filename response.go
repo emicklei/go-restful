@@ -5,7 +5,6 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
-	"errors"
 	"net/http"
 	"strings"
 )
@@ -110,38 +109,46 @@ func (r *Response) EntityWriter() (EntityReaderWriter, bool) {
 	return writer, ok
 }
 
-// WriteEntity marshals the value using the representation denoted by the Accept Header and the registered EntityWriters.
-// If no Accept header is specified (or */*) then return the Content-Type as specified by the first in the Route.Produces.
-// If an Accept header is specified then return the Content-Type as specified by the first in the Route.Produces that is matched with the Accept header.
-// If the value is nil then nothing is written. You may want to call WriteHeader(http.StatusNotFound) instead.
-// Current implementation ignores any q-parameters in the Accept Header.
+// WriteEntity calls WriteStatusWithEntity with Http Status OK (200).
 func (r *Response) WriteEntity(value interface{}) error {
+	return r.WriteStatusWithEntity(http.StatusOK, value)
+}
+
+// WriteEntity marshals the value using the representation denoted by the Accept Header and the registered EntityWriters.
+// If no Accept header is specified (or */*) then respond with the Content-Type as specified by the first in the Route.Produces.
+// If an Accept header is specified then respond with the Content-Type as specified by the first in the Route.Produces that is matched with the Accept header.
+// If the value is nil then no response is send except for the Http status. You may want to call WriteHeader(http.StatusNotFound) instead.
+// If there is no writer available that can represent the value in the request MIME type then Http Status NotAcceptable is written.
+// Current implementation ignores any q-parameters in the Accept Header.
+// Returns an error if the value could not be send as the response.
+func (r *Response) WriteStatusWithEntity(status int, value interface{}) error {
 	if value == nil { // do not write a nil representation
 		return nil
 	}
 	writer, ok := r.EntityWriter()
 	if !ok {
-		return errors.New("response cannot be written in an acceptable content-type.")
+		status = http.StatusNotAcceptable
+		value = nil
 	}
-	return writer.Write(r, value)
+	return writer.Write(r, status, value)
 }
 
 // WriteAsXml is a convenience method for writing a value in xml (requires Xml tags on the value)
 // It uses the standard encoding/xml package for marshalling the valuel ; not using a registered EntityReaderWriter.
 func (r *Response) WriteAsXml(value interface{}) error {
-	return writeXML(r, MIME_XML, value)
+	return writeXML(r, http.StatusOK, MIME_XML, value)
 }
 
 // WriteAsJson is a convenience method for writing a value in json.
 // It uses the standard encoding/json package for marshalling the valuel ; not using a registered EntityReaderWriter.
 func (r *Response) WriteAsJson(value interface{}) error {
-	return writeJSON(r, MIME_JSON, value)
+	return writeJSON(r, http.StatusOK, MIME_JSON, value)
 }
 
 // WriteJson is a convenience method for writing a value in Json with a given Content-Type.
 // It uses the standard encoding/json package for marshalling the valuel ; not using a registered EntityReaderWriter.
 func (r *Response) WriteJson(value interface{}, contentType string) error {
-	return writeJSON(r, contentType, value)
+	return writeJSON(r, http.StatusOK, contentType, value)
 }
 
 // WriteError write the http status and the error string on the response.
@@ -152,8 +159,7 @@ func (r *Response) WriteError(httpStatus int, err error) error {
 
 // WriteServiceError is a convenience method for a responding with a status and a ServiceError
 func (r *Response) WriteServiceError(httpStatus int, err ServiceError) error {
-	r.WriteHeader(httpStatus)
-	return r.WriteEntity(err)
+	return r.WriteStatusWithEntity(httpStatus, err)
 }
 
 // WriteErrorString is a convenience method for an error status with the actual error
