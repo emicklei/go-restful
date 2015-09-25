@@ -13,9 +13,7 @@ import (
 // DEPRECATED, use DefaultResponseContentType(mime)
 var DefaultResponseMimeType string
 
-//PrettyPrintResponses controls the indentation feature of XML and JSON
-//serialization in the response methods WriteEntity, WriteAsJson, and
-//WriteAsXml.
+//PrettyPrintResponses controls the indentation feature of XML and JSON serialization
 var PrettyPrintResponses = true
 
 // Response is a wrapper on the actual http ResponseWriter
@@ -169,6 +167,7 @@ func (r *Response) WriteError(httpStatus int, err error) error {
 
 // WriteServiceError is a convenience method for a responding with a status and a ServiceError
 func (r *Response) WriteServiceError(httpStatus int, err ServiceError) error {
+	r.err = err
 	return r.WriteStatusAndEntity(httpStatus, err)
 }
 
@@ -186,13 +185,13 @@ func (r *Response) WriteErrorString(httpStatus int, errorReason string) error {
 }
 
 // WriteHeader is overridden to remember the Status Code that has been written.
+// Changes to the Header of the response have no effect after this.
 func (r *Response) WriteHeader(httpStatus int) {
 	r.statusCode = httpStatus
 	r.ResponseWriter.WriteHeader(httpStatus)
 }
 
 // StatusCode returns the code that has been written using WriteHeader.
-// If WriteHeader, WriteEntity or WriteAsXml has not been called (yet) then return 200 OK.
 func (r Response) StatusCode() int {
 	if 0 == r.statusCode {
 		// no status code has been written yet; assume OK
