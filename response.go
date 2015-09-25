@@ -125,8 +125,8 @@ func (r *Response) WriteEntity(value interface{}) error {
 func (r *Response) WriteStatusAndEntity(status int, value interface{}) error {
 	writer, ok := r.EntityWriter()
 	if !ok {
-		status = http.StatusNotAcceptable
-		value = nil
+		r.WriteHeader(http.StatusNotAcceptable)
+		return nil
 	}
 	return writer.Write(r, status, value)
 }

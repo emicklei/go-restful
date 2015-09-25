@@ -17,7 +17,7 @@ type EntityReaderWriter interface {
 	// The Request may have a decompressing reader. Depends on Content-Encoding.
 	Read(req *Request, v interface{}) error
 
-	// Write an serialized version of the value on the response.
+	// Write a serialized version of the value on the response.
 	// The Response may have a compressing writer. Depends on Accept-Encoding.
 	// status should be a valid Http Status code
 	Write(resp *Response, status int, v interface{}) error
@@ -82,8 +82,9 @@ func (e entityXMLAccess) Write(resp *Response, status int, v interface{}) error 
 
 // writeXML marshalls the value to JSON and set the Content-Type Header.
 func writeXML(resp *Response, status int, contentType string, v interface{}) error {
-	if v == nil { // do not write a nil representation
+	if v == nil {
 		resp.WriteHeader(status)
+		// do not write a nil representation
 		return nil
 	}
 	if resp.prettyPrint {

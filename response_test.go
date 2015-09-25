@@ -193,3 +193,12 @@ func TestWriteHeaderAndEntity_Issue235(t *testing.T) {
 		t.Errorf("expected pong struct in json:%s", httpWriter.Body.String())
 	}
 }
+
+func TestWriteEntityNotAcceptable(t *testing.T) {
+	httpWriter := httptest.NewRecorder()
+	resp := Response{httpWriter, "application/bogus", []string{"application/json"}, 0, 0, true, nil}
+	resp.WriteEntity("done")
+	if httpWriter.Code != http.StatusNotAcceptable {
+		t.Errorf("got %d want %d", httpWriter.Code, http.StatusNotAcceptable)
+	}
+}
