@@ -19,9 +19,35 @@ type SwaggerService struct {
 }
 
 func newSwaggerService(config Config) *SwaggerService {
-	return &SwaggerService{
+	sws := &SwaggerService{
 		config:            config,
 		apiDeclarationMap: new(ApiDeclarationList)}
+
+	// Build all ApiDeclarations
+	for _, each := range config.WebServices {
+		rootPath := each.RootPath()
+		// skip the api service itself
+		if rootPath != config.ApiPath {
+			if rootPath == "" || rootPath == "/" {
+				// use routes
+				for _, route := range each.Routes() {
+					entry := staticPathFromRoute(route)
+					_, exists := sws.apiDeclarationMap.At(entry)
+					if !exists {
+						sws.apiDeclarationMap.Put(entry, sws.composeDeclaration(each, entry))
+					}
+				}
+			} else { // use root path
+				sws.apiDeclarationMap.Put(each.RootPath(), sws.composeDeclaration(each, each.RootPath()))
+			}
+		}
+	}
+
+	// if specified then call the PostBuilderHandler
+	if config.PostBuildHandler != nil {
+		config.PostBuildHandler(sws.apiDeclarationMap)
+	}
+	return sws
 }
 
 // LogInfo is the function that is called when this package needs to log. It defaults to log.Printf
@@ -56,31 +82,6 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 	ws.Route(ws.GET("/{a}/{b}/{c}/{d}/{e}/{f}/{g}").To(sws.getDeclarations))
 	LogInfo("[restful/swagger] listing is available at %v%v", config.WebServicesUrl, config.ApiPath)
 	wsContainer.Add(ws)
-
-	// Build all ApiDeclarations
-	for _, each := range config.WebServices {
-		rootPath := each.RootPath()
-		// skip the api service itself
-		if rootPath != config.ApiPath {
-			if rootPath == "" || rootPath == "/" {
-				// use routes
-				for _, route := range each.Routes() {
-					entry := staticPathFromRoute(route)
-					_, exists := sws.apiDeclarationMap.At(entry)
-					if !exists {
-						sws.apiDeclarationMap.Put(entry, sws.composeDeclaration(each, entry))
-					}
-				}
-			} else { // use root path
-				sws.apiDeclarationMap.Put(each.RootPath(), sws.composeDeclaration(each, each.RootPath()))
-			}
-		}
-	}
-
-	// if specified then call the PostBuilderHandler
-	if config.PostBuildHandler != nil {
-		config.PostBuildHandler(sws.apiDeclarationMap)
-	}
 
 	// Check paths for UI serving
 	if config.StaticHandler == nil && config.SwaggerFilePath != "" && config.SwaggerPath != "" {
@@ -155,7 +156,7 @@ func (sws SwaggerService) produceListing() ResourceListing {
 }
 
 func (sws SwaggerService) getDeclarations(req *restful.Request, resp *restful.Response) {
-	decl, ok := sws.apiDeclarationMap.At(composeRootPath(req))
+	decl, ok := sws.produceDeclarations(composeRootPath(req))
 	if !ok {
 		resp.WriteErrorString(http.StatusNotFound, "ApiDeclaration not found")
 		return
@@ -185,9 +186,27 @@ func (sws SwaggerService) getDeclarations(req *restful.Request, resp *restful.Re
 				scheme = "https"
 			}
 		}
-		(&decl).BasePath = fmt.Sprintf("%s://%s", scheme, host)
+		decl.BasePath = fmt.Sprintf("%s://%s", scheme, host)
 	}
 	resp.WriteAsJson(decl)
+}
+
+func (sws SwaggerService) produceAllDeclarations() map[string]ApiDeclaration {
+	decls := map[string]ApiDeclaration{}
+	sws.apiDeclarationMap.Do(func(k string, v ApiDeclaration) {
+		decls[k] = v
+	})
+	return decls
+}
+
+func (sws SwaggerService) produceDeclarations(route string) (*ApiDeclaration, bool) {
+	fmt.Println(sws.apiDeclarationMap)
+	decl, ok := sws.apiDeclarationMap.At(route)
+	if !ok {
+		return nil, false
+	}
+	decl.BasePath = sws.config.WebServicesUrl
+	return &decl, true
 }
 
 // composeDeclaration uses all routes and parameters to create a ApiDeclaration
