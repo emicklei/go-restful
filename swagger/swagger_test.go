@@ -19,8 +19,8 @@ func TestInfoStruct_Issue231(t *testing.T) {
 			LicenseUrl:        "http://example.com/license.txt",
 		},
 	}
-	sws := newSwaggerService(config)
-	str, err := json.MarshalIndent(sws.produceListing(), "", "    ")
+	sws := NewSwaggerService(config)
+	str, err := json.MarshalIndent(sws.ProduceListing(), "", "    ")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,6 +41,101 @@ func TestInfoStruct_Issue231(t *testing.T) {
 	`)
 }
 
+func TestProduceDeclarations(t *testing.T) {
+	ws1 := new(restful.WebService)
+	ws1.Route(ws1.GET("/one").To(dummy))
+	ws1.Route(ws1.GET("/two").To(dummy))
+
+	config := Config{
+		WebServices: []*restful.WebService{ws1},
+		ApiPath:     "/apipath",
+	}
+	sws := NewSwaggerService(config)
+
+	decl, ok := sws.ProduceDeclarations("/one")
+	if !ok {
+		t.Fatal("could not produce declarations for /one")
+	}
+	str, err := json.MarshalIndent(decl, "", "    ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	compareJson(t, string(str), `
+{
+    "swaggerVersion": "1.2",
+    "apiVersion": "",
+    "basePath": "",
+    "resourcePath": "/one",
+    "apis": [
+        {
+            "path": "/one",
+            "description": "",
+            "operations": [
+                {
+                    "type": "void",
+                    "method": "GET",
+                    "nickname": "dummy",
+                    "parameters": []
+                }
+            ]
+        }
+    ],
+    "models": {}
+}
+`)
+
+	str, err = json.MarshalIndent(sws.ProduceAllDeclarations(), "", "    ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	compareJson(t, string(str), `
+{
+    "/one": {
+        "swaggerVersion": "1.2",
+        "apiVersion": "",
+        "basePath": "",
+        "resourcePath": "/one",
+        "apis": [
+            {
+                "path": "/one",
+                "description": "",
+                "operations": [
+                    {
+                        "type": "void",
+                        "method": "GET",
+                        "nickname": "dummy",
+                        "parameters": []
+                    }
+                ]
+            }
+        ],
+        "models": {}
+    },
+    "/two": {
+        "swaggerVersion": "1.2",
+        "apiVersion": "",
+        "basePath": "",
+        "resourcePath": "/two",
+        "apis": [
+            {
+                "path": "/two",
+                "description": "",
+                "operations": [
+                    {
+                        "type": "void",
+                        "method": "GET",
+                        "nickname": "dummy",
+                        "parameters": []
+                    }
+                ]
+            }
+        ],
+        "models": {}
+    }
+}
+	`)
+}
+
 // go test -v -test.run TestThatMultiplePathsOnRootAreHandled ...swagger
 func TestThatMultiplePathsOnRootAreHandled(t *testing.T) {
 	ws1 := new(restful.WebService)
@@ -52,7 +147,7 @@ func TestThatMultiplePathsOnRootAreHandled(t *testing.T) {
 		ApiPath:        "/apipath",
 		WebServices:    []*restful.WebService{ws1},
 	}
-	sws := newSwaggerService(cfg)
+	sws := NewSwaggerService(cfg)
 	decl := sws.composeDeclaration(ws1, "/")
 	if got, want := len(decl.Apis), 2; got != want {
 		t.Errorf("got %v want %v", got, want)
@@ -70,7 +165,7 @@ func TestWriteSamples(t *testing.T) {
 		ApiPath:        "/apipath",
 		WebServices:    []*restful.WebService{ws1},
 	}
-	sws := newSwaggerService(cfg)
+	sws := NewSwaggerService(cfg)
 
 	decl := sws.composeDeclaration(ws1, "/")
 
@@ -179,7 +274,7 @@ func TestServiceToApi(t *testing.T) {
 		WebServices:      []*restful.WebService{ws},
 		PostBuildHandler: func(in *ApiDeclarationList) {},
 	}
-	sws := newSwaggerService(cfg)
+	sws := NewSwaggerService(cfg)
 	decl := sws.composeDeclaration(ws, "/tests")
 	// checks
 	if decl.ApiVersion != "1.2.3" {
@@ -246,7 +341,7 @@ func TestComposeResponseMessageArray(t *testing.T) {
 }
 
 func TestIssue78(t *testing.T) {
-	sws := newSwaggerService(Config{})
+	sws := NewSwaggerService(Config{})
 	models := new(ModelList)
 	sws.addModelFromSampleTo(&Operation{}, true, Response{Items: &[]TestItem{}}, models)
 	model, ok := models.At("swagger.Response")
