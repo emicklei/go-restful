@@ -1,5 +1,8 @@
 Change history of go-restful
 =
+2015-09-27
+- rename new WriteStatusAnd... to WriteHeaderAnd... for consistency
+
 2015-09-25
 - fixed problem with changing Header after WriteHeader (issue 235)
 

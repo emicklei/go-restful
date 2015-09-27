@@ -182,7 +182,7 @@ func TestWriteHeaderAndEntity_Issue235(t *testing.T) {
 	var pong = struct {
 		Foo string `json:"foo"`
 	}{Foo: "123"}
-	resp.WriteStatusAndEntity(404, pong)
+	resp.WriteHeaderAndEntity(404, pong)
 	if httpWriter.Code != http.StatusNotFound {
 		t.Errorf("got %d want %d", httpWriter.Code, http.StatusNoContent)
 	}

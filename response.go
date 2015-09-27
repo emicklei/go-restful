@@ -108,19 +108,19 @@ func (r *Response) EntityWriter() (EntityReaderWriter, bool) {
 	return writer, ok
 }
 
-// WriteEntity calls WriteStatusWithEntity with Http Status OK (200)
+// WriteEntity calls WriteHeaderAndEntity with Http Status OK (200)
 func (r *Response) WriteEntity(value interface{}) error {
-	return r.WriteStatusAndEntity(http.StatusOK, value)
+	return r.WriteHeaderAndEntity(http.StatusOK, value)
 }
 
-// WriteStatusAndEntity marshals the value using the representation denoted by the Accept Header and the registered EntityWriters.
+// WriteHeaderAndEntity marshals the value using the representation denoted by the Accept Header and the registered EntityWriters.
 // If no Accept header is specified (or */*) then respond with the Content-Type as specified by the first in the Route.Produces.
 // If an Accept header is specified then respond with the Content-Type as specified by the first in the Route.Produces that is matched with the Accept header.
 // If the value is nil then no response is send except for the Http status. You may want to call WriteHeader(http.StatusNotFound) instead.
 // If there is no writer available that can represent the value in the requested MIME type then Http Status NotAcceptable is written.
 // Current implementation ignores any q-parameters in the Accept Header.
 // Returns an error if the value could not be written on the response.
-func (r *Response) WriteStatusAndEntity(status int, value interface{}) error {
+func (r *Response) WriteHeaderAndEntity(status int, value interface{}) error {
 	writer, ok := r.EntityWriter()
 	if !ok {
 		r.WriteHeader(http.StatusNotAcceptable)
@@ -135,9 +135,9 @@ func (r *Response) WriteAsXml(value interface{}) error {
 	return writeXML(r, http.StatusOK, MIME_XML, value)
 }
 
-// WriteStatusAndXml is a convenience method for writing a status and value in xml (requires Xml tags on the value)
+// WriteHeaderAndXml is a convenience method for writing a status and value in xml (requires Xml tags on the value)
 // It uses the standard encoding/xml package for marshalling the valuel ; not using a registered EntityReaderWriter.
-func (r *Response) WriteStatusAndXml(status int, value interface{}) error {
+func (r *Response) WriteHeaderAndXml(status int, value interface{}) error {
 	return writeXML(r, status, MIME_XML, value)
 }
 
@@ -153,9 +153,9 @@ func (r *Response) WriteJson(value interface{}, contentType string) error {
 	return writeJSON(r, http.StatusOK, contentType, value)
 }
 
-// WriteStatusAndJson is a convenience method for writing the status and a value in Json with a given Content-Type.
+// WriteHeaderAndJson is a convenience method for writing the status and a value in Json with a given Content-Type.
 // It uses the standard encoding/json package for marshalling the value ; not using a registered EntityReaderWriter.
-func (r *Response) WriteStatusAndJson(status int, value interface{}, contentType string) error {
+func (r *Response) WriteHeaderAndJson(status int, value interface{}, contentType string) error {
 	return writeJSON(r, status, contentType, value)
 }
 
@@ -168,7 +168,7 @@ func (r *Response) WriteError(httpStatus int, err error) error {
 // WriteServiceError is a convenience method for a responding with a status and a ServiceError
 func (r *Response) WriteServiceError(httpStatus int, err ServiceError) error {
 	r.err = err
-	return r.WriteStatusAndEntity(httpStatus, err)
+	return r.WriteHeaderAndEntity(httpStatus, err)
 }
 
 // WriteErrorString is a convenience method for an error status with the actual error
