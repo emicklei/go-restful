@@ -22,7 +22,7 @@ func (kv *keyvalue) Read(req *Request, v interface{}) error {
 	return nil
 }
 
-func (kv *keyvalue) Write(resp *Response, v interface{}) error {
+func (kv *keyvalue) Write(resp *Response, status int, v interface{}) error {
 	t := reflect.TypeOf(v)
 	rv := reflect.ValueOf(v)
 	for ix := 0; ix < t.NumField(); ix++ {

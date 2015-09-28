@@ -26,7 +26,10 @@ func compareJson(t *testing.T, actualJsonAsString string, expectedJsonAsString s
 	var actualMap map[string]interface{}
 	json.Unmarshal([]byte(actualJsonAsString), &actualMap)
 	var expectedMap map[string]interface{}
-	json.Unmarshal([]byte(expectedJsonAsString), &expectedMap)
+	err := json.Unmarshal([]byte(expectedJsonAsString), &expectedMap)
+	if err != nil {
+		t.Fatalf("Unparsable expected JSON: %s", err)
+	}
 	if !reflect.DeepEqual(actualMap, expectedMap) {
 		t.Log("---- expected -----")
 		t.Log(withLineNumbers(expectedJsonAsString))
