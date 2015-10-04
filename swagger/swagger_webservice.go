@@ -213,12 +213,14 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix 
 	}
 	pathToRoutes.Do(func(path string, routes []restful.Route) {
 		api := Api{Path: strings.TrimSuffix(path, "/"), Description: ws.Documentation()}
+		voidString := "void"
 		for _, route := range routes {
-			// this gets overwritten if there is a write sample
 			operation := Operation{
-				Method:           route.Method,
-				Summary:          route.Doc,
-				Notes:            route.Notes,
+				Method:  route.Method,
+				Summary: route.Doc,
+				Notes:   route.Notes,
+				// Type gets overwritten if there is a write sample
+				DataTypeFields:   DataTypeFields{Type: &voidString},
 				Parameters:       []Parameter{},
 				Nickname:         route.Operation,
 				ResponseMessages: composeResponseMessages(route, &decl)}
@@ -283,9 +285,6 @@ func (sws SwaggerService) addModelsFromRouteTo(operation *Operation, route restf
 	}
 	if route.WriteSample != nil {
 		sws.addModelFromSampleTo(operation, true, route.WriteSample, &decl.Models)
-	} else {
-		tmp := "void"
-		operation.Type = &tmp
 	}
 }
 
