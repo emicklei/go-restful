@@ -320,7 +320,7 @@ func asSwaggerParameter(param restful.ParameterData) Parameter {
 	return Parameter{
 		DataTypeFields: DataTypeFields{
 			Type:         &param.DataType,
-			Format:       asFormat(param.DataType),
+			Format:       asFormat(param.DataType, param.DataFormat),
 			DefaultValue: Special(param.DefaultValue),
 		},
 		Name:        param.Name,
@@ -365,7 +365,10 @@ func composeRootPath(req *restful.Request) string {
 	return path + "/" + g
 }
 
-func asFormat(name string) string {
+func asFormat(dataType string, dataFormat string) string {
+	if dataFormat != "" {
+		return dataFormat
+	}
 	return "" // TODO
 }
 
