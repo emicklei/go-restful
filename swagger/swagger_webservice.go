@@ -19,9 +19,35 @@ type SwaggerService struct {
 }
 
 func newSwaggerService(config Config) *SwaggerService {
-	return &SwaggerService{
+	sws := &SwaggerService{
 		config:            config,
 		apiDeclarationMap: new(ApiDeclarationList)}
+
+	// Build all ApiDeclarations
+	for _, each := range config.WebServices {
+		rootPath := each.RootPath()
+		// skip the api service itself
+		if rootPath != config.ApiPath {
+			if rootPath == "" || rootPath == "/" {
+				// use routes
+				for _, route := range each.Routes() {
+					entry := staticPathFromRoute(route)
+					_, exists := sws.apiDeclarationMap.At(entry)
+					if !exists {
+						sws.apiDeclarationMap.Put(entry, sws.composeDeclaration(each, entry))
+					}
+				}
+			} else { // use root path
+				sws.apiDeclarationMap.Put(each.RootPath(), sws.composeDeclaration(each, each.RootPath()))
+			}
+		}
+	}
+
+	// if specified then call the PostBuilderHandler
+	if config.PostBuildHandler != nil {
+		config.PostBuildHandler(sws.apiDeclarationMap)
+	}
+	return sws
 }
 
 // LogInfo is the function that is called when this package needs to log. It defaults to log.Printf
@@ -56,31 +82,6 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 	ws.Route(ws.GET("/{a}/{b}/{c}/{d}/{e}/{f}/{g}").To(sws.getDeclarations))
 	LogInfo("[restful/swagger] listing is available at %v%v", config.WebServicesUrl, config.ApiPath)
 	wsContainer.Add(ws)
-
-	// Build all ApiDeclarations
-	for _, each := range config.WebServices {
-		rootPath := each.RootPath()
-		// skip the api service itself
-		if rootPath != config.ApiPath {
-			if rootPath == "" || rootPath == "/" {
-				// use routes
-				for _, route := range each.Routes() {
-					entry := staticPathFromRoute(route)
-					_, exists := sws.apiDeclarationMap.At(entry)
-					if !exists {
-						sws.apiDeclarationMap.Put(entry, sws.composeDeclaration(each, entry))
-					}
-				}
-			} else { // use root path
-				sws.apiDeclarationMap.Put(each.RootPath(), sws.composeDeclaration(each, each.RootPath()))
-			}
-		}
-	}
-
-	// if specified then call the PostBuilderHandler
-	if config.PostBuildHandler != nil {
-		config.PostBuildHandler(sws.apiDeclarationMap)
-	}
 
 	// Check paths for UI serving
 	if config.StaticHandler == nil && config.SwaggerFilePath != "" && config.SwaggerPath != "" {
@@ -155,7 +156,7 @@ func (sws SwaggerService) produceListing() ResourceListing {
 }
 
 func (sws SwaggerService) getDeclarations(req *restful.Request, resp *restful.Response) {
-	decl, ok := sws.apiDeclarationMap.At(composeRootPath(req))
+	decl, ok := sws.produceDeclarations(composeRootPath(req))
 	if !ok {
 		resp.WriteErrorString(http.StatusNotFound, "ApiDeclaration not found")
 		return
@@ -185,9 +186,27 @@ func (sws SwaggerService) getDeclarations(req *restful.Request, resp *restful.Re
 				scheme = "https"
 			}
 		}
-		(&decl).BasePath = fmt.Sprintf("%s://%s", scheme, host)
+		decl.BasePath = fmt.Sprintf("%s://%s", scheme, host)
 	}
 	resp.WriteAsJson(decl)
+}
+
+func (sws SwaggerService) produceAllDeclarations() map[string]ApiDeclaration {
+	decls := map[string]ApiDeclaration{}
+	sws.apiDeclarationMap.Do(func(k string, v ApiDeclaration) {
+		decls[k] = v
+	})
+	return decls
+}
+
+func (sws SwaggerService) produceDeclarations(route string) (*ApiDeclaration, bool) {
+	fmt.Println(sws.apiDeclarationMap)
+	decl, ok := sws.apiDeclarationMap.At(route)
+	if !ok {
+		return nil, false
+	}
+	decl.BasePath = sws.config.WebServicesUrl
+	return &decl, true
 }
 
 // composeDeclaration uses all routes and parameters to create a ApiDeclaration
@@ -213,12 +232,14 @@ func (sws SwaggerService) composeDeclaration(ws *restful.WebService, pathPrefix 
 	}
 	pathToRoutes.Do(func(path string, routes []restful.Route) {
 		api := Api{Path: strings.TrimSuffix(path, "/"), Description: ws.Documentation()}
+		voidString := "void"
 		for _, route := range routes {
 			operation := Operation{
-				Method:           route.Method,
-				Summary:          route.Doc,
-				Notes:            route.Notes,
-				Type:             asDataType(route.WriteSample),
+				Method:  route.Method,
+				Summary: route.Doc,
+				Notes:   route.Notes,
+				// Type gets overwritten if there is a write sample
+				DataTypeFields:   DataTypeFields{Type: &voidString},
 				Parameters:       []Parameter{},
 				Nickname:         route.Operation,
 				ResponseMessages: composeResponseMessages(route, &decl)}
@@ -304,14 +325,10 @@ func detectCollectionType(st reflect.Type) (bool, reflect.Type) {
 
 // addModelFromSample creates and adds (or overwrites) a Model from a sample resource
 func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse bool, sample interface{}, models *ModelList) {
-	st := reflect.TypeOf(sample)
-	isCollection, st := detectCollectionType(st)
-	modelName := modelBuilder{}.keyFrom(st)
 	if isResponse {
-		if isCollection {
-			modelName = "array[" + modelName + "]"
-		}
-		operation.Type = modelName
+		type_, items := asDataType(sample)
+		operation.Type = type_
+		operation.Items = items
 	}
 	modelBuilder{models}.addModelFrom(sample)
 }
@@ -388,9 +405,30 @@ func asParamType(kind int) string {
 	return ""
 }
 
-func asDataType(any interface{}) string {
-	if any == nil {
-		return "void"
+func asDataType(any interface{}) (*string, *Item) {
+	// If it's not a collection, return the suggested model name
+	st := reflect.TypeOf(any)
+	isCollection, st := detectCollectionType(st)
+	modelName := modelBuilder{}.keyFrom(st)
+	// if it's not a collection we are done
+	if !isCollection {
+		return &modelName, nil
 	}
-	return reflect.TypeOf(any).Name()
+
+	// XXX: This is not very elegant
+	// We create an Item object referring to the given model
+	models := ModelList{}
+	mb := modelBuilder{&models}
+	mb.addModelFrom(any)
+
+	elemTypeName := mb.getElementTypeName(modelName, "", st)
+	item := new(Item)
+	if mb.isPrimitiveType(elemTypeName) {
+		mapped := mb.jsonSchemaType(elemTypeName)
+		item.Type = &mapped
+	} else {
+		item.Ref = &elemTypeName
+	}
+	tmp := "array"
+	return &tmp, item
 }

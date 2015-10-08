@@ -134,7 +134,7 @@ type Api struct {
 
 // 5.2.3 Operation Object
 type Operation struct {
-	Type             string            `json:"type"`
+	DataTypeFields
 	Method           string            `json:"method"`
 	Summary          string            `json:"summary,omitempty"`
 	Notes            string            `json:"notes,omitempty"`
