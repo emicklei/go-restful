@@ -200,7 +200,6 @@ func (sws SwaggerService) produceAllDeclarations() map[string]ApiDeclaration {
 }
 
 func (sws SwaggerService) produceDeclarations(route string) (*ApiDeclaration, bool) {
-	fmt.Println(sws.apiDeclarationMap)
 	decl, ok := sws.apiDeclarationMap.At(route)
 	if !ok {
 		return nil, false
