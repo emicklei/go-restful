@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strings"
 )
 
 // RouterJSR311 implements the flow for matching Requests to Routes (and consequently Resource Functions)
@@ -23,8 +24,9 @@ func (r RouterJSR311) SelectRoute(
 	webServices []*WebService,
 	httpRequest *http.Request) (selectedService *WebService, selectedRoute *Route, err error) {
 
+	rawPath := strings.Split(httpRequest.RequestURI,"?")[0]
 	// Identify the root resource class (WebService)
-	dispatcher, finalMatch, err := r.detectDispatcher(httpRequest.URL.Path, webServices)
+	dispatcher, finalMatch, err := r.detectDispatcher(rawPath, webServices)
 	if err != nil {
 		return nil, nil, NewError(http.StatusNotFound, "")
 	}

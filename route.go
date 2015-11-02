@@ -7,6 +7,7 @@ package restful
 import (
 	"bytes"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -43,7 +44,8 @@ func (r *Route) postBuild() {
 
 // Create Request and Response from their http versions
 func (r *Route) wrapRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request) (*Request, *Response) {
-	params := r.extractParameters(httpRequest.URL.Path)
+	rawPath := strings.Split(httpRequest.RequestURI, "?")[0]
+	params := r.extractParameters(rawPath)
 	wrappedRequest := NewRequest(httpRequest)
 	wrappedRequest.pathParameters = params
 	wrappedRequest.selectedRoutePath = r.Path
@@ -174,7 +176,11 @@ func tokenizePath(path string) []string {
 	if "/" == path {
 		return []string{}
 	}
-	return strings.Split(strings.Trim(path, "/"), "/")
+	parts := strings.Split(strings.Trim(path, "/"), "/")
+	for index, part := range parts {
+		parts[index],_ = url.QueryUnescape(part)
+	}
+	return parts
 }
 
 // for debugging
