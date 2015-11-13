@@ -4,11 +4,13 @@ import "testing"
 
 // clear && go test -v -test.run TestThatExtraTagsAreReadIntoModel ...swagger
 func TestThatExtraTagsAreReadIntoModel(t *testing.T) {
+	type fakeint int
 	type Anything struct {
-		Name     string `description:"name" modelDescription:"a test"`
-		Size     int    `minimum:"0" maximum:"10"`
-		Stati    string `enum:"off|on" default:"on" modelDescription:"more description"`
-		ID       string `unique:"true"`
+		Name     string  `description:"name" modelDescription:"a test"`
+		Size     int     `minimum:"0" maximum:"10"`
+		Stati    string  `enum:"off|on" default:"on" modelDescription:"more description"`
+		ID       string  `unique:"true"`
+		FakeInt  fakeint `type:"integer"`
 		Password string
 	}
 	m := modelsFromStruct(Anything{})
@@ -37,6 +39,10 @@ func TestThatExtraTagsAreReadIntoModel(t *testing.T) {
 	}
 	p5, _ := props.Properties.At("Password")
 	if got, want := *p5.Type, "string"; got != want {
+		t.Errorf("got %v want %v", got, want)
+	}
+	p6, _ := props.Properties.At("FakeInt")
+	if got, want := *p6.Type, "integer"; got != want {
 		t.Errorf("got %v want %v", got, want)
 	}
 
