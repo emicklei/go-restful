@@ -5,6 +5,8 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
+	"fmt"
+	"net/http"
 	"os"
 	"reflect"
 	"runtime"
@@ -50,6 +52,70 @@ func (b *RouteBuilder) Do(oneArgBlocks ...func(*RouteBuilder)) *RouteBuilder {
 // If this route is matched with the incoming Http Request then call this function with the *Request,*Response pair. Required.
 func (b *RouteBuilder) To(function RouteFunction) *RouteBuilder {
 	b.function = function
+	return b
+}
+
+func typeIsRequestResponseFunc(t reflect.Type) bool {
+	return t.NumIn() == 3 &&
+		t.In(0).Kind() == reflect.Ptr &&
+		t.In(0).Elem().Kind() == reflect.Struct &&
+		t.In(1) == reflect.TypeOf(&Request{}) &&
+		t.In(2) == reflect.TypeOf(&Response{}) &&
+		t.NumOut() == 3 &&
+		t.Out(0).Kind() == reflect.Ptr &&
+		t.Out(0).Elem().Kind() == reflect.Struct &&
+		t.Out(1).Kind() == reflect.Int &&
+		t.Out(2).Implements(reflect.TypeOf((*error)(nil)).Elem())
+}
+
+func typeIsResponseFunc(t reflect.Type) bool {
+	return t.NumIn() == 2 &&
+		t.In(0) == reflect.TypeOf(&Request{}) &&
+		t.In(1) == reflect.TypeOf(&Response{}) &&
+		t.NumOut() == 3 &&
+		t.Out(0).Kind() == reflect.Ptr &&
+		t.Out(0).Elem().Kind() == reflect.Struct &&
+		t.Out(1).Kind() == reflect.Int &&
+		t.Out(2).Implements(reflect.TypeOf((*error)(nil)).Elem())
+}
+
+// TODO: allow custom error type that can be serialized
+func (b *RouteBuilder) Magic(function interface{}) *RouteBuilder {
+	v := reflect.ValueOf(function)
+	t := reflect.TypeOf(function)
+	if !typeIsRequestResponseFunc(t) && !typeIsResponseFunc(t) {
+		panic(fmt.Sprintf(`Magic handler must have one of the following the signatures:
+func(*Request, *Response){} (*outStructType, int, error)
+func(*inStructType, *Request, *Response){} (*outStructType, int, error)
+`))
+	}
+	b.function = func(req *Request, res *Response) {
+		var response []reflect.Value
+		// if there is a body to be read, read it before calling the handler
+		if typeIsRequestResponseFunc(t) {
+			// deserialize the input
+			in := reflect.New(t.In(0).Elem()).Interface()
+			err := req.ReadEntity(in)
+			if err != nil {
+				// TODO: does this work? What format should the error be in?
+				res.AddHeader("Content-Type", "text/plain")
+				res.WriteErrorString(http.StatusBadRequest, "Failed to parse input body.")
+				return
+			}
+			// call the user defined handler
+			response = v.Call([]reflect.Value{reflect.ValueOf(in), reflect.ValueOf(req), reflect.ValueOf(res)})
+		} else {
+			// call the user defined handler
+			response = v.Call([]reflect.Value{reflect.ValueOf(req), reflect.ValueOf(res)})
+		}
+		// serialize the output
+		if response[2].IsNil() {
+			res.WriteHeaderAndEntity(int(response[1].Int()), response[0].Interface())
+		} else {
+			res.AddHeader("Content-Type", "text/plain")
+			res.WriteErrorString(http.StatusNotFound, response[2].MethodByName("Error").Call([]reflect.Value{})[0].String())
+		}
+	}
 	return b
 }
 
