@@ -45,6 +45,7 @@ func TestKeyValueEncoding(t *testing.T) {
 	kv := new(keyvalue)
 	RegisterEntityAccessor("application/kv", kv)
 	b := Book{"Singing for Dummies", "john doe", 2015}
+	vb := Book{"Singing for Vendor Dummies", "john doe", 2015}
 
 	// Write
 	httpWriter := httptest.NewRecorder()
@@ -52,6 +53,15 @@ func TestKeyValueEncoding(t *testing.T) {
 	resp := Response{httpWriter, "application/kv,*/*;q=0.8", []string{"application/kv"}, 0, 0, true, nil}
 	resp.WriteEntity(b)
 	t.Log(string(httpWriter.Body.Bytes()))
+	if !kv.writeCalled {
+		t.Error("Write never called")
+	}
+
+	// Vendor type
+	httpVendorWriter := httptest.NewRecorder()
+	vendorResp := Response{httpVendorWriter, "application/vnd.my.company+v1+kv,*/*;q=0.8", []string{"application/vnd.my.company+v1+kv"}, 0, 0, true, nil}
+	vendorResp.WriteEntity(vb)
+	t.Log(string(httpVendorWriter.Body.Bytes()))
 	if !kv.writeCalled {
 		t.Error("Write never called")
 	}
@@ -66,4 +76,5 @@ func TestKeyValueEncoding(t *testing.T) {
 	if !kv.readCalled {
 		t.Error("Read never called")
 	}
+
 }
