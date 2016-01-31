@@ -36,8 +36,8 @@ type entityReaderWriters struct {
 }
 
 func init() {
-	RegisterEntityAccessor(MIME_JSON, entityJSONAccess{ContentType: MIME_JSON})
-	RegisterEntityAccessor(MIME_XML, entityXMLAccess{ContentType: MIME_XML})
+	RegisterEntityAccessor(MIME_JSON, NewEntityAccessorJSON(MIME_JSON))
+	RegisterEntityAccessor(MIME_XML, NewEntityAccessorXML(MIME_XML))
 }
 
 // RegisterEntityAccessor add/overrides the ReaderWriter for encoding content with this MIME type.
@@ -47,12 +47,16 @@ func RegisterEntityAccessor(mime string, erw EntityReaderWriter) {
 	entityAccessRegistry.accessors[mime] = erw
 }
 
-// RegisteredEntityAccessor returns the registered EntityReaderWriter if available.
-func RegisteredEntityAccessor(mime string) (EntityReaderWriter, bool) {
-	entityAccessRegistry.protection.RLock()
-	defer entityAccessRegistry.protection.RUnlock()
-	er, ok := entityAccessRegistry.accessors[mime]
-	return er, ok
+// NewEntityAccessorJSON returns a new EntityReaderWriter for accessing JSON content.
+// This package is already initialized with such an accessor using the MIME_JSON contentType.
+func NewEntityAccessorJSON(contentType string) EntityReaderWriter {
+	return entityJSONAccess{ContentType: contentType}
+}
+
+// NewEntityAccessorXML returns a new EntityReaderWriter for accessing XML content.
+// This package is already initialized with such an accessor using the MIME_XML contentType.
+func NewEntityAccessorXML(contentType string) EntityReaderWriter {
+	return entityXMLAccess{ContentType: contentType}
 }
 
 // accessorAt returns the registered ReaderWriter for this MIME type.
