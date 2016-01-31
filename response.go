@@ -73,33 +73,33 @@ func (r *Response) EntityWriter() (EntityReaderWriter, bool) {
 		if 0 == len(mime) || mime == "*/*" {
 			for _, each := range r.routeProduces {
 				if MIME_JSON == each {
-					return entityAccessRegistry.AccessorAt(MIME_JSON)
+					return entityAccessRegistry.accessorAt(MIME_JSON)
 				}
 				if MIME_XML == each {
-					return entityAccessRegistry.AccessorAt(MIME_XML)
+					return entityAccessRegistry.accessorAt(MIME_XML)
 				}
 			}
 		} else { // mime is not blank; see if we have a match in Produces
 			for _, each := range r.routeProduces {
 				if mime == each {
 					if MIME_JSON == each {
-						return entityAccessRegistry.AccessorAt(MIME_JSON)
+						return entityAccessRegistry.accessorAt(MIME_JSON)
 					}
 					if MIME_XML == each {
-						return entityAccessRegistry.AccessorAt(MIME_XML)
+						return entityAccessRegistry.accessorAt(MIME_XML)
 					}
 				}
 			}
 		}
 	}
-	writer, ok := entityAccessRegistry.AccessorAt(r.requestAccept)
+	writer, ok := entityAccessRegistry.accessorAt(r.requestAccept)
 	if !ok {
 		// if not registered then fallback to the defaults (if set)
 		if DefaultResponseMimeType == MIME_JSON {
-			return entityAccessRegistry.AccessorAt(MIME_JSON)
+			return entityAccessRegistry.accessorAt(MIME_JSON)
 		}
 		if DefaultResponseMimeType == MIME_XML {
-			return entityAccessRegistry.AccessorAt(MIME_XML)
+			return entityAccessRegistry.accessorAt(MIME_XML)
 		}
 		if trace {
 			traceLogger.Printf("no registered EntityReaderWriter found for %s", r.requestAccept)

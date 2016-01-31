@@ -47,8 +47,16 @@ func RegisterEntityAccessor(mime string, erw EntityReaderWriter) {
 	entityAccessRegistry.accessors[mime] = erw
 }
 
-// AccessorAt returns the registered ReaderWriter for this MIME type.
-func (r *entityReaderWriters) AccessorAt(mime string) (EntityReaderWriter, bool) {
+// RegisteredEntityAccessor returns the registered EntityReaderWriter if available.
+func RegisteredEntityAccessor(mime string) (EntityReaderWriter, bool) {
+	entityAccessRegistry.protection.RLock()
+	defer entityAccessRegistry.protection.RUnlock()
+	er, ok := entityAccessRegistry.accessors[mime]
+	return er, ok
+}
+
+// accessorAt returns the registered ReaderWriter for this MIME type.
+func (r *entityReaderWriters) accessorAt(mime string) (EntityReaderWriter, bool) {
 	r.protection.RLock()
 	defer r.protection.RUnlock()
 	er, ok := r.accessors[mime]
