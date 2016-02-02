@@ -9,7 +9,6 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -78,7 +77,7 @@ func (c *CompressingResponseWriter) isCompressorClosed() bool {
 func (c *CompressingResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	hijacker, ok := c.writer.(http.Hijacker)
 	if !ok {
-		return nil, nil, fmt.Errorf("ResponseWriter doesn't support Hijacker interface")
+		return nil, nil, errors.New("ResponseWriter doesn't support Hijacker interface")
 	}
 	return hijacker.Hijack()
 }
