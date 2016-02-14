@@ -79,15 +79,14 @@ func (r *Response) EntityWriter() (EntityReaderWriter, bool) {
 		}
 		if eachAccept.media == "*/*" {
 			for _, each := range r.routeProduces {
-				if MIME_JSON == each {
-					return entityAccessRegistry.AccessorAt(MIME_JSON)
-				}
-				if MIME_XML == each {
-					return entityAccessRegistry.AccessorAt(MIME_XML)
+				w, ok := entityAccessRegistry.AccessorAt(each)
+				if ok {
+					return w, true
 				}
 			}
 		}
 	}
+	// if requestAccept is empty
 	writer, ok := entityAccessRegistry.AccessorAt(r.requestAccept)
 	if !ok {
 		// if not registered then fallback to the defaults (if set)
