@@ -157,6 +157,54 @@ func TestWriteSamples(t *testing.T) {
     }`)
 }
 
+func TestRoutesWithCommonPart(t *testing.T) {
+	ws1 := new(restful.WebService)
+	ws1.Path("/")
+	ws1.Route(ws1.GET("/foobar").To(dummy).Writes(test_package.TestStruct{}))
+	ws1.Route(ws1.HEAD("/foobar").To(dummy).Writes(test_package.TestStruct{}))
+	ws1.Route(ws1.GET("/foo").To(dummy).Writes([]test_package.TestStruct{}))
+	ws1.Route(ws1.HEAD("/foo").To(dummy).Writes(test_package.TestStruct{}))
+
+	cfg := Config{
+		WebServicesUrl: "http://here.com",
+		ApiPath:        "/apipath",
+		WebServices:    []*restful.WebService{ws1},
+	}
+	sws := newSwaggerService(cfg)
+
+	decl := sws.composeDeclaration(ws1, "/foo")
+
+	str, err := json.MarshalIndent(decl.Apis, "", "    ")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	compareJson(t, string(str), `[
+		{
+			"path": "/foo",
+			"description": "",
+			"operations": [
+				{
+					"type": "array",
+					"items": {
+						"$ref": "test_package.TestStruct"
+					},
+					"method": "GET",
+					"nickname": "dummy",
+					"parameters": []
+				},
+				{
+					"type": "test_package.TestStruct",
+					"method": "HEAD",
+					"nickname": "dummy",
+					"parameters": []
+				}
+			]
+		}
+    ]`)
+}
+
+
 // go test -v -test.run TestServiceToApi ...swagger
 func TestServiceToApi(t *testing.T) {
 	ws := new(restful.WebService)
