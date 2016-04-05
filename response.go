@@ -71,16 +71,14 @@ func (r *Response) EntityWriter() (EntityReaderWriter, bool) {
 	for _, eachAccept := range sorted {
 		for _, eachProduce := range r.routeProduces {
 			if eachProduce == eachAccept.media {
-				w, ok := entityAccessRegistry.accessorAt(eachAccept.media)
-				if ok {
+				if w, ok := entityAccessRegistry.accessorAt(eachAccept.media); ok {
 					return w, true
 				}
 			}
 		}
 		if eachAccept.media == "*/*" {
 			for _, each := range r.routeProduces {
-				w, ok := entityAccessRegistry.accessorAt(each)
-				if ok {
+				if w, ok := entityAccessRegistry.accessorAt(each); ok {
 					return w, true
 				}
 			}
@@ -95,6 +93,13 @@ func (r *Response) EntityWriter() (EntityReaderWriter, bool) {
 		}
 		if DefaultResponseMimeType == MIME_XML {
 			return entityAccessRegistry.accessorAt(MIME_XML)
+		}
+		// Fallback to whatever the route says it can produce.
+		// https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+		for _, each := range r.routeProduces {
+			if w, ok := entityAccessRegistry.accessorAt(each); ok {
+				return w, true
+			}
 		}
 		if trace {
 			traceLogger.Printf("no registered EntityReaderWriter found for %s", r.requestAccept)
