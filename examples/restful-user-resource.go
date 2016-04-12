@@ -72,8 +72,6 @@ func (u UserResource) Register(container *restful.Container) {
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")))
 
 	container.Add(ws)
-	container.Remove(ws)
-	container.Add(ws)
 }
 
 // GET http://localhost:8080/users/1
