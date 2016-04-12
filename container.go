@@ -110,6 +110,9 @@ func (c *Container) Add(service *WebService) *Container {
 	return c
 }
 
+// addHandler may set a new HandleFunc for the serveMux
+// this function must run insige the critical region protected by the webServicesLock.
+// returns true if the function was registered on root ("/")
 func (c *Container) addHandler(service *WebService, serveMux *http.ServeMux) bool {
 	rootRegistered := false
 	pattern := fixedPrefixPath(service.RootPath())
@@ -144,6 +147,7 @@ func (c *Container) Remove(ws *WebService) error {
 	}
 	c.webServicesLock.Lock()
 	defer c.webServicesLock.Unlock()
+	// build a new ServeMux and re-register all WebServices
 	newServeMux := http.NewServeMux()
 	newServices := []*WebService{}
 	newIsRegisteredOnRoot := false
@@ -152,7 +156,7 @@ func (c *Container) Remove(ws *WebService) error {
 		if each.rootPath != ws.rootPath {
 			// If not registered on root then add specific mapping
 			if !newIsRegisteredOnRoot {
-				newIsRegisteredOnRoot = c.addHandler(each, c.ServeMux)
+				newIsRegisteredOnRoot = c.addHandler(each, newServeMux)
 			}
 			newServices = append(newServices, each)
 		}
