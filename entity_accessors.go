@@ -38,6 +38,7 @@ type entityReaderWriters struct {
 func init() {
 	RegisterEntityAccessor(MIME_JSON, NewEntityAccessorJSON(MIME_JSON))
 	RegisterEntityAccessor(MIME_XML, NewEntityAccessorXML(MIME_XML))
+	RegisterEntityAccessor(MIME_MSGPACK, NewEntityAccessorMsgPack(MIME_MSGPACK))
 }
 
 // RegisterEntityAccessor add/overrides the ReaderWriter for encoding content with this MIME type.

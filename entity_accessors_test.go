@@ -67,3 +67,34 @@ func TestKeyValueEncoding(t *testing.T) {
 		t.Error("Read never called")
 	}
 }
+
+func TestMsgPack(t *testing.T) {
+
+	type Tool struct {
+		Name   string
+		Vendor string
+	}
+
+	// Write
+	httpWriter := httptest.NewRecorder()
+	mpack := &Tool{Name: "json", Vendor: "apple"}
+	resp := Response{httpWriter, "application/x-msgpack,*/*;q=0.8", []string{"application/x-msgpack"}, 0, 0, true, nil}
+	err := resp.WriteEntity(mpack)
+	if err != nil {
+		t.Errorf("err %v", err)
+	}
+
+	// Read
+	bodyReader := bytes.NewReader(httpWriter.Body.Bytes())
+	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
+	httpRequest.Header.Set("Content-Type", "application/x-msgpack; charset=UTF-8")
+	request := NewRequest(httpRequest)
+	readMsgPack := new(Tool)
+	err = request.ReadEntity(&readMsgPack)
+	if err != nil {
+		t.Errorf("err %v", err)
+	}
+	if equal := reflect.DeepEqual(mpack, readMsgPack); !equal {
+		t.Fatalf("should not be error")
+	}
+}
