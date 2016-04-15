@@ -110,6 +110,17 @@ func TestContentType415_Issue170(t *testing.T) {
 	}
 }
 
+func TestNoContentTypePOST(t *testing.T) {
+	tearDown()
+	Add(newPostNoConsumesService())
+	httpRequest, _ := http.NewRequest("POST", "http://here.com/post", nil)
+	httpWriter := httptest.NewRecorder()
+	DefaultContainer.dispatch(httpWriter, httpRequest)
+	if 204 != httpWriter.Code {
+		t.Errorf("Expected 204, got %d", httpWriter.Code)
+	}
+}
+
 func TestContentType415_POST_Issue170(t *testing.T) {
 	tearDown()
 	Add(newPostOnlyJsonOnlyService())
@@ -276,6 +287,12 @@ func newGetConsumingOctetStreamService() *WebService {
 	return ws
 }
 
+func newPostNoConsumesService() *WebService {
+	ws := new(WebService).Path("")
+	ws.Route(ws.POST("/post").To(return204))
+	return ws
+}
+
 func newSelectedRouteTestingService() *WebService {
 	ws := new(WebService).Path("")
 	ws.Route(ws.GET(pathGetFriends).To(selectedRouteChecker))
@@ -294,4 +311,8 @@ func doPanic(req *Request, resp *Response) {
 }
 
 func doNothing(req *Request, resp *Response) {
+}
+
+func return204(req *Request, resp *Response) {
+	resp.WriteHeader(204)
 }
