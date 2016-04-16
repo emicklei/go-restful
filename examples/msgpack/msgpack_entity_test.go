@@ -33,7 +33,7 @@ func TestMsgPack(t *testing.T) {
 	// Read
 	bodyReader := bytes.NewReader(httpWriter.Body.Bytes())
 	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
-	httpRequest.Header.Set("Content-Type", "application/x-msgpack; charset=UTF-8")
+	httpRequest.Header.Set("Content-Type", MIME_MSGPACK)
 	request := restful.NewRequest(httpRequest)
 	readMsgPack := new(Tool)
 	err = request.ReadEntity(&readMsgPack)
