@@ -13,7 +13,7 @@ import (
 func TestMsgPack(t *testing.T) {
 
 	// register msg pack entity
-	restful.RegisterEntityAccessor(MIME_MSGPACK, NewEntityAccessorMsgPack(MIME_MSGPACK))
+	restful.RegisterEntityAccessor(MIME_MSGPACK, NewEntityAccessorMsgPack())
 	type Tool struct {
 		Name   string
 		Vendor string
