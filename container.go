@@ -29,6 +29,7 @@ type Container struct {
 	serviceErrorHandleFunc ServiceErrorHandleFunction
 	router                 RouteSelector // default is a RouterJSR311, CurlyRouter is the faster alternative
 	contentEncodingEnabled bool          // default is false
+	registrations          map[string]bool
 }
 
 // NewContainer creates a new Container using a new ServeMux and default router (RouterJSR311)
@@ -42,7 +43,9 @@ func NewContainer() *Container {
 		recoverHandleFunc:      logStackOnRecover,
 		serviceErrorHandleFunc: writeServiceError,
 		router:                 RouterJSR311{},
-		contentEncodingEnabled: false}
+		contentEncodingEnabled: false,
+		registrations:          map[string]bool{},
+	}
 }
 
 // RecoverHandleFunction declares functions that can be used to handle a panic situation.
@@ -92,7 +95,7 @@ func (c *Container) Add(service *WebService) *Container {
 		pattern := c.fixedPrefixPath(service.RootPath())
 		// check if root path registration is needed
 		if "/" == pattern || "" == pattern {
-			c.ServeMux.HandleFunc("/", c.dispatch)
+			c.HandleFuncDispatch("/")
 			c.isRegisteredOnRoot = true
 		} else {
 			// detect if registration already exists
@@ -104,9 +107,9 @@ func (c *Container) Add(service *WebService) *Container {
 				}
 			}
 			if !alreadyMapped {
-				c.ServeMux.HandleFunc(pattern, c.dispatch)
+				c.HandleFuncDispatch(pattern)
 				if !strings.HasSuffix(pattern, "/") {
-					c.ServeMux.HandleFunc(pattern+"/", c.dispatch)
+					c.HandleFuncDispatch(pattern + "/")
 				}
 			}
 		}
@@ -267,6 +270,19 @@ func (c Container) ServeHTTP(httpwriter http.ResponseWriter, httpRequest *http.R
 // Handle registers the handler for the given pattern. If a handler already exists for pattern, Handle panics.
 func (c Container) Handle(pattern string, handler http.Handler) {
 	c.ServeMux.Handle(pattern, handler)
+}
+
+// HandleFuncDispatch register for the given pattern.
+// Unlike the above, it first checks to see if that pattern is already
+// registered and skips registration.  This is because once you start handling
+// something in ServeMux you can't remove it.  (which seems broken imho)
+// Requires webServicesLock to be held.
+func (c *Container) HandleFuncDispatch(pattern string) {
+	_, found := c.registrations[pattern]
+	if !found {
+		c.ServeMux.HandleFunc(pattern, c.dispatch)
+		c.registrations[pattern] = true
+	}
 }
 
 // HandleWithFilter registers the handler for the given pattern.
