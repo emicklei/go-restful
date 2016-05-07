@@ -84,7 +84,7 @@ func (c *Container) EnableContentEncoding(enabled bool) {
 	c.contentEncodingEnabled = enabled
 }
 
-// Add a WebService to the Container. It will detect duplicate root paths and panic in that case.
+// Add a WebService to the Container. It will detect duplicate root paths and exit in that case.
 func (c *Container) Add(service *WebService) *Container {
 	c.webServicesLock.Lock()
 	defer c.webServicesLock.Unlock()
@@ -111,37 +111,35 @@ func (c *Container) Add(service *WebService) *Container {
 }
 
 // addHandler may set a new HandleFunc for the serveMux
-// this function must run insige the critical region protected by the webServicesLock.
+// this function must run inside the critical region protected by the webServicesLock.
 // returns true if the function was registered on root ("/")
 func (c *Container) addHandler(service *WebService, serveMux *http.ServeMux) bool {
-	rootRegistered := false
 	pattern := fixedPrefixPath(service.RootPath())
 	// check if root path registration is needed
 	if "/" == pattern || "" == pattern {
 		serveMux.HandleFunc("/", c.dispatch)
-		rootRegistered = true
-	} else {
-		// detect if registration already exists
-		alreadyMapped := false
-		for _, each := range c.webServices {
-			if each.RootPath() == service.RootPath() {
-				alreadyMapped = true
-				break
-			}
-		}
-		if !alreadyMapped {
-			serveMux.HandleFunc(pattern, c.dispatch)
-			if !strings.HasSuffix(pattern, "/") {
-				serveMux.HandleFunc(pattern+"/", c.dispatch)
-			}
+		return true
+	}
+	// detect if registration already exists
+	alreadyMapped := false
+	for _, each := range c.webServices {
+		if each.RootPath() == service.RootPath() {
+			alreadyMapped = true
+			break
 		}
 	}
-	return rootRegistered
+	if !alreadyMapped {
+		serveMux.HandleFunc(pattern, c.dispatch)
+		if !strings.HasSuffix(pattern, "/") {
+			serveMux.HandleFunc(pattern+"/", c.dispatch)
+		}
+	}
+	return false
 }
 
 func (c *Container) Remove(ws *WebService) error {
 	if c.ServeMux == http.DefaultServeMux {
-		errMsg := fmt.Sprintf("[restful] cannot remove a WebService from a DefaultContainer:['%v']", ws)
+		errMsg := fmt.Sprintf("[restful] cannot remove a WebService from a Container using the DefaultServeMux: ['%v']", ws)
 		log.Printf(errMsg)
 		return errors.New(errMsg)
 	}
@@ -151,8 +149,7 @@ func (c *Container) Remove(ws *WebService) error {
 	newServeMux := http.NewServeMux()
 	newServices := []*WebService{}
 	newIsRegisteredOnRoot := false
-	for ix := range c.webServices {
-		each := c.webServices[ix]
+	for _, each := range c.webServices {
 		if each.rootPath != ws.rootPath {
 			// If not registered on root then add specific mapping
 			if !newIsRegisteredOnRoot {
@@ -161,9 +158,7 @@ func (c *Container) Remove(ws *WebService) error {
 			newServices = append(newServices, each)
 		}
 	}
-	c.webServices = newServices
-	c.ServeMux = newServeMux
-	c.isRegisteredOnRoot = newIsRegisteredOnRoot
+	c.webServices, c.ServeMux, c.isRegisteredOnRoot = newServices, newServeMux, newIsRegisteredOnRoot
 	return nil
 }
 
