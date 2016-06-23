@@ -9,17 +9,25 @@ import (
 	"testing"
 )
 
-func testJsonFromStruct(t *testing.T, sample interface{}, expectedJson string) bool {
-	m := modelsFromStruct(sample)
+func testJsonFromStructWithConfig(t *testing.T, sample interface{}, expectedJson string, config *Config) bool {
+	m := modelsFromStructWithConfig(sample, config)
 	data, _ := json.MarshalIndent(m, " ", " ")
 	return compareJson(t, string(data), expectedJson)
 }
 
-func modelsFromStruct(sample interface{}) *ModelList {
+func modelsFromStructWithConfig(sample interface{}, config *Config) *ModelList {
 	models := new(ModelList)
-	builder := modelBuilder{models}
+	builder := modelBuilder{Models: models, Config: config}
 	builder.addModelFrom(sample)
 	return models
+}
+
+func testJsonFromStruct(t *testing.T, sample interface{}, expectedJson string) bool {
+	return testJsonFromStructWithConfig(t, sample, expectedJson, &Config{})
+}
+
+func modelsFromStruct(sample interface{}) *ModelList {
+	return modelsFromStructWithConfig(sample, &Config{})
 }
 
 func compareJson(t *testing.T, actualJsonAsString string, expectedJsonAsString string) bool {
