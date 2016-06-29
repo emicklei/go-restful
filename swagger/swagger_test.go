@@ -226,7 +226,7 @@ func TestComposeResponseMessages(t *testing.T) {
 	route := restful.Route{ResponseErrors: responseErrors}
 	decl := new(ApiDeclaration)
 	decl.Models = ModelList{}
-	msgs := composeResponseMessages(route, decl)
+	msgs := composeResponseMessages(route, decl, &Config{})
 	if msgs[0].ResponseModel != "swagger.TestItem" {
 		t.Errorf("got %s want swagger.TestItem", msgs[0].ResponseModel)
 	}
@@ -239,7 +239,7 @@ func TestComposeResponseMessageArray(t *testing.T) {
 	route := restful.Route{ResponseErrors: responseErrors}
 	decl := new(ApiDeclaration)
 	decl.Models = ModelList{}
-	msgs := composeResponseMessages(route, decl)
+	msgs := composeResponseMessages(route, decl, &Config{})
 	if msgs[0].ResponseModel != "array[swagger.TestItem]" {
 		t.Errorf("got %s want swagger.TestItem", msgs[0].ResponseModel)
 	}
