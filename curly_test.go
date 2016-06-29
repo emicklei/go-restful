@@ -168,7 +168,7 @@ func TestCurly_ISSUE_34(t *testing.T) {
 		t.Fatal("expected 2 routes")
 	}
 	if got, want := croutes[0].route.Path, "/network/{id}"; got != want {
-		t.Error("got %v want %v", got, want)
+		t.Errorf("got %v want %v", got, want)
 	}
 }
 
@@ -182,7 +182,7 @@ func TestCurly_ISSUE_34_2(t *testing.T) {
 		t.Fatal("expected 2 routes")
 	}
 	if got, want := croutes[0].route.Path, "/network/{id}"; got != want {
-		t.Error("got %v want %v", got, want)
+		t.Errorf("got %v want %v", got, want)
 	}
 }
 

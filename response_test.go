@@ -95,7 +95,7 @@ func TestStatusCreatedAndContentTypeJson_Issue54(t *testing.T) {
 	resp.WriteHeader(201)
 	resp.WriteAsJson(food{"Juicy"})
 	if httpWriter.HeaderMap.Get("Content-Type") != "application/json" {
-		t.Errorf("Expected content type json but got:%d", httpWriter.HeaderMap.Get("Content-Type"))
+		t.Errorf("Expected content type json but got:%s", httpWriter.HeaderMap.Get("Content-Type"))
 	}
 	if httpWriter.Code != 201 {
 		t.Errorf("Expected status 201 but got:%d", httpWriter.Code)
