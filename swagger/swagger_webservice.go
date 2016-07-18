@@ -104,6 +104,11 @@ func RegisterSwaggerService(config Config, wsContainer *restful.Container) {
 			swaggerPathSlash += "/"
 
 		}
+
+		if config.swaggerUrl != nil {
+			swaggerPathSlash += "?url=" + config.swaggerUrl
+		}
+
 		LogInfo("[restful/swagger] %v%v is mapped to custom Handler %T", config.WebServicesUrl, swaggerPathSlash, config.StaticHandler)
 		wsContainer.Handle(swaggerPathSlash, config.StaticHandler)
 
