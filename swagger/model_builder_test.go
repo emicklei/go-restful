@@ -869,10 +869,7 @@ func TestRegion_Issue113(t *testing.T) {
    ],
    "properties": {
     "id": {
-     "type": "array",
-     "items": {
-      "type": "integer"
-     }
+     "type": "string"
     },
     "name": {
      "type": "string"
