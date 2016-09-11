@@ -157,11 +157,6 @@ DoNotRecover controls whether panics will be caught to return HTTP 500.
 If set to true, Route functions are responsible for handling any error situation.
 Default value is false; it will recover from panics. This has performance implications.
 
-	restful.SetCacheReadEntity(false)
-
-SetCacheReadEntity controls whether the response data ([]byte) is cached such that ReadEntity is repeatable.
-If you expect to read large amounts of payload data, and you do not use this feature, you should set it to false.
-
 	restful.SetCompressorProvider(NewBoundedCachedCompressors(20, 20))
 
 If content encoding is enabled then the default strategy for getting new gzip/zlib writers and readers is to use a sync.Pool.
