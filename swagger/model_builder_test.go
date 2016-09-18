@@ -860,7 +860,7 @@ func TestRegion_Issue113(t *testing.T) {
   "||swagger.Region": {
    "id": "||swagger.Region",
    "properties": {}
-  },		
+  },
   "swagger.Region": {
    "id": "swagger.Region",
    "required": [
@@ -919,6 +919,25 @@ func TestIssue158(t *testing.T) {
   }
  }`
 	testJsonFromStruct(t, Customer{}, expected)
+}
+
+func TestPointers(t *testing.T) {
+	type Vote struct {
+		What YesNo
+	}
+	testJsonFromStruct(t, &Vote{}, `{
+  "swagger.Vote": {
+   "id": "swagger.Vote",
+   "required": [
+    "What"
+   ],
+   "properties": {
+    "What": {
+     "type": "string"
+    }
+   }
+  }
+ }`)
 }
 
 func TestSlices(t *testing.T) {

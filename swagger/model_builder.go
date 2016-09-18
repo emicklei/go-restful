@@ -43,6 +43,12 @@ func (b modelBuilder) addModelFrom(sample interface{}) {
 }
 
 func (b modelBuilder) addModel(st reflect.Type, nameOverride string) *Model {
+	// Turn pointers into simpler types so further checks are
+	// correct.
+	if st.Kind() == reflect.Ptr {
+		st = st.Elem()
+	}
+
 	modelName := b.keyFrom(st)
 	if nameOverride != "" {
 		modelName = nameOverride
