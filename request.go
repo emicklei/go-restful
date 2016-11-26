@@ -13,7 +13,7 @@ import (
 
 var defaultRequestContentType string
 
-var doCacheReadEntityBytes = true
+var doCacheReadEntityBytes = false
 
 // Request is a wrapper for a http Request that provides convenience methods
 type Request struct {
