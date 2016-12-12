@@ -3,6 +3,7 @@ package swagger
 import (
 	"encoding/xml"
 	"net"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -1234,4 +1235,49 @@ func TestXmlNameStructs(t *testing.T) {
  }
 `
 	testJsonFromStruct(t, XmlNamed{}, expected)
+}
+
+func TestNameCustomization(t *testing.T) {
+	expected := `
+{
+  "swagger.A": {
+   "id": "swagger.A",
+   "description": "A struct",
+   "required": [
+    "SB"
+   ],
+   "properties": {
+    "SB": {
+     "type": "string",
+     "description": "SB field"
+    },
+    "metadata": {
+     "$ref": "new.swagger.SpecialC1",
+     "description": "C1 field"
+    }
+   }
+  },
+  "new.swagger.SpecialC1": {
+   "id": "new.swagger.SpecialC1",
+   "description": "C1 struct",
+   "required": [
+    "SC"
+   ],
+   "properties": {
+    "SC": {
+     "type": "string",
+     "description": "SC field"
+    }
+   }
+  }
+ }`
+
+	testJsonFromStructWithConfig(t, A{}, expected, &Config{
+		ModelTypeNameHandler: func(t reflect.Type) (string, bool) {
+			if t == reflect.TypeOf(C1{}) {
+				return "new.swagger.SpecialC1", true
+			}
+			return "", false
+		},
+	})
 }
