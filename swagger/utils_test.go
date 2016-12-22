@@ -43,7 +43,7 @@ func compareJson(t *testing.T, actualJsonAsString string, expectedJsonAsString s
 		err := json.Unmarshal([]byte(expectedJsonAsString), &expectedArray)
 		success = reflect.DeepEqual(actualArray, expectedArray)
 		if err != nil {
-			t.Fatalf("Unparsable expected JSON: %s", err)
+			t.Fatalf("Unparsable expected JSON: %s, actual: %v, expected: %v", err, actualJsonAsString, expectedJsonAsString)
 		}
 	} else {
 		success = reflect.DeepEqual(actualMap, expectedMap)
