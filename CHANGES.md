@@ -1,5 +1,10 @@
 Change history of go-restful
 =
+2017-01-27
+- remove defer request body close
+- expose Dispatch for testing filters and Routefunctions
+- swagger response model cannot be array 
+
 2016-12-22
 - (API change) Remove code related to caching request content. Removes SetCacheReadEntity(doCache bool)
 

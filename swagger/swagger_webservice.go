@@ -293,13 +293,12 @@ func composeResponseMessages(route restful.Route, decl *ApiDeclaration, config *
 		if each.Model != nil {
 			st := reflect.TypeOf(each.Model)
 			isCollection, st := detectCollectionType(st)
-			modelName := modelBuilder{}.keyFrom(st)
-			if isCollection {
-				modelName = "array[" + modelName + "]"
+			// collection cannot be in responsemodel
+			if !isCollection {
+				modelName := modelBuilder{}.keyFrom(st)
+				modelBuilder{Models: &decl.Models, Config: config}.addModel(st, "")
+				message.ResponseModel = modelName
 			}
-			modelBuilder{Models: &decl.Models, Config: config}.addModel(st, "")
-			// reference the model
-			message.ResponseModel = modelName
 		}
 		messages = append(messages, message)
 	}
@@ -334,12 +333,13 @@ func detectCollectionType(st reflect.Type) (bool, reflect.Type) {
 
 // addModelFromSample creates and adds (or overwrites) a Model from a sample resource
 func (sws SwaggerService) addModelFromSampleTo(operation *Operation, isResponse bool, sample interface{}, models *ModelList) {
+	mb := modelBuilder{Models: models, Config: &sws.config}
 	if isResponse {
-		type_, items := asDataType(sample, &sws.config)
-		operation.Type = type_
+		sampleType, items := asDataType(sample, &sws.config)
+		operation.Type = sampleType
 		operation.Items = items
 	}
-	modelBuilder{Models: models, Config: &sws.config}.addModelFrom(sample)
+	mb.addModelFrom(sample)
 }
 
 func asSwaggerParameter(param restful.ParameterData) Parameter {

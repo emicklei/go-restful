@@ -204,7 +204,6 @@ func TestRoutesWithCommonPart(t *testing.T) {
     ]`)
 }
 
-
 // go test -v -test.run TestServiceToApi ...swagger
 func TestServiceToApi(t *testing.T) {
 	ws := new(restful.WebService)
@@ -276,19 +275,6 @@ func TestComposeResponseMessages(t *testing.T) {
 	decl.Models = ModelList{}
 	msgs := composeResponseMessages(route, decl, &Config{})
 	if msgs[0].ResponseModel != "swagger.TestItem" {
-		t.Errorf("got %s want swagger.TestItem", msgs[0].ResponseModel)
-	}
-}
-
-// clear && go test -v -test.run TestComposeResponseMessageArray ...swagger
-func TestComposeResponseMessageArray(t *testing.T) {
-	responseErrors := map[int]restful.ResponseError{}
-	responseErrors[400] = restful.ResponseError{Code: 400, Message: "Bad Request", Model: []TestItem{}}
-	route := restful.Route{ResponseErrors: responseErrors}
-	decl := new(ApiDeclaration)
-	decl.Models = ModelList{}
-	msgs := composeResponseMessages(route, decl, &Config{})
-	if msgs[0].ResponseModel != "array[swagger.TestItem]" {
 		t.Errorf("got %s want swagger.TestItem", msgs[0].ResponseModel)
 	}
 }
