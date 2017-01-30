@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/emicklei/go-restful"
-	"github.com/emicklei/go-restful/swagger"
+	"github.com/emicklei/go-restful-swagger12"
 )
 
 // This example is functionally the same as the example in restful-user-resource.go
