@@ -14,6 +14,7 @@ func TestOptionsFilter(t *testing.T) {
 	ws.Route(ws.GET("/candy/{kind}").To(dummy))
 	ws.Route(ws.DELETE("/candy/{kind}").To(dummy))
 	ws.Route(ws.POST("/candies").To(dummy))
+	ws.Route(ws.PUT("/candies").To(dummy))
 	Add(ws)
 	Filter(optionsFilter.Filter)
 
@@ -29,7 +30,8 @@ func TestOptionsFilter(t *testing.T) {
 	httpWriter = httptest.NewRecorder()
 	DefaultContainer.dispatch(httpWriter, httpRequest)
 	actual = httpWriter.Header().Get(HEADER_Allow)
-	if "POST" != actual {
-		t.Fatal("expected: POST but got:" + actual)
+	if "POST,PUT" != actual {
+		t.Fatal("expected: POST,PUT but got:" + actual)
 	}
+
 }
