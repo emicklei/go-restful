@@ -2,14 +2,16 @@ package restful
 
 import "net/http"
 
-func ExampleOPTIONSFilter() {
+func ExampleOptionsFilter() {
 	// Install the OPTIONS filter on the default Container
-	Filter(OPTIONSFilter())
+	optionsFilter := OptionsFilter{Container: DefaultContainer}
+	Filter(optionsFilter.Filter)
 }
-func ExampleContainer_OPTIONSFilter() {
+func ExampleContainer_OptionsFilter() {
 	// Install the OPTIONS filter on a Container
 	myContainer := new(Container)
-	myContainer.Filter(myContainer.OPTIONSFilter)
+	optionsFilter := OptionsFilter{Container: myContainer}
+	myContainer.Filter(optionsFilter.Filter)
 }
 
 func ExampleContainer() {

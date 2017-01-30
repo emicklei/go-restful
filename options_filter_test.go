@@ -10,11 +10,12 @@ import (
 func TestOptionsFilter(t *testing.T) {
 	tearDown()
 	ws := new(WebService)
+	optionsFilter := OptionsFilter{Container: DefaultContainer}
 	ws.Route(ws.GET("/candy/{kind}").To(dummy))
 	ws.Route(ws.DELETE("/candy/{kind}").To(dummy))
 	ws.Route(ws.POST("/candies").To(dummy))
 	Add(ws)
-	Filter(OPTIONSFilter())
+	Filter(optionsFilter.Filter)
 
 	httpRequest, _ := http.NewRequest("OPTIONS", "http://here.io/candy/gum", nil)
 	httpWriter := httptest.NewRecorder()
