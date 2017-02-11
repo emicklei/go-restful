@@ -32,6 +32,7 @@ type RouteBuilder struct {
 	readSample, writeSample interface{}
 	parameters              []*Parameter
 	errorMap                map[int]ResponseError
+	metadata                map[string]interface{}
 }
 
 // Do evaluates each argument with the RouteBuilder itself.
@@ -165,6 +166,14 @@ func (b *RouteBuilder) Returns(code int, message string, model interface{}) *Rou
 	return b
 }
 
+func (b *RouteBuilder) Metadata(key string, value interface{}) *RouteBuilder {
+	if b.metadata == nil {
+		b.metadata = map[string]interface{}{}
+	}
+	b.metadata[key] = value
+	return b
+}
+
 type ResponseError struct {
 	Code    int
 	Message string
@@ -232,7 +241,8 @@ func (b *RouteBuilder) Build() Route {
 		ParameterDocs:  b.parameters,
 		ResponseErrors: b.errorMap,
 		ReadSample:     b.readSample,
-		WriteSample:    b.writeSample}
+		WriteSample:    b.writeSample,
+		Metadata:	b.metadata}
 	route.postBuild()
 	return route
 }
