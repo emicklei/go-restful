@@ -59,3 +59,14 @@ func TestRouteBuilder(t *testing.T) {
 		t.Errorf("Metadata not set")
 	}
 }
+
+func TestAnonymousFuncNaming(t *testing.T) {
+	f1 := func() {}
+	f2 := func() {}
+	if got, want := nameOfFunction(f1), "func1"; got != want {
+		t.Errorf("got %v want %v", got, want)
+	}
+	if got, want := nameOfFunction(f2), "func2"; got != want {
+		t.Errorf("got %v want %v", got, want)
+	}
+}

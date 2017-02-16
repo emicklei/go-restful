@@ -5,10 +5,12 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"runtime"
 	"strings"
+	"sync/atomic"
 
 	"github.com/emicklei/go-restful/log"
 )
@@ -242,7 +244,7 @@ func (b *RouteBuilder) Build() Route {
 		ResponseErrors: b.errorMap,
 		ReadSample:     b.readSample,
 		WriteSample:    b.writeSample,
-		Metadata:	b.metadata}
+		Metadata:       b.metadata}
 	route.postBuild()
 	return route
 }
@@ -250,6 +252,8 @@ func (b *RouteBuilder) Build() Route {
 func concatPath(path1, path2 string) string {
 	return strings.TrimRight(path1, "/") + "/" + strings.TrimLeft(path2, "/")
 }
+
+var anonymousFuncCount int32
 
 // nameOfFunction returns the short name of the function f for documentation.
 // It uses a runtime feature for debugging ; its value may change for later Go versions.
@@ -261,5 +265,10 @@ func nameOfFunction(f interface{}) string {
 	last = strings.TrimSuffix(last, ")-fm") // Go 1.5
 	last = strings.TrimSuffix(last, "·fm")  // < Go 1.5
 	last = strings.TrimSuffix(last, "-fm")  // Go 1.5
+	if last == "func1" {                    // this could mean conflicts in API docs
+		val := atomic.AddInt32(&anonymousFuncCount, 1)
+		last = "func" + fmt.Sprintf("%d", val)
+		atomic.StoreInt32(&anonymousFuncCount, val)
+	}
 	return last
 }
