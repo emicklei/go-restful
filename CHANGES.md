@@ -1,5 +1,8 @@
 Change history of go-restful
 =
+2017-02-16
+- solved issue #304, make operation names unique
+
 2017-01-30
  
 	[IMPORTANT] For swagger users, change your import statement to:	
