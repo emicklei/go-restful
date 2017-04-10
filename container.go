@@ -74,7 +74,7 @@ func (c *Container) DoNotRecover(doNot bool) {
 	c.doNotRecover = doNot
 }
 
-// Router changes the default Router (currently RouterJSR311)
+// Router changes the default Router (currently CurlyRouter)
 func (c *Container) Router(aRouter RouteSelector) {
 	c.router = aRouter
 }
