@@ -32,7 +32,7 @@ type Container struct {
 	contentEncodingEnabled bool          // default is false
 }
 
-// NewContainer creates a new Container using a new ServeMux and default router (RouterJSR311)
+// NewContainer creates a new Container using a new ServeMux and default router (CurlyRouter)
 func NewContainer() *Container {
 	return &Container{
 		webServices:            []*WebService{},
