@@ -131,7 +131,9 @@ The request has a valid URL but the method (GET,PUT,POST,...) is not allowed.
 
 	406: Not Acceptable
 
-The request does not have or has an unknown Accept Header set for this operation.
+The request does not have or has an unknown Accept Header set for this operation. Note that a 406 might also occur
+when doing a POST request with empty body. The restful application should use .Consumes("application/octet-stream")
+to handle these requests.
 
 	415: Unsupported Media Type
 
