@@ -19,10 +19,9 @@ func main() {
 }
 
 func basicAuthenticate(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
-	encoded := req.Request.Header.Get("Authorization")
 	// usr/pwd = admin/admin
-	// real code does some decoding
-	if len(encoded) == 0 || "Basic YWRtaW46YWRtaW4=" != encoded {
+	u, p, ok := req.Request.BasicAuth()
+	if !ok || u != "admin" || p != "admin" {
 		resp.AddHeader("WWW-Authenticate", "Basic realm=Protected Area")
 		resp.WriteErrorString(401, "401: Not Authorized")
 		return
