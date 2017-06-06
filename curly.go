@@ -20,7 +20,8 @@ func (c CurlyRouter) SelectRoute(
 	webServices []*WebService,
 	httpRequest *http.Request) (selectedService *WebService, selected *Route, err error) {
 
-	requestTokens := tokenizePath(httpRequest.URL.Path)
+	rawPath := strings.Split(httpRequest.RequestURI,"?")[0]
+	requestTokens := tokenizePath(rawPath)
 
 	detectedService := c.detectWebService(requestTokens, webServices)
 	if detectedService == nil {
