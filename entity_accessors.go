@@ -63,6 +63,14 @@ func NewEntityAccessorXML(contentType string) EntityReaderWriter {
 func (r *entityReaderWriters) accessorAt(mime string) (EntityReaderWriter, bool) {
 	r.protection.RLock()
 	defer r.protection.RUnlock()
+	// check if media type has vendor extension
+	// https://tools.ietf.org/html/rfc6838#section-3.2
+	// Foramt : type / vnd. media type name [+suffix] e.g application/vnd.my.company+v3+json
+	if strings.Contains(mime, "/vnd.") {
+		lastIndexOfSuffixSeperator := strings.LastIndex(mime, "+")
+		firstIndexOfMimeSeperator := strings.Index(mime, "/")
+		mime = mime[:firstIndexOfMimeSeperator+1] + mime[lastIndexOfSuffixSeperator+1:len(mime)]
+	}
 	er, ok := r.accessors[mime]
 	if !ok {
 		// retry with reverse lookup
