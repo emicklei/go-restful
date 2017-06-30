@@ -40,7 +40,7 @@ func main() {
 		WebServicesUrl: "http://localhost:8080",
 		ApiPath:        "/apidocs.json",
 
-		// Optionally, specifiy where the UI is located
+		// Optionally, specify where the UI is located
 		SwaggerPath:     "/apidocs/",
 		SwaggerFilePath: "/Users/emicklei/xProjects/swagger-ui/dist"}
 	swagger.RegisterSwaggerService(config, restful.DefaultContainer)
