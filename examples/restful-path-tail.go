@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-// This example shows how to a Route that matches the "tail" of a path.
+// This example shows how to create a Route matching the "tail" of a path.
 // Requires the use of a CurlyRouter and the star "*" path parameter pattern.
 //
 // GET http://localhost:8080/basepath/some/other/location/test.xml
