@@ -3,6 +3,7 @@ package main
 import (
 	. "github.com/emicklei/go-restful"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -18,7 +19,7 @@ func main() {
 	Add(ws)
 
 	println("[go-restful] serve path tails from http://localhost:8080/basepath")
-	http.ListenAndServe(":8080", nil)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func staticFromPathParam(req *Request, resp *Response) {
