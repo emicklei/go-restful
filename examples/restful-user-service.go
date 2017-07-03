@@ -138,6 +138,6 @@ func main() {
 		SwaggerFilePath: "/Users/emicklei/Projects/swagger-ui/dist"}
 	swagger.InstallSwaggerService(config)
 
-	log.Printf("start listening on localhost:8080")
+	log.Print("start listening on localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
