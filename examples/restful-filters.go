@@ -26,7 +26,7 @@ func main() {
 	restful.Filter(globalLogging)
 
 	restful.Add(NewUserService())
-	log.Printf("start listening on localhost:8080")
+	log.Print("start listening on localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -102,13 +102,13 @@ func (c *CountFilter) routeCounter(req *restful.Request, resp *restful.Response,
 // GET http://localhost:8080/users
 //
 func getAllUsers(request *restful.Request, response *restful.Response) {
-	log.Printf("getAllUsers")
+	log.Print("getAllUsers")
 	response.WriteEntity(UserList{[]User{{"42", "Gandalf"}, {"3.14", "Pi"}}})
 }
 
 // GET http://localhost:8080/users/42
 //
 func findUser(request *restful.Request, response *restful.Response) {
-	log.Printf("findUser")
+	log.Print("findUser")
 	response.WriteEntity(User{"42", "Gandalf"})
 }
