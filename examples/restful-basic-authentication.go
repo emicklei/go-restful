@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/emicklei/go-restful"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -15,7 +16,7 @@ func main() {
 	ws := new(restful.WebService)
 	ws.Route(ws.GET("/secret").Filter(basicAuthenticate).To(secret))
 	restful.Add(ws)
-	http.ListenAndServe(":8080", nil)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func basicAuthenticate(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
