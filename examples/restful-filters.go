@@ -18,7 +18,7 @@ type UserList struct {
 // This example show how to create and use the three different Filters (Container,WebService and Route)
 // When applied to the restful.DefaultContainer, we refer to them as a global filter.
 //
-// GET  http://locahost:8080/users/42
+// GET  http://localhost:8080/users/42
 // and see the logging per filter (try repeating this request)
 
 func main() {
