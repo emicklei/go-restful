@@ -10,11 +10,13 @@ import (
 func TestOptionsFilter(t *testing.T) {
 	tearDown()
 	ws := new(WebService)
+	optionsFilter := OptionsFilter{Container: DefaultContainer}
 	ws.Route(ws.GET("/candy/{kind}").To(dummy))
 	ws.Route(ws.DELETE("/candy/{kind}").To(dummy))
 	ws.Route(ws.POST("/candies").To(dummy))
+	ws.Route(ws.PUT("/candies").To(dummy))
 	Add(ws)
-	Filter(OPTIONSFilter())
+	Filter(optionsFilter.Filter)
 
 	httpRequest, _ := http.NewRequest("OPTIONS", "http://here.io/candy/gum", nil)
 	httpWriter := httptest.NewRecorder()
@@ -28,7 +30,8 @@ func TestOptionsFilter(t *testing.T) {
 	httpWriter = httptest.NewRecorder()
 	DefaultContainer.dispatch(httpWriter, httpRequest)
 	actual = httpWriter.Header().Get(HEADER_Allow)
-	if "POST" != actual {
-		t.Fatal("expected: POST but got:" + actual)
+	if "POST,PUT" != actual {
+		t.Fatal("expected: POST,PUT but got:" + actual)
 	}
+
 }
