@@ -24,7 +24,7 @@ type RouteBuilder struct {
 	httpMethod  string        // required
 	function    RouteFunction // required
 	filters     []FilterFunction
-	conditions []RouteSelectionConditionFunction
+	conditions  []RouteSelectionConditionFunction
 
 	typeNameHandleFunc TypeNameHandleFunction // required
 
@@ -36,6 +36,7 @@ type RouteBuilder struct {
 	parameters              []*Parameter
 	errorMap                map[int]ResponseError
 	metadata                map[string]interface{}
+	deprecated              bool
 }
 
 // Do evaluates each argument with the RouteBuilder itself.
@@ -194,6 +195,12 @@ func (b *RouteBuilder) Metadata(key string, value interface{}) *RouteBuilder {
 	return b
 }
 
+// Deprecate sets the value of deprecated to true.  Deprecated routes have a special UI treatment to warn against use
+func (b *RouteBuilder) Deprecate() *RouteBuilder {
+	b.deprecated = true
+	return b
+}
+
 // ResponseError represents a response; not necessarily an error.
 type ResponseError struct {
 	Code      int
@@ -280,7 +287,8 @@ func (b *RouteBuilder) Build() Route {
 		ResponseErrors: b.errorMap,
 		ReadSample:     b.readSample,
 		WriteSample:    b.writeSample,
-		Metadata:       b.metadata}
+		Metadata:       b.metadata,
+		Deprecated:     b.deprecated}
 	route.postBuild()
 	return route
 }
