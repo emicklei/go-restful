@@ -84,8 +84,8 @@ func TestISSUE_30(t *testing.T) {
 	if len(routes) != 2 {
 		t.Fatal("expected 2 routes")
 	}
-	if routes[0].Path != "/users/login" {
-		t.Error("first is", routes[0].Path)
+	if routes[0].route.Path != "/users/login" {
+		t.Error("first is", routes[0].route.Path)
 		t.Logf("routes:%v", routes)
 	}
 }
@@ -99,8 +99,8 @@ func TestISSUE_34(t *testing.T) {
 	if len(routes) != 2 {
 		t.Fatal("expected 2 routes")
 	}
-	if routes[0].Path != "/network/{id}" {
-		t.Error("first is", routes[0].Path)
+	if routes[0].route.Path != "/network/{id}" {
+		t.Error("first is", routes[0].route.Path)
 		t.Logf("routes:%v", routes)
 	}
 }
@@ -115,8 +115,8 @@ func TestISSUE_34_2(t *testing.T) {
 	if len(routes) != 2 {
 		t.Fatal("expected 2 routes")
 	}
-	if routes[0].Path != "/network/{id}" {
-		t.Error("first is", routes[0].Path)
+	if routes[0].route.Path != "/network/{id}" {
+		t.Error("first is", routes[0].route.Path)
 	}
 }
 
@@ -165,25 +165,25 @@ func TestSelectRoutesUsers1(t *testing.T) {
 	routes := RouterJSR311{}.selectRoutes(ws1, "/1")
 	checkRoutesContains(routes, "/users/{id}", t)
 }
-func checkRoutesContains(routes []Route, path string, t *testing.T) {
+func checkRoutesContains(routes []routeCandidate, path string, t *testing.T) {
 	if !containsRoutePath(routes, path, t) {
 		for _, r := range routes {
-			t.Logf("route %v %v", r.Method, r.Path)
+			t.Logf("route %v %v", r.route.Method, r.route.Path)
 		}
 		t.Fatalf("routes should include [%v]:", path)
 	}
 }
-func checkRoutesContainsNo(routes []Route, path string, t *testing.T) {
+func checkRoutesContainsNo(routes []routeCandidate, path string, t *testing.T) {
 	if containsRoutePath(routes, path, t) {
 		for _, r := range routes {
-			t.Logf("route %v %v", r.Method, r.Path)
+			t.Logf("route %v %v", r.route.Method, r.route.Path)
 		}
 		t.Fatalf("routes should not include [%v]:", path)
 	}
 }
-func containsRoutePath(routes []Route, path string, t *testing.T) bool {
+func containsRoutePath(routes []routeCandidate, path string, t *testing.T) bool {
 	for _, each := range routes {
-		if each.Path == path {
+		if each.route.Path == path {
 			return true
 		}
 	}
@@ -214,24 +214,24 @@ func TestDetectRouteReturns404IfNoRoutePassesConditions(t *testing.T) {
 	called := false
 	shouldNotBeCalledButWas := false
 
-	routes := []Route{
-		new(RouteBuilder).To(dummy).
+	routes := []routeCandidate{
+		routeCandidate{route: new(RouteBuilder).To(dummy).
 			If(func(req *http.Request) bool { return false }).
-			Build(),
+			Build()},
 
 		// check that condition functions are called in order
-		new(RouteBuilder).
+		routeCandidate{route: new(RouteBuilder).
 			To(dummy).
 			If(func(req *http.Request) bool { return true }).
 			If(func(req *http.Request) bool { called = true; return false }).
-			Build(),
+			Build()},
 
 		// check that condition functions short circuit
-		new(RouteBuilder).
+		routeCandidate{route: new(RouteBuilder).
 			To(dummy).
 			If(func(req *http.Request) bool { return false }).
 			If(func(req *http.Request) bool { shouldNotBeCalledButWas = true; return false }).
-			Build(),
+			Build()},
 	}
 
 	_, err := RouterJSR311{}.detectRoute(routes, (*http.Request)(nil))
@@ -245,6 +245,58 @@ func TestDetectRouteReturns404IfNoRoutePassesConditions(t *testing.T) {
 
 	if shouldNotBeCalledButWas {
 		t.Fatal("expected condition function to not be called, but it was")
+	}
+}
+
+var extractParams = []struct {
+	name           string
+	routePath      string
+	urlPath        string
+	expectedParams map[string]string
+}{
+	{"wildcardLastPart", "/fixed/{var:*}", "/fixed/remainder", map[string]string{"var": "remainder"}},
+	{"wildcardMultipleParts", "/fixed/{var:*}", "/fixed/remain/der", map[string]string{"var": "remain/der"}},
+	{"wildcardManyParts", "/fixed/{var:*}", "/fixed/test/sub/hi.html", map[string]string{"var": "test/sub/hi.html"}},
+	{"wildcardInMiddle", "/fixed/{var:*}/morefixed", "/fixed/middle/stuff/morefixed", map[string]string{"var": "middle/stuff"}},
+	{"wildcardFollowedByVar", "/fixed/{var:*}/morefixed/{otherVar}", "/fixed/middle/stuff/morefixed/end", map[string]string{"var": "middle/stuff", "otherVar": "end"}},
+	{"singleParam", "/fixed/{var}", "/fixed/remainder", map[string]string{"var": "remainder"}},
+	{"slash", "/", "/", map[string]string{}},
+	{"NoVars", "/fixed", "/fixed", map[string]string{}},
+	{"TwoVars", "/from/{source}/to/{destination}", "/from/LHR/to/AMS", map[string]string{"source": "LHR", "destination": "AMS"}},
+	{"VarOnFront", "/{what}/from/{source}", "/who/from/SOS", map[string]string{"what": "who", "source": "SOS"}},
+}
+
+func TestExtractParams(t *testing.T) {
+	for _, testCase := range extractParams {
+		t.Run(testCase.name, func(t *testing.T) {
+			ws1 := new(WebService).Path("/")
+			ws1.Route(ws1.GET(testCase.routePath).To(dummy))
+			router := RouterJSR311{}
+			req, _ := http.NewRequest(http.MethodGet, testCase.urlPath, nil)
+			_, _, params, err := router.SelectRoute([]*WebService{ws1}, req)
+			if err != nil {
+				t.Fatalf("Unexpected error selecting route: %v", err.Error())
+			}
+			if len(params) != len(testCase.expectedParams) {
+				t.Fatalf("Wrong length of params on selected route, expected: %v, got: %v", testCase.expectedParams, params)
+			}
+			for expectedParamKey, expectedParamValue := range testCase.expectedParams {
+				if expectedParamValue != params[expectedParamKey] {
+					t.Errorf("Wrong parameter for key '%v', expected: %v, got: %v", expectedParamKey, expectedParamValue, params[expectedParamKey])
+				}
+			}
+		})
+	}
+}
+
+func TestSelectRouteInvalidMethod(t *testing.T) {
+	ws1 := new(WebService).Path("/")
+	ws1.Route(ws1.GET("/simple").To(dummy))
+	router := RouterJSR311{}
+	req, _ := http.NewRequest(http.MethodPost, "/simple", nil)
+	_, _, _, err := router.SelectRoute([]*WebService{ws1}, req)
+	if err == nil {
+		t.Fatal("Expected an error as the wrong method is used but was nil")
 	}
 }
 

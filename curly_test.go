@@ -158,6 +158,63 @@ func TestExtractParameters_Wildcard3(t *testing.T) {
 	}
 }
 
+func TestExtractParameters_Wildcard4(t *testing.T) {
+	params := doExtractParams("/static/{var:*}/sub", 3, "/static/test/sub", t)
+	if params["var"] != "test/sub" {
+		t.Errorf("parameter mismatch var: %s", params["var"])
+	}
+}
+
+func TestMatchesPath_OneParam(t *testing.T) {
+	params := doExtractParams("/from/{source}", 2, "/from/here", t)
+	if params["source"] != "here" {
+		t.Errorf("parameter mismatch here")
+	}
+}
+
+func TestMatchesPath_Slash(t *testing.T) {
+	params := doExtractParams("/", 0, "/", t)
+	if len(params) != 0 {
+		t.Errorf("expected empty parameters")
+	}
+}
+
+func TestMatchesPath_SlashNonVar(t *testing.T) {
+	params := doExtractParams("/any", 1, "/any", t)
+	if len(params) != 0 {
+		t.Errorf("expected empty parameters")
+	}
+}
+
+func TestMatchesPath_TwoVars(t *testing.T) {
+	params := doExtractParams("/from/{source}/to/{destination}", 4, "/from/AMS/to/NY", t)
+	if params["source"] != "AMS" {
+		t.Errorf("parameter mismatch AMS")
+	}
+}
+
+func TestMatchesPath_VarOnFront(t *testing.T) {
+	params := doExtractParams("{what}/from/{source}/", 3, "who/from/SOS/", t)
+	if params["source"] != "SOS" {
+		t.Errorf("parameter mismatch SOS")
+	}
+}
+
+func doExtractParams(routePath string, size int, urlPath string, t *testing.T) map[string]string {
+	ws1 := new(WebService).Path("/")
+	ws1.Route(ws1.GET(routePath).To(curlyDummy))
+	router := CurlyRouter{}
+	req, _ := http.NewRequest(http.MethodGet, urlPath, nil)
+	_, r, params, err := router.SelectRoute([]*WebService{ws1}, req)
+	if err != nil {
+		t.Fatalf("Unexpected error selecting route: %v", err.Error())
+	}
+	if len(r.pathParts) != size {
+		t.Fatalf("len not %v %v, but %v", size, r.pathParts, len(r.pathParts))
+	}
+	return params
+}
+
 // clear && go test -v -test.run TestCurly_ISSUE_34 ...restful
 func TestCurly_ISSUE_34(t *testing.T) {
 	ws1 := new(WebService).Path("/")
@@ -193,7 +250,7 @@ func TestCurly_JsonHtml(t *testing.T) {
 	ws1.Route(ws1.GET("/some.html").To(curlyDummy).Consumes("*/*").Produces("text/html"))
 	req, _ := http.NewRequest("GET", "/some.html", nil)
 	req.Header.Set("Accept", "application/json")
-	_, route, err := CurlyRouter{}.SelectRoute([]*WebService{ws1}, req)
+	_, route, _, err := CurlyRouter{}.SelectRoute([]*WebService{ws1}, req)
 	if err == nil {
 		t.Error("error expected")
 	}
@@ -208,7 +265,7 @@ func TestCurly_ISSUE_137(t *testing.T) {
 	ws1.Route(ws1.GET("/hello").To(curlyDummy))
 	ws1.Path("/")
 	req, _ := http.NewRequest("GET", "/", nil)
-	_, route, _ := CurlyRouter{}.SelectRoute([]*WebService{ws1}, req)
+	_, route, _, _ := CurlyRouter{}.SelectRoute([]*WebService{ws1}, req)
 	t.Log(route)
 	if route != nil {
 		t.Error("no route expected")
@@ -221,7 +278,7 @@ func TestCurly_ISSUE_137_2(t *testing.T) {
 	ws1.Route(ws1.GET("/hello").To(curlyDummy))
 	ws1.Path("/")
 	req, _ := http.NewRequest("GET", "/hello/bob", nil)
-	_, route, _ := CurlyRouter{}.SelectRoute([]*WebService{ws1}, req)
+	_, route, _, _ := CurlyRouter{}.SelectRoute([]*WebService{ws1}, req)
 	t.Log(route)
 	if route != nil {
 		t.Errorf("no route expected, got %v", route)

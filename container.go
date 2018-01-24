@@ -237,11 +237,12 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 	// Find best match Route ; err is non nil if no match was found
 	var webService *WebService
 	var route *Route
+	var params map[string]string
 	var err error
 	func() {
 		c.webServicesLock.RLock()
 		defer c.webServicesLock.RUnlock()
-		webService, route, err = c.router.SelectRoute(
+		webService, route, params, err = c.router.SelectRoute(
 			c.webServices,
 			httpRequest)
 	}()
@@ -259,7 +260,7 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 		chain.ProcessFilter(NewRequest(httpRequest), NewResponse(writer))
 		return
 	}
-	wrappedRequest, wrappedResponse := route.wrapRequestResponse(writer, httpRequest)
+	wrappedRequest, wrappedResponse := route.wrapRequestResponse(writer, httpRequest, params)
 	// pass through filters (if any)
 	if len(c.containerFilters)+len(webService.filters)+len(route.Filters) > 0 {
 		// compose filter chain

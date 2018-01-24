@@ -21,30 +21,36 @@ type RouterJSR311 struct{}
 // for the WebService and its Route for the given Request.
 func (r RouterJSR311) SelectRoute(
 	webServices []*WebService,
-	httpRequest *http.Request) (selectedService *WebService, selectedRoute *Route, err error) {
+	httpRequest *http.Request) (selectedService *WebService, selectedRoute *Route, params map[string]string, err error) {
 
 	// Identify the root resource class (WebService)
 	dispatcher, finalMatch, err := r.detectDispatcher(httpRequest.URL.Path, webServices)
 	if err != nil {
-		return nil, nil, NewError(http.StatusNotFound, "")
+		return nil, nil, nil, NewError(http.StatusNotFound, "")
 	}
 	// Obtain the set of candidate methods (Routes)
 	routes := r.selectRoutes(dispatcher, finalMatch)
 	if len(routes) == 0 {
-		return dispatcher, nil, NewError(http.StatusNotFound, "404: Page Not Found")
+		return dispatcher, nil, nil, NewError(http.StatusNotFound, "404: Page Not Found")
 	}
 
 	// Identify the method (Route) that will handle the request
-	route, ok := r.detectRoute(routes, httpRequest)
-	return dispatcher, route, ok
+	candidateRoute, ok := r.detectRoute(routes, httpRequest)
+	var route *Route
+	var pathParameters map[string]string
+	if candidateRoute != nil {
+		route = &candidateRoute.route
+		pathParameters = candidateRoute.pathParameters
+	}
+	return dispatcher, route, pathParameters, ok
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
-func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*Route, error) {
-	ifOk := []Route{}
+func (r RouterJSR311) detectRoute(routes []routeCandidate, httpRequest *http.Request) (*routeCandidate, error) {
+	ifOk := []routeCandidate{}
 	for _, each := range routes {
 		ok := true
-		for _, fn := range each.If {
+		for _, fn := range each.route.If {
 			if !fn(httpRequest) {
 				ok = false
 				break
@@ -62,9 +68,9 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 	}
 
 	// http method
-	methodOk := []Route{}
+	methodOk := []routeCandidate{}
 	for _, each := range ifOk {
-		if httpRequest.Method == each.Method {
+		if httpRequest.Method == each.route.Method {
 			methodOk = append(methodOk, each)
 		}
 	}
@@ -78,9 +84,9 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 
 	// content-type
 	contentType := httpRequest.Header.Get(HEADER_ContentType)
-	inputMediaOk = []Route{}
+	inputMediaOk = []routeCandidate{}
 	for _, each := range methodOk {
-		if each.matchesContentType(contentType) {
+		if each.route.matchesContentType(contentType) {
 			inputMediaOk = append(inputMediaOk, each)
 		}
 	}
@@ -92,13 +98,13 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 	}
 
 	// accept
-	outputMediaOk := []Route{}
+	outputMediaOk := []routeCandidate{}
 	accept := httpRequest.Header.Get(HEADER_Accept)
 	if len(accept) == 0 {
 		accept = "*/*"
 	}
 	for _, each := range inputMediaOk {
-		if each.matchesAccept(accept) {
+		if each.route.matchesAccept(accept) {
 			outputMediaOk = append(outputMediaOk, each)
 		}
 	}
@@ -120,7 +126,7 @@ func (r RouterJSR311) bestMatchByMedia(routes []Route, contentType string, accep
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2  (step 2)
-func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string) []Route {
+func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string) []routeCandidate {
 	filtered := &sortableRouteCandidates{}
 	for _, each := range dispatcher.Routes() {
 		pathExpr := each.pathExpr
@@ -128,8 +134,14 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 		if matches != nil {
 			lastMatch := matches[len(matches)-1]
 			if len(lastMatch) == 0 || lastMatch == "/" { // do not include if value is neither empty nor ‘/’.
+				params := map[string]string{}
+				for i := 1; i < len(matches); i++ {
+					if len(pathExpr.VarNames) >= i {
+						params[pathExpr.VarNames[i-1]] = matches[i]
+					}
+				}
 				filtered.candidates = append(filtered.candidates,
-					routeCandidate{each, len(matches) - 1, pathExpr.LiteralCount, pathExpr.VarCount})
+					routeCandidate{each, len(matches) - 1, pathExpr.LiteralCount, pathExpr.VarCount, params})
 			}
 		}
 	}
@@ -137,16 +149,16 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 		if trace {
 			traceLogger.Printf("WebService on path %s has no routes that match URL path remainder:%s\n", dispatcher.rootPath, pathRemainder)
 		}
-		return []Route{}
+		return []routeCandidate{}
 	}
 	sort.Sort(sort.Reverse(filtered))
 
 	// select other routes from candidates whoes expression matches rmatch
-	matchingRoutes := []Route{filtered.candidates[0].route}
+	matchingRoutes := []routeCandidate{filtered.candidates[0]}
 	for c := 1; c < len(filtered.candidates); c++ {
 		each := filtered.candidates[c]
 		if each.route.pathExpr.Matcher.MatchString(pathRemainder) {
-			matchingRoutes = append(matchingRoutes, each.route)
+			matchingRoutes = append(matchingRoutes, each)
 		}
 	}
 	return matchingRoutes
@@ -176,9 +188,10 @@ func (r RouterJSR311) detectDispatcher(requestPath string, dispatchers []*WebSer
 
 type routeCandidate struct {
 	route           Route
-	matchesCount    int // the number of capturing groups
-	literalCount    int // the number of literal characters (means those not resulting from template variable substitution)
-	nonDefaultCount int // the number of capturing groups with non-default regular expressions (i.e. not ‘([^  /]+?)’)
+	matchesCount    int               // the number of capturing groups
+	literalCount    int               // the number of literal characters (means those not resulting from template variable substitution)
+	nonDefaultCount int               // the number of capturing groups with non-default regular expressions (i.e. not ‘([^  /]+?)’)
+	pathParameters  map[string]string // the path parameter values when this route matched the URL
 }
 
 func (r routeCandidate) expressionToMatch() string {

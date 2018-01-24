@@ -10,9 +10,9 @@ import "net/http"
 type RouteSelector interface {
 
 	// SelectRoute finds a Route given the input HTTP Request and a list of WebServices.
-	// It returns a selected Route and its containing WebService or an error indicating
-	// a problem.
+	// It returns a selected Route, its containing WebService and the path parameters
+	// or an error indicating a problem.
 	SelectRoute(
 		webServices []*WebService,
-		httpRequest *http.Request) (selectedService *WebService, selected *Route, err error)
+		httpRequest *http.Request) (selectedService *WebService, selected *Route, pathParameters map[string]string, err error)
 }
