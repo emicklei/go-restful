@@ -5,6 +5,7 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
+	"bytes"
 	"net/http"
 	"regexp"
 	"sort"
@@ -18,7 +19,7 @@ type CurlyRouter struct{}
 // for the WebService and its Route for the given Request.
 func (c CurlyRouter) SelectRoute(
 	webServices []*WebService,
-	httpRequest *http.Request) (selectedService *WebService, selected *Route, err error) {
+	httpRequest *http.Request) (selectedService *WebService, selected *Route, params map[string]string, err error) {
 
 	requestTokens := tokenizePath(httpRequest.URL.Path)
 
@@ -27,20 +28,21 @@ func (c CurlyRouter) SelectRoute(
 		if trace {
 			traceLogger.Printf("no WebService was found to match URL path:%s\n", httpRequest.URL.Path)
 		}
-		return nil, nil, NewError(http.StatusNotFound, "404: Page Not Found")
+		return nil, nil, nil, NewError(http.StatusNotFound, "404: Page Not Found")
 	}
 	candidateRoutes := c.selectRoutes(detectedService, requestTokens)
 	if len(candidateRoutes) == 0 {
 		if trace {
 			traceLogger.Printf("no Route in WebService with path %s was found to match URL path:%s\n", detectedService.rootPath, httpRequest.URL.Path)
 		}
-		return detectedService, nil, NewError(http.StatusNotFound, "404: Page Not Found")
+		return detectedService, nil, nil, NewError(http.StatusNotFound, "404: Page Not Found")
 	}
 	selectedRoute, err := c.detectRoute(candidateRoutes, httpRequest)
 	if selectedRoute == nil {
-		return detectedService, nil, err
+		return detectedService, nil, nil, err
 	}
-	return detectedService, selectedRoute, nil
+	params = extractParameters(&selectedRoute.route, requestTokens)
+	return detectedService, &selectedRoute.route, params, nil
 }
 
 // selectRoutes return a collection of Route from a WebService that matches the path tokens from the request.
@@ -112,9 +114,13 @@ var jsr311Router = RouterJSR311{}
 
 // detectRoute selectes from a list of Route the first match by inspecting both the Accept and Content-Type
 // headers of the Request. See also RouterJSR311 in jsr311.go
-func (c CurlyRouter) detectRoute(candidateRoutes sortableCurlyRoutes, httpRequest *http.Request) (*Route, error) {
+func (c CurlyRouter) detectRoute(candidateRoutes sortableCurlyRoutes, httpRequest *http.Request) (*routeCandidate, error) {
 	// tracing is done inside detectRoute
-	return jsr311Router.detectRoute(candidateRoutes.routes(), httpRequest)
+	candidates := []routeCandidate{}
+	for _, candidateRoute := range candidateRoutes.routes() {
+		candidates = append(candidates, routeCandidate{route: candidateRoute})
+	}
+	return jsr311Router.detectRoute(candidates, httpRequest)
 }
 
 // detectWebService returns the best matching webService given the list of path tokens.
@@ -161,4 +167,47 @@ func (c CurlyRouter) computeWebserviceScore(requestTokens []string, tokens []str
 		}
 	}
 	return true, score
+}
+
+// Extract the parameters from the request url path
+func extractParameters(r *Route, urlParts []string) map[string]string {
+	pathParameters := map[string]string{}
+	for i, key := range r.pathParts {
+		var value string
+		if i >= len(urlParts) {
+			value = ""
+		} else {
+			value = urlParts[i]
+		}
+		if strings.HasPrefix(key, "{") { // path-parameter
+			if colon := strings.Index(key, ":"); colon != -1 {
+				// extract by regex
+				regPart := key[colon+1 : len(key)-1]
+				keyPart := key[1:colon]
+				if regPart == "*" {
+					pathParameters[keyPart] = untokenizePath(i, urlParts)
+					break
+				} else {
+					pathParameters[keyPart] = value
+				}
+			} else {
+				// without enclosing {}
+				pathParameters[key[1:len(key)-1]] = value
+			}
+		}
+	}
+	return pathParameters
+}
+
+// Untokenize back into an URL path using the slash separator
+func untokenizePath(offset int, parts []string) string {
+	var buffer bytes.Buffer
+	for p := offset; p < len(parts); p++ {
+		buffer.WriteString(parts[p])
+		// do not end
+		if p < len(parts)-1 {
+			buffer.WriteString("/")
+		}
+	}
+	return buffer.String()
 }
