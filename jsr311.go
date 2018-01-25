@@ -24,7 +24,7 @@ func (r RouterJSR311) SelectRoute(
 	httpRequest *http.Request) (selectedService *WebService, selectedRoute *Route, params map[string]string, err error) {
 
 	// Identify the root resource class (WebService)
-	dispatcher, finalMatch, err := r.detectDispatcher(httpRequest.URL.Path, webServices)
+	dispatcher, finalMatch, pathParameters, err := r.detectDispatcher(httpRequest.URL.Path, webServices)
 	if err != nil {
 		return nil, nil, nil, NewError(http.StatusNotFound, "")
 	}
@@ -37,10 +37,11 @@ func (r RouterJSR311) SelectRoute(
 	// Identify the method (Route) that will handle the request
 	candidateRoute, ok := r.detectRoute(routes, httpRequest)
 	var route *Route
-	var pathParameters map[string]string
 	if candidateRoute != nil {
 		route = &candidateRoute.route
-		pathParameters = candidateRoute.pathParameters
+		for key, value := range candidateRoute.pathParameters {
+			pathParameters[key] = value
+		}
 	}
 	return dispatcher, route, pathParameters, ok
 }
@@ -134,12 +135,7 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 		if matches != nil {
 			lastMatch := matches[len(matches)-1]
 			if len(lastMatch) == 0 || lastMatch == "/" { // do not include if value is neither empty nor ‘/’.
-				params := map[string]string{}
-				for i := 1; i < len(matches); i++ {
-					if len(pathExpr.VarNames) >= i {
-						params[pathExpr.VarNames[i-1]] = matches[i]
-					}
-				}
+				params := r.extractParams(pathExpr, matches)
 				filtered.candidates = append(filtered.candidates,
 					routeCandidate{each, len(matches) - 1, pathExpr.LiteralCount, pathExpr.VarCount, params})
 			}
@@ -165,23 +161,34 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 }
 
 // http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2 (step 1)
-func (r RouterJSR311) detectDispatcher(requestPath string, dispatchers []*WebService) (*WebService, string, error) {
+func (r RouterJSR311) detectDispatcher(requestPath string, dispatchers []*WebService) (*WebService, string, map[string]string, error) {
 	filtered := &sortableDispatcherCandidates{}
 	for _, each := range dispatchers {
 		matches := each.pathExpr.Matcher.FindStringSubmatch(requestPath)
 		if matches != nil {
+			params := r.extractParams(each.pathExpr, matches)
 			filtered.candidates = append(filtered.candidates,
-				dispatcherCandidate{each, matches[len(matches)-1], len(matches), each.pathExpr.LiteralCount, each.pathExpr.VarCount})
+				dispatcherCandidate{each, matches[len(matches)-1], len(matches), each.pathExpr.LiteralCount, each.pathExpr.VarCount, params})
 		}
 	}
 	if len(filtered.candidates) == 0 {
 		if trace {
 			traceLogger.Printf("no WebService was found to match URL path:%s\n", requestPath)
 		}
-		return nil, "", errors.New("not found")
+		return nil, "", nil, errors.New("not found")
 	}
 	sort.Sort(sort.Reverse(filtered))
-	return filtered.candidates[0].dispatcher, filtered.candidates[0].finalMatch, nil
+	return filtered.candidates[0].dispatcher, filtered.candidates[0].finalMatch, filtered.candidates[0].params, nil
+}
+
+func (RouterJSR311) extractParams(pathExpr *pathExpression, matches []string) map[string]string {
+	params := map[string]string{}
+	for i := 1; i < len(matches); i++ {
+		if len(pathExpr.VarNames) >= i {
+			params[pathExpr.VarNames[i-1]] = matches[i]
+		}
+	}
+	return params
 }
 
 // Types and functions to support the sorting of Routes
@@ -245,9 +252,10 @@ func (rcs *sortableRouteCandidates) Less(i, j int) bool {
 type dispatcherCandidate struct {
 	dispatcher      *WebService
 	finalMatch      string
-	matchesCount    int // the number of capturing groups
-	literalCount    int // the number of literal characters (means those not resulting from template variable substitution)
-	nonDefaultCount int // the number of capturing groups with non-default regular expressions (i.e. not ‘([^  /]+?)’)
+	matchesCount    int               // the number of capturing groups
+	literalCount    int               // the number of literal characters (means those not resulting from template variable substitution)
+	nonDefaultCount int               // the number of capturing groups with non-default regular expressions (i.e. not ‘([^  /]+?)’)
+	params          map[string]string // The parameters matched
 }
 type sortableDispatcherCandidates struct {
 	candidates []dispatcherCandidate

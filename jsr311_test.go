@@ -3,6 +3,7 @@ package restful
 import (
 	"io"
 	"net/http"
+	"reflect"
 	"sort"
 	"testing"
 )
@@ -13,16 +14,17 @@ import (
 var paths = []struct {
 	// url with path (1) is handled by service with root (2) and last capturing group has value final (3)
 	path, root, final string
+	params            map[string]string
 }{
-	{"/", "/", "/"},
-	{"/p", "/p", ""},
-	{"/p/x", "/p/{q}", ""},
-	{"/q/x", "/q", "/x"},
-	{"/p/x/", "/p/{q}", "/"},
-	{"/p/x/y", "/p/{q}", "/y"},
-	{"/q/x/y", "/q", "/x/y"},
-	{"/z/q", "/{p}/q", ""},
-	{"/a/b/c/q", "/", "/a/b/c/q"},
+	{"/", "/", "/", map[string]string{}},
+	{"/p", "/p", "", map[string]string{}},
+	{"/p/x", "/p/{q}", "", map[string]string{"q": "x"}},
+	{"/q/x", "/q", "/x", map[string]string{}},
+	{"/p/x/", "/p/{q}", "/", map[string]string{"q": "x"}},
+	{"/p/x/y", "/p/{q}", "/y", map[string]string{"q": "x"}},
+	{"/q/x/y", "/q", "/x/y", map[string]string{}},
+	{"/z/q", "/{p}/q", "", map[string]string{"p": "z"}},
+	{"/a/b/c/q", "/", "/a/b/c/q", map[string]string{}},
 }
 
 func TestDetectDispatcher(t *testing.T) {
@@ -44,7 +46,7 @@ func TestDetectDispatcher(t *testing.T) {
 
 	ok := true
 	for i, fixture := range paths {
-		who, final, err := router.detectDispatcher(fixture.path, dispatchers)
+		who, final, params, err := router.detectDispatcher(fixture.path, dispatchers)
 		if err != nil {
 			t.Logf("error in detection:%v", err)
 			ok = false
@@ -55,6 +57,10 @@ func TestDetectDispatcher(t *testing.T) {
 		}
 		if final != fixture.final {
 			t.Logf("[line:%v] Unexpected final, expected:%v, actual:%v", i, fixture.final, final)
+			ok = false
+		}
+		if !reflect.DeepEqual(params, fixture.params) {
+			t.Logf("[line:%v] Unexpected params, expected:%v, actual:%v", i, fixture.params, params)
 			ok = false
 		}
 	}
@@ -297,6 +303,33 @@ func TestSelectRouteInvalidMethod(t *testing.T) {
 	_, _, _, err := router.SelectRoute([]*WebService{ws1}, req)
 	if err == nil {
 		t.Fatal("Expected an error as the wrong method is used but was nil")
+	}
+}
+
+func TestParameterInWebService(t *testing.T) {
+	for _, testCase := range extractParams {
+		t.Run(testCase.name, func(t *testing.T) {
+			ws1 := new(WebService).Path("/{wsParam}")
+			ws1.Route(ws1.GET(testCase.routePath).To(dummy))
+			router := RouterJSR311{}
+			req, _ := http.NewRequest(http.MethodGet, "/wsValue"+testCase.urlPath, nil)
+			_, _, params, err := router.SelectRoute([]*WebService{ws1}, req)
+			if err != nil {
+				t.Fatalf("Unexpected error selecting route: %v", err.Error())
+			}
+			expectedParams := map[string]string{"wsParam": "wsValue"}
+			for key, value := range testCase.expectedParams {
+				expectedParams[key] = value
+			}
+			if len(params) != len(expectedParams) {
+				t.Fatalf("Wrong length of params on selected route, expected: %v, got: %v", testCase.expectedParams, params)
+			}
+			for expectedParamKey, expectedParamValue := range testCase.expectedParams {
+				if expectedParamValue != params[expectedParamKey] {
+					t.Errorf("Wrong parameter for key '%v', expected: %v, got: %v", expectedParamKey, expectedParamValue, params[expectedParamKey])
+				}
+			}
+		})
 	}
 }
 
