@@ -1,5 +1,7 @@
 package main
 
+// Note: this file is copied from https://github.com/emicklei/go-restful-openapi/blob/master/examples/user-resource.go
+
 import (
 	"log"
 	"net/http"
@@ -9,13 +11,11 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-// UserResource is the REST layer to the User domain
 type UserResource struct {
 	// normally one would use DAO (data access object)
 	users map[string]User
 }
 
-// WebService creates a new service that can handle REST requests for User resources.
 func (u UserResource) WebService() *restful.WebService {
 	ws := new(restful.WebService)
 	ws.
@@ -135,7 +135,16 @@ func main() {
 	// Open http://localhost:8080/apidocs/?url=http://localhost:8080/apidocs.json
 	http.Handle("/apidocs/", http.StripPrefix("/apidocs/", http.FileServer(http.Dir("/Users/emicklei/Projects/swagger-ui/dist"))))
 
-	log.Printf("start listening on localhost:8080")
+	// Optionally, you may need to enable CORS for the UI to work.
+	cors := restful.CrossOriginResourceSharing{
+		AllowedHeaders: []string{"Content-Type", "Accept"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		CookiesAllowed: false,
+		Container:      restful.DefaultContainer}
+	restful.DefaultContainer.Filter(cors.Filter)
+
+	log.Printf("Get the API using http://localhost:8080/apidocs.json")
+	log.Printf("Open Swagger UI using http://localhost:8080/apidocs/?url=http://localhost:8080/apidocs.json")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
