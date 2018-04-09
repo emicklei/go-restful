@@ -126,13 +126,6 @@ type entityJSONAccess struct {
 	ContentType string
 }
 
-// Read unmarshalls the value from JSON
-func (e entityJSONAccess) Read(req *Request, v interface{}) error {
-	decoder := json.NewDecoder(req.Request.Body)
-	decoder.UseNumber()
-	return decoder.Decode(v)
-}
-
 // Write marshalls the value to JSON and set the Content-Type Header.
 func (e entityJSONAccess) Write(resp *Response, status int, v interface{}) error {
 	return writeJSON(resp, status, e.ContentType, v)
