@@ -131,7 +131,7 @@ func TestBodyParameter(t *testing.T) {
 	}
 }
 
-func TestReadEntityUnkown(t *testing.T) {
+func TestReadEntityUnknown(t *testing.T) {
 	bodyReader := strings.NewReader("?")
 	httpRequest, _ := http.NewRequest("GET", "/test", bodyReader)
 	httpRequest.Header.Set("Content-Type", "application/rubbish")
@@ -139,7 +139,7 @@ func TestReadEntityUnkown(t *testing.T) {
 	sam := new(Sample)
 	err := request.ReadEntity(sam)
 	if err == nil {
-		t.Fatal("read should be in error")
+		t.Fatal("read should be error")
 	}
 }
 
@@ -151,5 +151,14 @@ func TestSetAttribute(t *testing.T) {
 	there := request.Attribute("go")
 	if there != "there" {
 		t.Fatalf("missing request attribute:%v", there)
+	}
+}
+
+func TestReadEntityNil(t *testing.T){
+	httpRequest, _ := http.NewRequest("GET", "/test", nil)
+	request := &Request{Request: httpRequest}
+	errRead := request.ReadEntity(nil)
+	if errRead != nil {
+		t.Fatal("read should be error")
 	}
 }

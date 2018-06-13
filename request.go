@@ -75,6 +75,11 @@ func (r *Request) ReadEntity(entityPointer interface{}) (err error) {
 	contentType := r.Request.Header.Get(HEADER_ContentType)
 	contentEncoding := r.Request.Header.Get(HEADER_ContentEncoding)
 
+	// check if the request body is nil
+	if entityPointer == nil {
+		return NewError(http.StatusBadRequest, "Unable to unmarshal: entity cannot be nil")
+	}
+
 	// check if the request body needs decompression
 	if ENCODING_GZIP == contentEncoding {
 		gzipReader := currentCompressorProvider.AcquireGzipReader()
