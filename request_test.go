@@ -153,3 +153,14 @@ func TestSetAttribute(t *testing.T) {
 		t.Fatalf("missing request attribute:%v", there)
 	}
 }
+
+func TestReadEntityNilRequestBody(t *testing.T) {
+	httpRequest, _ := http.NewRequest("GET", "/test", nil)
+	httpRequest.Header.Set("Content-Type", "application/json")
+	request := &Request{Request: httpRequest}
+	sam := new(Sample)
+	err := request.ReadEntity(sam)
+	if err == nil {
+		t.Fatal("read should be error")
+	}
+}
