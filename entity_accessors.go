@@ -146,7 +146,7 @@ func writeJSON(resp *Response, status int, contentType string, v interface{}) er
 	}
 	if resp.prettyPrint {
 		// pretty output must be created and written explicitly
-		output, err := MarshalIndent(v, " ", " ")
+		output, err := MarshalIndent(v, "", " ")
 		if err != nil {
 			return err
 		}
