@@ -44,7 +44,7 @@ func TestMeasureContentLengthJson(t *testing.T) {
 	httpWriter := httptest.NewRecorder()
 	resp := Response{ResponseWriter: httpWriter, requestAccept: "*/*", routeProduces: []string{"*/*"}, prettyPrint: true}
 	resp.WriteAsJson(food{"apple"})
-	if resp.ContentLength() != 22 {
+	if resp.ContentLength() != 20 {
 		t.Errorf("Incorrect measured length:%d", resp.ContentLength())
 	}
 }
