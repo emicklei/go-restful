@@ -25,14 +25,14 @@ func (c CurlyRouter) SelectRoute(
 	detectedService := c.detectWebService(requestTokens, webServices)
 	if detectedService == nil {
 		if trace {
-			traceLogger.Printf("no WebService was found to match URL path:%s\n", httpRequest.URL.Path)
+			traceLogger.Logf("no WebService was found to match URL path:%s\n", httpRequest.URL.Path)
 		}
 		return nil, nil, NewError(http.StatusNotFound, "404: Page Not Found")
 	}
 	candidateRoutes := c.selectRoutes(detectedService, requestTokens)
 	if len(candidateRoutes) == 0 {
 		if trace {
-			traceLogger.Printf("no Route in WebService with path %s was found to match URL path:%s\n", detectedService.rootPath, httpRequest.URL.Path)
+			traceLogger.Logf("no Route in WebService with path %s was found to match URL path:%s\n", detectedService.rootPath, httpRequest.URL.Path)
 		}
 		return detectedService, nil, NewError(http.StatusNotFound, "404: Page Not Found")
 	}
@@ -100,7 +100,7 @@ func (c CurlyRouter) regularMatchesPathToken(routeToken string, colon int, reque
 	regPart := routeToken[colon+1 : len(routeToken)-1]
 	if regPart == "*" {
 		if trace {
-			traceLogger.Printf("wildcard parameter detected in route token %s that matches %s\n", routeToken, requestToken)
+			traceLogger.Logf("wildcard parameter detected in route token %s that matches %s\n", routeToken, requestToken)
 		}
 		return true, true
 	}

@@ -11,8 +11,6 @@ import (
 	"runtime"
 	"strings"
 	"sync/atomic"
-
-	"github.com/emicklei/go-restful/log"
 )
 
 // RouteBuilder is a helper to construct Routes.
@@ -153,7 +151,7 @@ func (b *RouteBuilder) Operation(name string) *RouteBuilder {
 
 // ReturnsError is deprecated, use Returns instead.
 func (b *RouteBuilder) ReturnsError(code int, message string, model interface{}) *RouteBuilder {
-	log.Print("ReturnsError is deprecated, use Returns instead.")
+	Logger.Log("ReturnsError is deprecated, use Returns instead.")
 	return b.Returns(code, message, model)
 }
 
@@ -261,11 +259,11 @@ func (b *RouteBuilder) typeNameHandler(handler TypeNameHandleFunction) *RouteBui
 func (b *RouteBuilder) Build() Route {
 	pathExpr, err := newPathExpression(b.currentPath)
 	if err != nil {
-		log.Printf("Invalid path:%s because:%v", b.currentPath, err)
+		Logger.Logf("Invalid path:%s because:%v", b.currentPath, err)
 		os.Exit(1)
 	}
 	if b.function == nil {
-		log.Printf("No function specified for route:" + b.currentPath)
+		Logger.Logf("No function specified for route:" + b.currentPath)
 		os.Exit(1)
 	}
 	operationName := b.operation

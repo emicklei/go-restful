@@ -13,8 +13,6 @@ import (
 	"runtime"
 	"strings"
 	"sync"
-
-	"github.com/emicklei/go-restful/log"
 )
 
 // Container holds a collection of WebServices and a http.ServeMux to dispatch http requests.
@@ -97,7 +95,7 @@ func (c *Container) Add(service *WebService) *Container {
 	// cannot have duplicate root paths
 	for _, each := range c.webServices {
 		if each.RootPath() == service.RootPath() {
-			log.Printf("WebService with duplicate root path detected:['%v']", each)
+			Logger.Logf("WebService with duplicate root path detected:['%v']", each)
 			os.Exit(1)
 		}
 	}
@@ -140,7 +138,7 @@ func (c *Container) addHandler(service *WebService, serveMux *http.ServeMux) boo
 func (c *Container) Remove(ws *WebService) error {
 	if c.ServeMux == http.DefaultServeMux {
 		errMsg := fmt.Sprintf("cannot remove a WebService from a Container using the DefaultServeMux: ['%v']", ws)
-		log.Print(errMsg)
+		Logger.Log(errMsg)
 		return errors.New(errMsg)
 	}
 	c.webServicesLock.Lock()
@@ -176,7 +174,7 @@ func logStackOnRecover(panicReason interface{}, httpWriter http.ResponseWriter) 
 		}
 		buffer.WriteString(fmt.Sprintf("    %s:%d\r\n", file, line))
 	}
-	log.Print(buffer.String())
+	Logger.Log(buffer.String())
 	httpWriter.WriteHeader(http.StatusInternalServerError)
 	httpWriter.Write(buffer.Bytes())
 }
@@ -228,7 +226,7 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 			var err error
 			writer, err = NewCompressingResponseWriter(httpWriter, encoding)
 			if err != nil {
-				log.Print("unable to install compressor: ", err)
+				Logger.Log("unable to install compressor: ", err)
 				httpWriter.WriteHeader(http.StatusInternalServerError)
 				return
 			}

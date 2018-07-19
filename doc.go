@@ -156,19 +156,27 @@ Default value is true
 If content encoding is enabled then the default strategy for getting new gzip/zlib writers and readers is to use a sync.Pool.
 Because writers are expensive structures, performance is even more improved when using a preloaded cache. You can also inject your own implementation.
 
-Trouble shooting
-
-This package has the means to produce detail logging of the complete Http request matching process and filter invocation.
-Enabling this feature requires you to set an implementation of restful.StdLogger (e.g. log.Logger) instance such as:
-
-	restful.TraceLogger(log.New(os.Stdout, "[restful] ", log.LstdFlags|log.Lshortfile))
-
 Logging
 
 The restful.SetLogger() method allows you to override the logger used by the package. By default restful
 uses the standard library `log` package and logs to stdout. Different logging packages are supported as
-long as they conform to `StdLogger` interface defined in the `log` sub-package, writing an adapter for your
+long as they conform to github.com/go-log/log's Logger interface.  github.com/go-log/log's subpackages
+provide some adapters for common logging implementations, and writing additional adapters for your
 preferred package is simple.
+
+Trouble shooting
+
+This package has the means to produce detail logging of the complete HTTP request matching process and filter invocation.
+For example, to use the standard library's Logger.Logger, you could use:
+
+  import (
+    "log"
+
+    "github.com/emicklei/go-restful"
+    "github.com/go-log/log/print"
+  )
+
+	restful.TraceLogger(print.New(log.New(os.Stdout, "[restful] ", log.LstdFlags|log.Lshortfile)))
 
 Resources
 

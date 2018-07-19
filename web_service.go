@@ -5,8 +5,6 @@ import (
 	"os"
 	"reflect"
 	"sync"
-
-	"github.com/emicklei/go-restful/log"
 )
 
 // Copyright 2013 Ernest Micklei. All rights reserved.
@@ -60,7 +58,7 @@ func reflectTypeName(sample interface{}) string {
 func (w *WebService) compilePathExpression() {
 	compiled, err := newPathExpression(w.rootPath)
 	if err != nil {
-		log.Printf("invalid path:%s because:%v", w.rootPath, err)
+		Logger.Logf("invalid path:%s because:%v", w.rootPath, err)
 		os.Exit(1)
 	}
 	w.pathExpr = compiled

@@ -117,7 +117,7 @@ func (r *Response) EntityWriter() (EntityReaderWriter, bool) {
 			}
 		}
 		if trace {
-			traceLogger.Printf("no registered EntityReaderWriter found for %s", r.requestAccept)
+			traceLogger.Logf("no registered EntityReaderWriter found for %s", r.requestAccept)
 		}
 	}
 	return writer, ok
@@ -204,7 +204,7 @@ func (r *Response) Flush() {
 	if f, ok := r.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
 	} else if trace {
-		traceLogger.Printf("ResponseWriter %v doesn't support Flush", r)
+		traceLogger.Logf("ResponseWriter %v doesn't support Flush", r)
 	}
 }
 

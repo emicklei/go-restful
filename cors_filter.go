@@ -35,14 +35,14 @@ func (c CrossOriginResourceSharing) Filter(req *Request, resp *Response, chain *
 	origin := req.Request.Header.Get(HEADER_Origin)
 	if len(origin) == 0 {
 		if trace {
-			traceLogger.Print("no Http header Origin set")
+			traceLogger.Log("no Http header Origin set")
 		}
 		chain.ProcessFilter(req, resp)
 		return
 	}
 	if !c.isOriginAllowed(origin) { // check whether this origin is allowed
 		if trace {
-			traceLogger.Printf("HTTP Origin:%s is not part of %v, neither matches any part of %v", origin, c.AllowedDomains, c.allowedOriginPatterns)
+			traceLogger.Logf("HTTP Origin:%s is not part of %v, neither matches any part of %v", origin, c.AllowedDomains, c.allowedOriginPatterns)
 		}
 		chain.ProcessFilter(req, resp)
 		return
@@ -78,7 +78,7 @@ func (c *CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Resp
 	acrm := req.Request.Header.Get(HEADER_AccessControlRequestMethod)
 	if !c.isValidAccessControlRequestMethod(acrm, c.AllowedMethods) {
 		if trace {
-			traceLogger.Printf("Http header %s:%s is not in %v",
+			traceLogger.Logf("Http header %s:%s is not in %v",
 				HEADER_AccessControlRequestMethod,
 				acrm,
 				c.AllowedMethods)
@@ -90,7 +90,7 @@ func (c *CrossOriginResourceSharing) doPreflightRequest(req *Request, resp *Resp
 		for _, each := range strings.Split(acrhs, ",") {
 			if !c.isValidAccessControlRequestHeader(strings.Trim(each, " ")) {
 				if trace {
-					traceLogger.Printf("Http header %s:%s is not in %v",
+					traceLogger.Logf("Http header %s:%s is not in %v",
 						HEADER_AccessControlRequestHeaders,
 						acrhs,
 						c.AllowedHeaders)

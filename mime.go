@@ -34,7 +34,7 @@ func sortedMimes(accept string) (sorted []mime) {
 			if len(parts) == 2 {
 				f, err := strconv.ParseFloat(parts[1], 64)
 				if err != nil {
-					traceLogger.Printf("unable to parse quality in %s, %v", each, err)
+					traceLogger.Logf("unable to parse quality in %s, %v", each, err)
 				} else {
 					sorted = insertMime(sorted, mime{typeAndQuality[0], f})
 				}

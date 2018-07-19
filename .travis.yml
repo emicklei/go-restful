@@ -3,4 +3,7 @@ language: go
 go:
   - 1.x
 
+before_install:
+  - go get -d github.com/go-log/log
+
 script: go test -v

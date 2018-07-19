@@ -81,7 +81,7 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 	}
 	if len(ifOk) == 0 {
 		if trace {
-			traceLogger.Printf("no Route found (from %d) that passes conditional checks", len(routes))
+			traceLogger.Logf("no Route found (from %d) that passes conditional checks", len(routes))
 		}
 		return nil, NewError(http.StatusNotFound, "404: Not Found")
 	}
@@ -95,7 +95,7 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 	}
 	if len(methodOk) == 0 {
 		if trace {
-			traceLogger.Printf("no Route found (in %d routes) that matches HTTP method %s\n", len(routes), httpRequest.Method)
+			traceLogger.Logf("no Route found (in %d routes) that matches HTTP method %s\n", len(routes), httpRequest.Method)
 		}
 		return nil, NewError(http.StatusMethodNotAllowed, "405: Method Not Allowed")
 	}
@@ -111,7 +111,7 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 	}
 	if len(inputMediaOk) == 0 {
 		if trace {
-			traceLogger.Printf("no Route found (from %d) that matches HTTP Content-Type: %s\n", len(methodOk), contentType)
+			traceLogger.Logf("no Route found (from %d) that matches HTTP Content-Type: %s\n", len(methodOk), contentType)
 		}
 		return nil, NewError(http.StatusUnsupportedMediaType, "415: Unsupported Media Type")
 	}
@@ -129,7 +129,7 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 	}
 	if len(outputMediaOk) == 0 {
 		if trace {
-			traceLogger.Printf("no Route found (from %d) that matches HTTP Accept: %s\n", len(inputMediaOk), accept)
+			traceLogger.Logf("no Route found (from %d) that matches HTTP Accept: %s\n", len(inputMediaOk), accept)
 		}
 		return nil, NewError(http.StatusNotAcceptable, "406: Not Acceptable")
 	}
@@ -160,7 +160,7 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 	}
 	if len(filtered.candidates) == 0 {
 		if trace {
-			traceLogger.Printf("WebService on path %s has no routes that match URL path remainder:%s\n", dispatcher.rootPath, pathRemainder)
+			traceLogger.Logf("WebService on path %s has no routes that match URL path remainder:%s\n", dispatcher.rootPath, pathRemainder)
 		}
 		return []Route{}
 	}
@@ -189,7 +189,7 @@ func (r RouterJSR311) detectDispatcher(requestPath string, dispatchers []*WebSer
 	}
 	if len(filtered.candidates) == 0 {
 		if trace {
-			traceLogger.Printf("no WebService was found to match URL path:%s\n", requestPath)
+			traceLogger.Logf("no WebService was found to match URL path:%s\n", requestPath)
 		}
 		return nil, "", errors.New("not found")
 	}
