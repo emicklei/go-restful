@@ -144,19 +144,14 @@ func writeJSON(resp *Response, status int, contentType string, v interface{}) er
 		// do not write a nil representation
 		return nil
 	}
+	enc := NewEncoder(resp)
 	if resp.prettyPrint {
-		// pretty output must be created and written explicitly
-		output, err := MarshalIndent(v, "", " ")
-		if err != nil {
-			return err
-		}
-		resp.Header().Set(HEADER_ContentType, contentType)
-		resp.WriteHeader(status)
-		_, err = resp.Write(output)
-		return err
+		enc.SetIndent("", " ")
 	}
-	// not-so-pretty
+	if !resp.jsonEscapeHTML {
+		enc.SetEscapeHTML(false)
+	}
 	resp.Header().Set(HEADER_ContentType, contentType)
 	resp.WriteHeader(status)
-	return NewEncoder(resp).Encode(v)
+	return enc.Encode(v)
 }

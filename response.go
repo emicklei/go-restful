@@ -17,23 +17,28 @@ var DefaultResponseMimeType string
 //PrettyPrintResponses controls the indentation feature of XML and JSON serialization
 var PrettyPrintResponses = true
 
+// JSONEscapeHTMLResponses controls whether to escape <, >, and & in JSON Encoder
+// Default value is true as encoding/json standard library, as well as go-iterator
+var JSONEscapeHTMLResponses = true
+
 // Response is a wrapper on the actual http ResponseWriter
 // It provides several convenience methods to prepare and write response content.
 type Response struct {
 	http.ResponseWriter
-	requestAccept string        // mime-type what the Http Request says it wants to receive
-	routeProduces []string      // mime-types what the Route says it can produce
-	statusCode    int           // HTTP status code that has been written explicitly (if zero then net/http has written 200)
-	contentLength int           // number of bytes written for the response body
-	prettyPrint   bool          // controls the indentation feature of XML and JSON serialization. It is initialized using var PrettyPrintResponses.
-	err           error         // err property is kept when WriteError is called
-	hijacker      http.Hijacker // if underlying ResponseWriter supports it
+	requestAccept  string        // mime-type what the Http Request says it wants to receive
+	routeProduces  []string      // mime-types what the Route says it can produce
+	statusCode     int           // HTTP status code that has been written explicitly (if zero then net/http has written 200)
+	contentLength  int           // number of bytes written for the response body
+	prettyPrint    bool          // controls the indentation feature of XML and JSON serialization. It is initialized using var PrettyPrintResponses.
+	jsonEscapeHTML bool          // controls whether to escape <, >, and & in JSON Encoder. It is initialized using var JSONEscapeHTMLResponses.
+	err            error         // err property is kept when WriteError is called
+	hijacker       http.Hijacker // if underlying ResponseWriter supports it
 }
 
 // NewResponse creates a new response based on a http ResponseWriter.
 func NewResponse(httpWriter http.ResponseWriter) *Response {
 	hijacker, _ := httpWriter.(http.Hijacker)
-	return &Response{ResponseWriter: httpWriter, routeProduces: []string{}, statusCode: http.StatusOK, prettyPrint: PrettyPrintResponses, hijacker: hijacker}
+	return &Response{ResponseWriter: httpWriter, routeProduces: []string{}, statusCode: http.StatusOK, prettyPrint: PrettyPrintResponses, jsonEscapeHTML: JSONEscapeHTMLResponses, hijacker: hijacker}
 }
 
 // DefaultResponseContentType set a default.
@@ -65,6 +70,11 @@ func (r *Response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 // PrettyPrint changes whether this response must produce pretty (line-by-line, indented) JSON or XML output.
 func (r *Response) PrettyPrint(bePretty bool) {
 	r.prettyPrint = bePretty
+}
+
+// JSONEscapeHTML changes whether to escape the <, > and &
+func (r *Response) JSONEscapeHTML(jsonEscape bool) {
+	r.jsonEscapeHTML = jsonEscape
 }
 
 // AddHeader is a shortcut for .Header().Add(header,value)

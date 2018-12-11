@@ -211,3 +211,33 @@ func TestWriteEntityNoAcceptMatchNoProduces(t *testing.T) {
 		t.Errorf("got %d want %d", httpWriter.Code, http.StatusNotAcceptable)
 	}
 }
+
+// go test -v -test.run TestWriteEntityJSONEscapeHTML ...restful
+func TestWriteEntityJSONEscapeHTMLEnabled(t *testing.T) {
+	httpWriter := httptest.NewRecorder()
+	resp := Response{ResponseWriter: httpWriter, requestAccept: "application/json", routeProduces: []string{"application/json"}, prettyPrint: true, jsonEscapeHTML: true}
+	var pong = struct {
+		Foo  string `json:"foo"`
+		Link string `json:"link"`
+	}{Foo: "123", Link: "http://www.google.com/search?q=foo&q=bar"}
+	resp.WriteHeaderAndEntity(200, pong)
+	if strings.Contains(httpWriter.Body.String(), "&") {
+		t.Errorf("expected link escaped in json:%s", httpWriter.Body.String())
+	}
+}
+
+// go test -v -test.run TestWriteEntityJSONEscapeHTMLDisabled ...restful
+func TestWriteEntityJSONEscapeHTMLDisabled(t *testing.T) {
+	httpWriter := httptest.NewRecorder()
+	resp := Response{ResponseWriter: httpWriter, requestAccept: "application/json", routeProduces: []string{"application/json"}, prettyPrint: true, jsonEscapeHTML: true}
+	// Disable HTML escaping
+	resp.JSONEscapeHTML(false)
+	var pong = struct {
+		Foo  string `json:"foo"`
+		Link string `json:"link"`
+	}{Foo: "123", Link: "http://www.google.com/search?q=foo&q=bar"}
+	resp.WriteHeaderAndEntity(200, pong)
+	if !strings.Contains(httpWriter.Body.String(), "&") {
+		t.Errorf("expected link not escaped in json:%s", httpWriter.Body.String())
+	}
+}
