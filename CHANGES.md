@@ -1,5 +1,9 @@
 Change history of go-restful
 =
+
+v2.8.1
+- Fix Parameter 'AllowableValues' to populate swagger definition
+
 v2.8.0
 - add Request.QueryParameters()
 - add json-iterator (via build tag)
