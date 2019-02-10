@@ -1,5 +1,9 @@
 Change history of go-restful
 =
+
+v2.9.0
+- add per Route content encoding setting (overrides container setting)
+
 v2.8.0
 - add Request.QueryParameters()
 - add json-iterator (via build tag)
