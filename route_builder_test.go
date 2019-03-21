@@ -59,7 +59,7 @@ func TestRouteBuilder(t *testing.T) {
 	if r.Metadata["test"] != "test-value" {
 		t.Errorf("Metadata not set")
 	}
-	if _, ok := r.ResponseErrors[0]; !ok {
+	if r.DefaultResponse == nil {
 		t.Fatal("expected default response")
 	}
 }
