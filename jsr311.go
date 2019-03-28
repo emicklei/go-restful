@@ -114,7 +114,9 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 		if trace {
 			traceLogger.Printf("no Route found (from %d) that matches HTTP Content-Type: %s\n", len(previous), contentType)
 		}
-		return nil, NewError(http.StatusUnsupportedMediaType, "415: Unsupported Media Type")
+		if httpRequest.ContentLength > 0 {
+			return nil, NewError(http.StatusUnsupportedMediaType, "415: Unsupported Media Type")
+		}
 	}
 
 	// accept
