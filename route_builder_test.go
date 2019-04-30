@@ -74,3 +74,39 @@ func TestAnonymousFuncNaming(t *testing.T) {
 		t.Errorf("got %v want %v", got, want)
 	}
 }
+
+func TestContentEncodingEnabled(t *testing.T) {
+	b := new(RouteBuilder)
+	b.function = dummy
+	r := b.Build()
+
+	got := r.contentEncodingEnabled
+	var want *bool //nil
+
+	if got != want {
+		t.Errorf("got %v want %v (default nil)", got, want)
+	}
+
+	//true
+	b = new(RouteBuilder)
+	b.function = dummy
+	b.ContentEncodingEnabled(true)
+	r = b.Build()
+	got = r.contentEncodingEnabled
+
+	if *got != true {
+		t.Errorf("got %v want %v (explicit true)", *got, true)
+	}
+
+	//true
+	b = new(RouteBuilder)
+	b.function = dummy
+	b.ContentEncodingEnabled(false)
+	r = b.Build()
+	got = r.contentEncodingEnabled
+
+	if *got != false {
+		t.Errorf("got %v want %v (explicit false)", *got, false)
+	}
+
+}
