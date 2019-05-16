@@ -211,3 +211,12 @@ func TestWriteEntityNoAcceptMatchNoProduces(t *testing.T) {
 		t.Errorf("got %d want %d", httpWriter.Code, http.StatusNotAcceptable)
 	}
 }
+
+func TestWriteErrorWithNil(t *testing.T) {
+	httpWriter := httptest.NewRecorder()
+	resp := Response{ResponseWriter: httpWriter}
+	resp.WriteError(http.StatusGone, nil)
+	if httpWriter.Code != http.StatusGone {
+		t.Errorf("got %d want %d", httpWriter.Code, http.StatusGone)
+	}
+}
