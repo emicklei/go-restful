@@ -1,5 +1,9 @@
 ## Change history of go-restful
 
+
+v2.9.5
+- fix panic in Response.WriteError if err == nil
+
 v2.9.4
 
 - fix issue #400 , parsing mime type quality
