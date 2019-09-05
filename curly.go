@@ -47,7 +47,7 @@ func (c CurlyRouter) SelectRoute(
 func (c CurlyRouter) selectRoutes(ws *WebService, requestTokens []string) sortableCurlyRoutes {
 	candidates := make(sortableCurlyRoutes, 0, 8)
 	for _, each := range ws.routes {
-		matches, paramCount, staticCount := c.matchesRouteByPathTokens(each.pathParts, requestTokens)
+		matches, paramCount, staticCount := c.matchesRouteByPathTokens(each.pathParts, requestTokens, each.hasCustomVerb)
 		if matches {
 			candidates.add(curlyRoute{each, paramCount, staticCount}) // TODO make sure Routes() return pointers?
 		}
@@ -57,7 +57,7 @@ func (c CurlyRouter) selectRoutes(ws *WebService, requestTokens []string) sortab
 }
 
 // matchesRouteByPathTokens computes whether it matches, howmany parameters do match and what the number of static path elements are.
-func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []string) (matches bool, paramCount int, staticCount int) {
+func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []string, hasCustomVerb bool) (matches bool, paramCount int, staticCount int) {
 	if len(routeTokens) < len(requestTokens) {
 		// proceed in matching only if last routeToken is wildcard
 		count := len(routeTokens)
@@ -72,7 +72,7 @@ func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []strin
 			return false, 0, 0
 		}
 		requestToken := requestTokens[i]
-		if hasCustomVerb(routeToken){
+		if hasCustomVerb{
 			if !isMatchCustomVerb(routeToken, requestToken) {
 				return false, 0, 0
 			}

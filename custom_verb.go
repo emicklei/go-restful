@@ -20,7 +20,7 @@ func isMatchCustomVerb(routeToken string, pathToken string) bool {
 	}
 
 	customVerb := rs[1]
-	specificVerbReg := regexp.MustCompile(fmt.Sprintf(":%v$", customVerb))
+	specificVerbReg := regexp.MustCompile(fmt.Sprintf(":%s$", customVerb))
 	return specificVerbReg.MatchString(pathToken)
 }
 
