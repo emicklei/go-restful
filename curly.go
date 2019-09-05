@@ -72,6 +72,15 @@ func (c CurlyRouter) matchesRouteByPathTokens(routeTokens, requestTokens []strin
 			return false, 0, 0
 		}
 		requestToken := requestTokens[i]
+		if hasCustomVerb(routeToken){
+			if !isMatchCustomVerb(routeToken, requestToken) {
+				return false, 0, 0
+			}
+			staticCount++
+			requestToken = removeCustomVerb(requestToken)
+			routeToken = removeCustomVerb(routeToken)
+		}
+
 		if strings.HasPrefix(routeToken, "{") {
 			paramCount++
 			if colon := strings.Index(routeToken, ":"); colon != -1 {
