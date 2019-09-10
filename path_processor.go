@@ -29,7 +29,7 @@ func (d defaultPathProcessor) ExtractParameters(r *Route, _ *WebService, urlPath
 		} else {
 			value = urlParts[i]
 		}
-		if r.hasCustomVerb {
+		if r.hasCustomVerb && hasCustomVerb(key) {
 			key = removeCustomVerb(key)
 			value = removeCustomVerb(value)
 		}

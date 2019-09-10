@@ -117,8 +117,8 @@ var routeMatchers = []struct {
 	{"/resources:run", "/resources:run", true, 0, 2, true},
 	{"/resources:run", "/user:run", false, 0, 0, true},
 	{"/resources:run", "/resources", false, 0, 0, true},
-	{"/{userId:^prefix-}:start", "/prefix-}:startUserId", false, 0, 0, true},
-	{"/{userId:^prefix-}:start", "/prefix-userId:start", true, 1, 1, true},
+	{"/users/{userId:^prefix-}:start", "/users/prefix-}:startUserId", false, 0, 0, true},
+	{"/users/{userId:^prefix-}:start", "/users/prefix-userId:start", true, 1, 2, true},
 
 }
 
