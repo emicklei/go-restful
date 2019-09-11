@@ -100,19 +100,26 @@ var routeMatchers = []struct {
 	matches     bool
 	paramCount  int
 	staticCount int
+	hasCustomVerb bool
 }{
 	// route, request-path
-	{"/a", "/a", true, 0, 1},
-	{"/a", "/b", false, 0, 0},
-	{"/a", "/b", false, 0, 0},
-	{"/a/{b}/c/", "/a/2/c", true, 1, 2},
-	{"/{a}/{b}/{c}/", "/a/b", false, 0, 0},
-	{"/{x:*}", "/", false, 0, 0},
-	{"/{x:*}", "/a", true, 1, 0},
-	{"/{x:*}", "/a/b", true, 1, 0},
-	{"/a/{x:*}", "/a/b", true, 1, 1},
-	{"/a/{x:[A-Z][A-Z]}", "/a/ZX", true, 1, 1},
-	{"/basepath/{resource:*}", "/basepath/some/other/location/test.xml", true, 1, 1},
+	{"/a", "/a", true, 0, 1, false},
+	{"/a", "/b", false, 0, 0, false},
+	{"/a", "/b", false, 0, 0, false},
+	{"/a/{b}/c/", "/a/2/c", true, 1, 2, false},
+	{"/{a}/{b}/{c}/", "/a/b", false, 0, 0, false},
+	{"/{x:*}", "/", false, 0, 0, false},
+	{"/{x:*}", "/a", true, 1, 0, false},
+	{"/{x:*}", "/a/b", true, 1, 0, false},
+	{"/a/{x:*}", "/a/b", true, 1, 1, false},
+	{"/a/{x:[A-Z][A-Z]}", "/a/ZX", true, 1, 1, false},
+	{"/basepath/{resource:*}", "/basepath/some/other/location/test.xml", true, 1, 1, false},
+	{"/resources:run", "/resources:run", true, 0, 2, true},
+	{"/resources:run", "/user:run", false, 0, 0, true},
+	{"/resources:run", "/resources", false, 0, 0, true},
+	{"/users/{userId:^prefix-}:start", "/users/prefix-}:startUserId", false, 0, 0, true},
+	{"/users/{userId:^prefix-}:start", "/users/prefix-userId:start", true, 1, 2, true},
+
 }
 
 // clear && go test -v -test.run Test_matchesRouteByPathTokens ...restful
@@ -121,7 +128,7 @@ func Test_matchesRouteByPathTokens(t *testing.T) {
 	for i, each := range routeMatchers {
 		routeToks := tokenizePath(each.route)
 		reqToks := tokenizePath(each.path)
-		matches, pCount, sCount := router.matchesRouteByPathTokens(routeToks, reqToks)
+		matches, pCount, sCount := router.matchesRouteByPathTokens(routeToks, reqToks, each.hasCustomVerb)
 		if matches != each.matches {
 			t.Fatalf("[%d] unexpected matches outcome route:%s, path:%s, matches:%v", i, each.route, each.path, matches)
 		}

@@ -62,6 +62,16 @@ func TestRouteBuilder(t *testing.T) {
 	if r.DefaultResponse == nil {
 		t.Fatal("expected default response")
 	}
+	if r.hasCustomVerb {
+		t.Errorf("hasCustomVerb should not be true")
+	}
+
+	customVerbRoute := new(RouteBuilder)
+	customVerbRoute.To(dummy)
+	customVerbRoute.Path("/users:init")
+	if !customVerbRoute.Build().hasCustomVerb {
+		t.Errorf("hasCustomVerb should be true")
+	}
 }
 
 func TestAnonymousFuncNaming(t *testing.T) {
