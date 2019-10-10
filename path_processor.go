@@ -2,6 +2,7 @@ package restful
 
 import (
 	"bytes"
+	"regexp"
 	"strings"
 )
 
@@ -34,7 +35,7 @@ func (d defaultPathProcessor) ExtractParameters(r *Route, _ *WebService, urlPath
 			value = removeCustomVerb(value)
 		}
 
-		if strings.HasPrefix(key, "{") { // path-parameter
+		if strings.Index(key, "{") > -1 { // path-parameter
 			if colon := strings.Index(key, ":"); colon != -1 {
 				// extract by regex
 				regPart := key[colon+1 : len(key)-1]
@@ -47,7 +48,14 @@ func (d defaultPathProcessor) ExtractParameters(r *Route, _ *WebService, urlPath
 				}
 			} else {
 				// without enclosing {}
-				pathParameters[key[1:len(key)-1]] = value
+				startIndex := strings.Index(key, "{")
+				endIndex := strings.Index(key, "}")
+
+				extractValuePattern := regexp.QuoteMeta(key[:startIndex]) + `(.*)` + regexp.QuoteMeta(key[endIndex+1:])
+				extractValueReg := regexp.MustCompile(extractValuePattern)
+
+				value = extractValueReg.FindStringSubmatch(value)[1]
+				pathParameters[key[startIndex+1:endIndex]] = value
 			}
 		}
 	}

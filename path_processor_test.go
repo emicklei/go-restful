@@ -44,6 +44,27 @@ func TestExtractParameters_EmptyValue(t *testing.T) {
 	}
 }
 
+func TestExtractParameters_Dot(t *testing.T) {
+	params := doExtractParams("/fixed/{var}.foo", 2, "/fixed/barrr.foo", t)
+	if params["var"] != "barrr" {
+		t.Errorf("parameter mismatch var")
+	}
+}
+
+func TestExtractParameters_Prefix(t *testing.T) {
+	params := doExtractParams("/fixed/foo_{var}", 2, "/fixed/foo_barrr", t)
+	if params["var"] != "barrr" {
+		t.Errorf("parameter mismatch var")
+	}
+}
+
+func TestExtractParameters_Suffix(t *testing.T) {
+	params := doExtractParams("/fixed/{var}_foo", 2, "/fixed/barrr_foo", t)
+	if params["var"] != "barrr" {
+		t.Errorf("parameter mismatch var")
+	}
+}
+
 func TestExtractParameters_RegexAndCustomVerb(t *testing.T) {
 	testCase := []struct{
 		route string
