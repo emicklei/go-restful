@@ -67,6 +67,13 @@ func TestExtractParameters_Suffix(t *testing.T) {
 	}
 }
 
+func TestExtractParameters_Mixed(t *testing.T) {
+	params := doExtractParams("/fixed/foo_{var}_bar", 2, "/fixed/foo_barrr_bar", t)
+	if params["var"] != "barrr" {
+		t.Errorf("parameter mismatch var")
+	}
+}
+
 func TestExtractParameters_RegexAndCustomVerb(t *testing.T) {
 	testCase := []struct {
 		route     string
