@@ -1,7 +1,16 @@
-## Change history of go-restful
+# Change history of go-restful
 
+
+v2.10.0 
+
+- allow prefix and suffix in path variable expression (#414)
+
+v2.9.6
+
+- support google custome verb (#413)
 
 v2.9.5
+
 - fix panic in Response.WriteError if err == nil
 
 v2.9.4
