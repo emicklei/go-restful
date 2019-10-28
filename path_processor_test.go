@@ -1,6 +1,8 @@
 package restful
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestMatchesPath_OneParam(t *testing.T) {
 	params := doExtractParams("/from/{source}", 2, "/from/here", t)
@@ -44,25 +46,53 @@ func TestExtractParameters_EmptyValue(t *testing.T) {
 	}
 }
 
+func TestExtractParameters_Dot(t *testing.T) {
+	params := doExtractParams("/fixed/{var}.foo", 2, "/fixed/barrr.foo", t)
+	if params["var"] != "barrr" {
+		t.Errorf("parameter mismatch var")
+	}
+}
+
+func TestExtractParameters_Prefix(t *testing.T) {
+	params := doExtractParams("/fixed/foo_{var}", 2, "/fixed/foo_barrr", t)
+	if params["var"] != "barrr" {
+		t.Errorf("parameter mismatch var")
+	}
+}
+
+func TestExtractParameters_Suffix(t *testing.T) {
+	params := doExtractParams("/fixed/{var}_foo", 2, "/fixed/barrr_foo", t)
+	if params["var"] != "barrr" {
+		t.Errorf("parameter mismatch var")
+	}
+}
+
+func TestExtractParameters_Mixed(t *testing.T) {
+	params := doExtractParams("/fixed/foo_{var}_bar", 2, "/fixed/foo_barrr_bar", t)
+	if params["var"] != "barrr" {
+		t.Errorf("parameter mismatch var")
+	}
+}
+
 func TestExtractParameters_RegexAndCustomVerb(t *testing.T) {
-	testCase := []struct{
-		route string
-		size int
-		path string
+	testCase := []struct {
+		route     string
+		size      int
+		path      string
 		checkList map[string]string
 	}{
-		{"/projects/{projectId}/users/{id:^prefix-}:custom", 4,"/projects/110/users/prefix-userId:custom", map[string]string{
+		{"/projects/{projectId}/users/{id:^prefix-}:custom", 4, "/projects/110/users/prefix-userId:custom", map[string]string{
 			"projectId": "110",
-			"id":"prefix-userId",}},
-		{"/projects/{projectId}/users/{id:*}", 4,"/projects/110/users/prefix-userId:custom", map[string]string{
+			"id":        "prefix-userId"}},
+		{"/projects/{projectId}/users/{id:*}", 4, "/projects/110/users/prefix-userId:custom", map[string]string{
 			"projectId": "110",
-			"id":"prefix-userId:custom",}},
+			"id":        "prefix-userId:custom"}},
 	}
 
 	for idx, v := range testCase {
 		params := doExtractParams(v.route, v.size, v.path, t)
 		for k, val := range v.checkList {
-			if params[k] != val{
+			if params[k] != val {
 				t.Errorf("[%v] params: %v mismatch, expected: %v, actual: %v", idx, k, v.checkList[k], params[k])
 			}
 		}

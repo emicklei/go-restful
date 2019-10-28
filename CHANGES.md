@@ -1,4 +1,4 @@
-## Change history of go-restful
+# Change history of go-restful
 
 v2.10.0
 
@@ -10,6 +10,18 @@ v2.10.0
 v2.9.6
 
 - small optimization in filter code
+
+v2.11.1
+
+- fix WriteError return value (#415)
+
+v2.11.0 
+
+- allow prefix and suffix in path variable expression (#414)
+
+v2.9.6
+
+- support google custome verb (#413)
 
 v2.9.5
 
