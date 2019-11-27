@@ -1,5 +1,9 @@
 # Change history of go-restful
 
+v3.0.0
+
+- add Go module
+
 v2.10.0
 
 - support for Custom Verbs (thanks Vinci Xu <277040271@qq.com>)
