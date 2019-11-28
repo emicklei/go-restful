@@ -18,6 +18,19 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 - PATCH = Update partial content of a resource
 - OPTIONS = Get information about the communication options for the request URI
     
+
+### Importing
+
+The master branch is now v3+ and has Go Module support.
+
+	$ go get github.com/emicklei/go-restful/v3
+
+&nbsp;
+
+	import (
+  		"github.com/emicklei/go-restful/v3" // imports as package "restful"
+	)
+
 ### Example
 
 ```Go
