@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/emicklei/go-restful/log"
+	"github.com/emicklei/go-restful/log/v3"
 )
 
 // RouteBuilder is a helper to construct Routes.
