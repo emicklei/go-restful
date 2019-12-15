@@ -14,7 +14,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/emicklei/go-restful/log/v3"
+	"github.com/emicklei/go-restful/v3/log"
 )
 
 // Container holds a collection of WebServices and a http.ServeMux to dispatch http requests.

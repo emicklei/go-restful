@@ -4,7 +4,7 @@ package restful
 // Use of this source code is governed by a license
 // that can be found in the LICENSE file.
 import (
-	"github.com/emicklei/go-restful/log/v3"
+	"github.com/emicklei/go-restful/v3/log"
 )
 
 var trace bool = false

@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/emicklei/go-restful/log/v3"
+	"github.com/emicklei/go-restful/v3/log"
 )
 
 // Copyright 2013 Ernest Micklei. All rights reserved.
