@@ -2,6 +2,7 @@
 
 v3.0.0
 
+- fix: use request/response resulting from filter chain
 - add Go module
   Module consumer should use github.com/emicklei/go-restful/v3 as import path
 
