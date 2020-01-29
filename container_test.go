@@ -1,6 +1,7 @@
 package restful
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -26,17 +27,27 @@ func TestContainer_HandleWithFilter(t *testing.T) {
 	postfilterCalled := false
 	httpHandlerCalled := false
 
+	contextAvailable := false
+
 	wc := NewContainer()
 	wc.Filter(func(request *Request, response *Response, chain *FilterChain) {
 		prefilterCalled = true
+		request.Request = request.Request.WithContext(context.WithValue(request.Request.Context(), "prefilterContextSet", "true"))
 		chain.ProcessFilter(request, response)
 	})
 	wc.HandleWithFilter("/", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		httpHandlerCalled = true
+		_, ok1 := req.Context().Value("prefilterContextSet").(string)
+		_, ok2 := req.Context().Value("postfilterContextSet").(string)
+		if ok1 && ok2 {
+			contextAvailable = true
+		}
+
 		w.Write([]byte("ok"))
 	}))
 	wc.Filter(func(request *Request, response *Response, chain *FilterChain) {
 		postfilterCalled = true
+		request.Request = request.Request.WithContext(context.WithValue(request.Request.Context(), "postfilterContextSet", "true"))
 		chain.ProcessFilter(request, response)
 	})
 
@@ -57,6 +68,9 @@ func TestContainer_HandleWithFilter(t *testing.T) {
 	}
 	if !httpHandlerCalled {
 		t.Errorf("handler added by calling HandleWithFilter wasn't called")
+	}
+	if !contextAvailable {
+		t.Errorf("Context not available in http handler")
 	}
 }
 
