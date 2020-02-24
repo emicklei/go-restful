@@ -176,6 +176,15 @@ func (b *RouteBuilder) Returns(code int, message string, model interface{}) *Rou
 	return b
 }
 
+// ReturnsWithHeaders is similar to Returns, but can specify response headers
+func (b *RouteBuilder) ReturnsWithHeaders(code int, message string, model interface{}, headers map[string]Header) *RouteBuilder {
+	b.Returns(code, message, model)
+	err := b.errorMap[code]
+	err.Headers = headers
+	b.errorMap[code] = err
+	return b
+}
+
 // DefaultReturns is a special Returns call that sets the default of the response.
 func (b *RouteBuilder) DefaultReturns(message string, model interface{}) *RouteBuilder {
 	b.defaultResponse = &ResponseError{
@@ -205,7 +214,25 @@ type ResponseError struct {
 	Code      int
 	Message   string
 	Model     interface{}
+	Headers   map[string]Header
 	IsDefault bool
+}
+
+// Header describes a header for a response of the API
+//
+// For more information: http://goo.gl/8us55a#headerObject
+type Header struct {
+	*Items
+	Description string
+}
+
+// Items describe swagger simple schemas for headers
+type Items struct {
+	Type             string
+	Format           string
+	Items            *Items
+	CollectionFormat string
+	Default          interface{}
 }
 
 func (b *RouteBuilder) servicePath(path string) *RouteBuilder {
