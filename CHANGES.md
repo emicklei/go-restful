@@ -1,5 +1,11 @@
 # Change history of go-restful
 
+
+v3.1.0
+
+- support describing response headers (#426)
+- fix openapi examples (#425)
+
 v3.0.0
 
 - fix: use request/response resulting from filter chain
