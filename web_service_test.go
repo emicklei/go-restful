@@ -99,7 +99,7 @@ func TestMethodNotAllowed_Issue435(t *testing.T) {
 	if 405 != httpWriter.Code {
 		t.Error("405 expected method not allowed")
 	}
-	if "PUT, GET, DELETE" != httpWriter.Header().Get("Allowed") {
+	if "PUT, GET, DELETE" != httpWriter.Header().Get("Allow") {
 		t.Error("405 expected Allowed header got ", httpWriter.Header())
 	}
 }

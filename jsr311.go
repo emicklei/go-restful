@@ -109,7 +109,7 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 			}
 			allowed = append(allowed, candidate.Method)
 		}
-		header := http.Header{"Allowed": []string{strings.Join(allowed, ", ")}}
+		header := http.Header{"Allow": []string{strings.Join(allowed, ", ")}}
 		return nil, NewErrorWithHeader(http.StatusMethodNotAllowed, "405: Method Not Allowed", header)
 	}
 
