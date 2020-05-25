@@ -91,7 +91,7 @@ func TestMethodNotAllowed(t *testing.T) {
 
 func TestMethodNotAllowed_Issue435(t *testing.T) {
 	tearDown()
-	Add(newPutGetDeleteGetService())
+	Add(newPutGetDeleteWithDuplicateService())
 	httpRequest, _ := http.NewRequest("POST", "http://here/thing", nil)
 	httpRequest.Header.Set("Accept", "*/*")
 	httpWriter := httptest.NewRecorder()
@@ -291,12 +291,12 @@ func newGetOnlyService() *WebService {
 	return ws
 }
 
-func newPutGetDeleteGetService() *WebService {
+func newPutGetDeleteWithDuplicateService() *WebService {
 	ws := new(WebService).Path("")
 	ws.Route(ws.PUT("/thing").To(doPanic))
 	ws.Route(ws.GET("/thing").To(doPanic))
 	ws.Route(ws.DELETE("/thing").To(doPanic))
-	ws.Route(ws.GET("/other").To(doPanic))
+	ws.Route(ws.GET("/thing").To(doPanic))
 	return ws
 }
 
