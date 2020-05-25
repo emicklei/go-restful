@@ -185,11 +185,9 @@ func logStackOnRecover(panicReason interface{}, httpWriter http.ResponseWriter) 
 // when a ServiceError is returned during route selection. Default implementation
 // calls resp.WriteErrorString(err.Code, err.Message)
 func writeServiceError(err ServiceError, req *Request, resp *Response) {
-	if err.Header != nil {
-		for header, values := range err.Header {
-			for _, value := range values {
-				resp.Header().Add(header, value)
-			}
+	for header, values := range err.Header {
+		for _, value := range values {
+			resp.Header().Add(header, value)
 		}
 	}
 	resp.WriteErrorString(err.Code, err.Message)
