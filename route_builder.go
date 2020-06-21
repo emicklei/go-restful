@@ -17,14 +17,15 @@ import (
 
 // RouteBuilder is a helper to construct Routes.
 type RouteBuilder struct {
-	rootPath    string
-	currentPath string
-	produces    []string
-	consumes    []string
-	httpMethod  string        // required
-	function    RouteFunction // required
-	filters     []FilterFunction
-	conditions  []RouteSelectionConditionFunction
+	rootPath                         string
+	currentPath                      string
+	produces                         []string
+	consumes                         []string
+	httpMethod                       string        // required
+	function                         RouteFunction // required
+	filters                          []FilterFunction
+	conditions                       []RouteSelectionConditionFunction
+	allowedMethodsWithoutContentType []string // see Route
 
 	typeNameHandleFunc TypeNameHandleFunction // required
 
@@ -209,6 +210,15 @@ func (b *RouteBuilder) Deprecate() *RouteBuilder {
 	return b
 }
 
+// AllowedMethodsWithoutContentType overides the default list GET,HEAD,OPTIONS,DELETE,TRACE
+// If a request does not include a content-type header then
+// depending on the method, it may return a 415 Unsupported Media.
+// Must have uppercase HTTP Method names such as GET,HEAD,OPTIONS,...
+func (b *RouteBuilder) AllowedMethodsWithoutContentType(methods []string) *RouteBuilder {
+	b.allowedMethodsWithoutContentType = methods
+	return b
+}
+
 // ResponseError represents a response; not necessarily an error.
 type ResponseError struct {
 	Code      int
@@ -303,26 +313,27 @@ func (b *RouteBuilder) Build() Route {
 		operationName = nameOfFunction(b.function)
 	}
 	route := Route{
-		Method:                 b.httpMethod,
-		Path:                   concatPath(b.rootPath, b.currentPath),
-		Produces:               b.produces,
-		Consumes:               b.consumes,
-		Function:               b.function,
-		Filters:                b.filters,
-		If:                     b.conditions,
-		relativePath:           b.currentPath,
-		pathExpr:               pathExpr,
-		Doc:                    b.doc,
-		Notes:                  b.notes,
-		Operation:              operationName,
-		ParameterDocs:          b.parameters,
-		ResponseErrors:         b.errorMap,
-		DefaultResponse:        b.defaultResponse,
-		ReadSample:             b.readSample,
-		WriteSample:            b.writeSample,
-		Metadata:               b.metadata,
-		Deprecated:             b.deprecated,
-		contentEncodingEnabled: b.contentEncodingEnabled,
+		Method:                           b.httpMethod,
+		Path:                             concatPath(b.rootPath, b.currentPath),
+		Produces:                         b.produces,
+		Consumes:                         b.consumes,
+		Function:                         b.function,
+		Filters:                          b.filters,
+		If:                               b.conditions,
+		relativePath:                     b.currentPath,
+		pathExpr:                         pathExpr,
+		Doc:                              b.doc,
+		Notes:                            b.notes,
+		Operation:                        operationName,
+		ParameterDocs:                    b.parameters,
+		ResponseErrors:                   b.errorMap,
+		DefaultResponse:                  b.defaultResponse,
+		ReadSample:                       b.readSample,
+		WriteSample:                      b.writeSample,
+		Metadata:                         b.metadata,
+		Deprecated:                       b.deprecated,
+		contentEncodingEnabled:           b.contentEncodingEnabled,
+		allowedMethodsWithoutContentType: b.allowedMethodsWithoutContentType,
 	}
 	route.postBuild()
 	return route
