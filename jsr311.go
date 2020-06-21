@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strings"
 )
 
 // RouterJSR311 implements the flow for matching Requests to Routes (and consequently Resource Functions)
@@ -98,7 +99,18 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 		if trace {
 			traceLogger.Printf("no Route found (in %d routes) that matches HTTP method %s\n", len(previous), httpRequest.Method)
 		}
-		return nil, NewError(http.StatusMethodNotAllowed, "405: Method Not Allowed")
+		allowed := []string{}
+	allowedLoop:
+		for _, candidate := range previous {
+			for _, method := range allowed {
+				if method == candidate.Method {
+					continue allowedLoop
+				}
+			}
+			allowed = append(allowed, candidate.Method)
+		}
+		header := http.Header{"Allow": []string{strings.Join(allowed, ", ")}}
+		return nil, NewErrorWithHeader(http.StatusMethodNotAllowed, "405: Method Not Allowed", header)
 	}
 
 	// content-type
