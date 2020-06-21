@@ -1,7 +1,12 @@
 # Change history of go-restful
 
 
-v3.1.0
+## [v3.2.0] - 2020-06-21
+
+- 405 Method Not Allowed must have Allow header (#436) (thx Bracken <abdawson@gmail.com>)
+- add field allowedMethodsWithoutContentType (#424)
+
+## [v3.1.0]
 
 - support describing response headers (#426)
 - fix openapi examples (#425)
