@@ -89,6 +89,21 @@ func TestMethodNotAllowed(t *testing.T) {
 	}
 }
 
+func TestMethodNotAllowed_Issue435(t *testing.T) {
+	tearDown()
+	Add(newPutGetDeleteWithDuplicateService())
+	httpRequest, _ := http.NewRequest("POST", "http://here/thing", nil)
+	httpRequest.Header.Set("Accept", "*/*")
+	httpWriter := httptest.NewRecorder()
+	DefaultContainer.dispatch(httpWriter, httpRequest)
+	if 405 != httpWriter.Code {
+		t.Error("405 expected method not allowed")
+	}
+	if "PUT, GET, DELETE" != httpWriter.Header().Get("Allow") {
+		t.Error("405 expected Allowed header got ", httpWriter.Header())
+	}
+}
+
 func TestSelectedRoutePath_Issue100(t *testing.T) {
 	tearDown()
 	Add(newSelectedRouteTestingService())
@@ -273,6 +288,15 @@ func newPanicingService() *WebService {
 func newGetOnlyService() *WebService {
 	ws := new(WebService).Path("")
 	ws.Route(ws.GET("/get").To(doPanic))
+	return ws
+}
+
+func newPutGetDeleteWithDuplicateService() *WebService {
+	ws := new(WebService).Path("")
+	ws.Route(ws.PUT("/thing").To(doPanic))
+	ws.Route(ws.GET("/thing").To(doPanic))
+	ws.Route(ws.DELETE("/thing").To(doPanic))
+	ws.Route(ws.GET("/thing").To(doPanic))
 	return ws
 }
 
