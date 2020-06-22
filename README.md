@@ -4,7 +4,12 @@ package for building REST-style Web Services using Google Go
 
 [![Build Status](https://travis-ci.org/emicklei/go-restful.png)](https://travis-ci.org/emicklei/go-restful)
 [![Go Report Card](https://goreportcard.com/badge/github.com/emicklei/go-restful)](https://goreportcard.com/report/github.com/emicklei/go-restful)
+<<<<<<< HEAD
 [![GoDoc](https://godoc.org/github.com/emicklei/go-restful?status.svg)](https://godoc.org/github.com/emicklei/go-restful)
+=======
+[![GoDoc](https://godoc.org/github.com/emicklei/go-restful?status.svg)](https://pkg.go.dev/github.com/emicklei/go-restful)
+[![codecov](https://codecov.io/gh/emicklei/go-restful/branch/master/graph/badge.svg)](https://codecov.io/gh/emicklei/go-restful)
+>>>>>>> 10525f3... add codecov, use pkg.go.dev
 
 - [Code examples](https://github.com/emicklei/go-restful/tree/master/examples)
 
