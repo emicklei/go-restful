@@ -48,7 +48,7 @@ func (u UserResource) WebService() *restful.WebService {
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Reads(User{})) // from the request
 
-	ws.Route(ws.PUT("").To(u.createUser).
+	ws.Route(ws.POST("").To(u.createUser).
 		// docs
 		Doc("create a user").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -85,10 +85,10 @@ func (u UserResource) findUser(request *restful.Request, response *restful.Respo
 	}
 }
 
-// PUT http://localhost:8080/users/1
+// POST http://localhost:8080/users/1
 // <User><Id>1</Id><Name>Melissa Raspberry</Name></User>
 //
-func (u *UserResource) updateUser(request *restful.Request, response *restful.Response) {
+func (u *UserResource) createUser(request *restful.Request, response *restful.Response) {
 	usr := new(User)
 	err := request.ReadEntity(&usr)
 	if err == nil {
@@ -102,7 +102,7 @@ func (u *UserResource) updateUser(request *restful.Request, response *restful.Re
 // PUT http://localhost:8080/users/1
 // <User><Id>1</Id><Name>Melissa</Name></User>
 //
-func (u *UserResource) createUser(request *restful.Request, response *restful.Response) {
+func (u *UserResource) updateUser(request *restful.Request, response *restful.Response) {
 	usr := User{ID: request.PathParameter("user-id")}
 	err := request.ReadEntity(&usr)
 	if err == nil {
@@ -125,8 +125,8 @@ func main() {
 	restful.DefaultContainer.Add(u.WebService())
 
 	config := restfulspec.Config{
-		WebServices: restful.RegisteredWebServices(), // you control what services are visible
-		APIPath:     "/apidocs.json",
+		WebServices:                   restful.RegisteredWebServices(), // you control what services are visible
+		APIPath:                       "/apidocs.json",
 		PostBuildSwaggerObjectHandler: enrichSwaggerObject}
 	restful.DefaultContainer.Add(restfulspec.NewOpenAPIService(config))
 
