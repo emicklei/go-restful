@@ -13,10 +13,10 @@ func setup(container *Container) {
 	rtCount := 26
 
 	for i := 0; i < wsCount; i++ {
-		root := fmt.Sprintf("/%s/{%s}/", string(i+97), string(i+97))
+		root := fmt.Sprintf("/%s/{%s}/", string(rune(i+97)), string(rune(i+97)))
 		ws := new(WebService).Path(root)
 		for j := 0; j < rtCount; j++ {
-			sub := fmt.Sprintf("/%s2/{%s2}", string(j+97), string(j+97))
+			sub := fmt.Sprintf("/%s2/{%s2}", string(rune(j+97)), string(rune(j+97)))
 			ws.Route(ws.GET(sub).To(echo))
 		}
 		container.Add(ws)
