@@ -1,5 +1,10 @@
 # Change history of go-restful
 
+## [v2.14.0] - 2020-08-19
+
+- Enable content encoding on Handle and ServeHTTP (#446)
+- List available representations in 406 body (#437)
+- Convert to string using rune() (#443)
 
 ## [v2.13.0] - 2020-06-21
 
