@@ -301,13 +301,59 @@ func fixedPrefixPath(pathspec string) string {
 }
 
 // ServeHTTP implements net/http.Handler therefore a Container can be a Handler in a http.Server
-func (c *Container) ServeHTTP(httpwriter http.ResponseWriter, httpRequest *http.Request) {
-	c.ServeMux.ServeHTTP(httpwriter, httpRequest)
+func (c *Container) ServeHTTP(httpWriter http.ResponseWriter, httpRequest *http.Request) {
+	writer := httpWriter
+
+	// CompressingResponseWriter should be closed after all operations are done
+	defer func() {
+		if compressWriter, ok := writer.(*CompressingResponseWriter); ok {
+			compressWriter.Close()
+		}
+	}()
+
+	if c.contentEncodingEnabled {
+		doCompress, encoding := wantsCompressedResponse(httpRequest)
+		if doCompress {
+			var err error
+			writer, err = NewCompressingResponseWriter(httpWriter, encoding)
+			if err != nil {
+				log.Print("unable to install compressor: ", err)
+				httpWriter.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}
+	}
+
+	c.ServeMux.ServeHTTP(writer, httpRequest)
 }
 
 // Handle registers the handler for the given pattern. If a handler already exists for pattern, Handle panics.
 func (c *Container) Handle(pattern string, handler http.Handler) {
-	c.ServeMux.Handle(pattern, handler)
+	c.ServeMux.Handle(pattern, http.HandlerFunc(func(httpWriter http.ResponseWriter, httpRequest *http.Request) {
+		writer := httpWriter
+
+		// CompressingResponseWriter should be closed after all operations are done
+		defer func() {
+			if compressWriter, ok := writer.(*CompressingResponseWriter); ok {
+				compressWriter.Close()
+			}
+		}()
+
+		if c.contentEncodingEnabled {
+			doCompress, encoding := wantsCompressedResponse(httpRequest)
+			if doCompress {
+				var err error
+				writer, err = NewCompressingResponseWriter(httpWriter, encoding)
+				if err != nil {
+					log.Print("unable to install compressor: ", err)
+					httpWriter.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+			}
+		}
+
+		handler.ServeHTTP(writer, httpRequest)
+	}))
 }
 
 // HandleWithFilter registers the handler for the given pattern.
