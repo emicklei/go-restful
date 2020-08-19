@@ -1,6 +1,7 @@
 package restful
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -101,6 +102,25 @@ func TestMethodNotAllowed_Issue435(t *testing.T) {
 	}
 	if "PUT, GET, DELETE" != httpWriter.Header().Get("Allow") {
 		t.Error("405 expected Allowed header got ", httpWriter.Header())
+	}
+}
+
+func TestNotAcceptable_Issue434(t *testing.T) {
+	tearDown()
+	Add(newGetPlainTextOrJsonService())
+	httpRequest, _ := http.NewRequest("GET", "http://here.com/get", nil)
+	httpRequest.Header.Set("Accept", "application/toml")
+	httpWriter := httptest.NewRecorder()
+	DefaultContainer.dispatch(httpWriter, httpRequest)
+	if 406 != httpWriter.Code {
+		t.Error("406 expected not acceptable", httpWriter.Code)
+	}
+	expected := `406: Not Acceptable
+
+Available representations: text/plain, application/json`
+	body, _ := ioutil.ReadAll(httpWriter.Body)
+	if expected != string(body) {
+		t.Errorf("Expected body:\n%s\ngot:\n%s\n", expected, string(body))
 	}
 }
 
