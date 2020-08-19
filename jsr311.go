@@ -147,7 +147,14 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 		if trace {
 			traceLogger.Printf("no Route found (from %d) that matches HTTP Accept: %s\n", len(previous), accept)
 		}
-		return nil, NewError(http.StatusNotAcceptable, "406: Not Acceptable")
+		available := []string{}
+		for _, candidate := range previous {
+			available = append(available, candidate.Produces...)
+		}
+		return nil, NewError(
+			http.StatusNotAcceptable,
+			fmt.Sprintf("406: Not Acceptable\n\nAvailable representations: %s", strings.Join(available, ", ")),
+		)
 	}
 	// return r.bestMatchByMedia(outputMediaOk, contentType, accept), nil
 	return candidates[0], nil
