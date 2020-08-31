@@ -1,6 +1,6 @@
 # Change history of go-restful
 
-## [v2.14.1] - 2020-08-31
+## [v2.14.2] - 2020-08-31
 
 - Added check on writer to prevent compression of response twice. #447
 
