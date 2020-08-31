@@ -1,5 +1,9 @@
 # Change history of go-restful
 
+## [v3.3.1] - 2020-08-31
+
+- Added check on writer to prevent compression of response twice. #447
+
 ## [v3.3.0] - 2020-08-19
 
 - Enable content encoding on Handle and ServeHTTP (#446)
