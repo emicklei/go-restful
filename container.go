@@ -302,8 +302,13 @@ func fixedPrefixPath(pathspec string) string {
 
 // ServeHTTP implements net/http.Handler therefore a Container can be a Handler in a http.Server
 func (c *Container) ServeHTTP(httpWriter http.ResponseWriter, httpRequest *http.Request) {
-	writer := httpWriter
+	// Skip, if httpWriter is already an CompressingResponseWriter
+	if _, ok := httpWriter.(*CompressingResponseWriter); ok {
+		c.ServeMux.ServeHTTP(httpWriter, httpRequest)
+		return
+	}
 
+	writer := httpWriter
 	// CompressingResponseWriter should be closed after all operations are done
 	defer func() {
 		if compressWriter, ok := writer.(*CompressingResponseWriter); ok {
@@ -330,6 +335,12 @@ func (c *Container) ServeHTTP(httpWriter http.ResponseWriter, httpRequest *http.
 // Handle registers the handler for the given pattern. If a handler already exists for pattern, Handle panics.
 func (c *Container) Handle(pattern string, handler http.Handler) {
 	c.ServeMux.Handle(pattern, http.HandlerFunc(func(httpWriter http.ResponseWriter, httpRequest *http.Request) {
+		// Skip, if httpWriter is already an CompressingResponseWriter
+		if _, ok := httpWriter.(*CompressingResponseWriter); ok {
+			handler.ServeHTTP(httpWriter, httpRequest)
+			return
+		}
+
 		writer := httpWriter
 
 		// CompressingResponseWriter should be closed after all operations are done
