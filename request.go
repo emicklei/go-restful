@@ -5,9 +5,23 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
+	"bytes"
 	"compress/zlib"
+	"io"
+	"io/ioutil"
 	"net/http"
+	"sync"
 )
+
+var pool sync.Pool
+
+func init() {
+	pool = sync.Pool{
+		New: func() interface{} {
+			return bytes.NewBuffer(make([]byte, 2048))
+		},
+	}
+}
 
 var defaultRequestContentType string
 
@@ -72,9 +86,23 @@ func (r *Request) HeaderParameter(name string) string {
 
 // ReadEntity checks the Accept header and reads the content into the entityPointer.
 func (r *Request) ReadEntity(entityPointer interface{}) (err error) {
+	buffer := pool.Get().(*bytes.Buffer)
+	buffer.Reset()
+	defer func() {
+		if buffer != nil {
+			pool.Put(buffer)
+			buffer = nil
+		}
+	}()
+	_, err = io.Copy(buffer, r.Request.Body)
+	if err != nil {
+		return err
+	}
+	// store request body for use
+	r.Request.Body = ioutil.NopCloser(bytes.NewReader(buffer.Bytes()))
+
 	contentType := r.Request.Header.Get(HEADER_ContentType)
 	contentEncoding := r.Request.Header.Get(HEADER_ContentEncoding)
-
 	// check if the request body needs decompression
 	if ENCODING_GZIP == contentEncoding {
 		gzipReader := currentCompressorProvider.AcquireGzipReader()
@@ -99,7 +127,12 @@ func (r *Request) ReadEntity(entityPointer interface{}) (err error) {
 			return NewError(http.StatusBadRequest, "Unable to unmarshal content of type:"+contentType)
 		}
 	}
-	return entityReader.Read(r, entityPointer)
+
+	err = entityReader.Read(r, entityPointer)
+	// assign request body again
+	r.Request.Body = ioutil.NopCloser(bytes.NewReader(buffer.Bytes()))
+
+	return err
 }
 
 // SetAttribute adds or replaces the attribute with the given value.
