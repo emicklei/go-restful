@@ -206,6 +206,7 @@ func (c *Container) Dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 
 // Dispatch the incoming Http Request to a matching WebService.
 func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.Request) {
+	// so we can assign a compressing one later
 	writer := httpWriter
 
 	// CompressingResponseWriter should be closed after all operations are done
@@ -236,28 +237,8 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 			c.webServices,
 			httpRequest)
 	}()
-
-	// Detect if compression is needed
-	// assume without compression, test for override
-	contentEncodingEnabled := c.contentEncodingEnabled
-	if route != nil && route.contentEncodingEnabled != nil {
-		contentEncodingEnabled = *route.contentEncodingEnabled
-	}
-	if contentEncodingEnabled {
-		doCompress, encoding := wantsCompressedResponse(httpRequest)
-		if doCompress {
-			var err error
-			writer, err = NewCompressingResponseWriter(httpWriter, encoding)
-			if err != nil {
-				log.Print("unable to install compressor: ", err)
-				httpWriter.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-		}
-	}
-
 	if err != nil {
-		// a non-200 response has already been written
+		// a non-200 response (may be compressed) has already been written
 		// run container filters anyway ; they should not touch the response...
 		chain := FilterChain{Filters: c.containerFilters, Target: func(req *Request, resp *Response) {
 			switch err.(type) {
@@ -270,6 +251,29 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 		chain.ProcessFilter(NewRequest(httpRequest), NewResponse(writer))
 		return
 	}
+
+	// Unless httpWriter is already an CompressingResponseWriter see if we need to install one
+	if _, isCompressing := httpWriter.(*CompressingResponseWriter); !isCompressing {
+		// Detect if compression is needed
+		// assume without compression, test for override
+		contentEncodingEnabled := c.contentEncodingEnabled
+		if route != nil && route.contentEncodingEnabled != nil {
+			contentEncodingEnabled = *route.contentEncodingEnabled
+		}
+		if contentEncodingEnabled {
+			doCompress, encoding := wantsCompressedResponse(httpRequest)
+			if doCompress {
+				var err error
+				writer, err = NewCompressingResponseWriter(httpWriter, encoding)
+				if err != nil {
+					log.Print("unable to install compressor: ", err)
+					httpWriter.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+			}
+		}
+	}
+
 	pathProcessor, routerProcessesPath := c.router.(PathProcessor)
 	if !routerProcessesPath {
 		pathProcessor = defaultPathProcessor{}
@@ -302,6 +306,13 @@ func fixedPrefixPath(pathspec string) string {
 
 // ServeHTTP implements net/http.Handler therefore a Container can be a Handler in a http.Server
 func (c *Container) ServeHTTP(httpWriter http.ResponseWriter, httpRequest *http.Request) {
+	// Skip, if content encoding is disabled
+	if !c.contentEncodingEnabled {
+		c.ServeMux.ServeHTTP(httpWriter, httpRequest)
+		return
+	}
+	// content encoding is enabled
+
 	// Skip, if httpWriter is already an CompressingResponseWriter
 	if _, ok := httpWriter.(*CompressingResponseWriter); ok {
 		c.ServeMux.ServeHTTP(httpWriter, httpRequest)
@@ -316,16 +327,14 @@ func (c *Container) ServeHTTP(httpWriter http.ResponseWriter, httpRequest *http.
 		}
 	}()
 
-	if c.contentEncodingEnabled {
-		doCompress, encoding := wantsCompressedResponse(httpRequest)
-		if doCompress {
-			var err error
-			writer, err = NewCompressingResponseWriter(httpWriter, encoding)
-			if err != nil {
-				log.Print("unable to install compressor: ", err)
-				httpWriter.WriteHeader(http.StatusInternalServerError)
-				return
-			}
+	doCompress, encoding := wantsCompressedResponse(httpRequest)
+	if doCompress {
+		var err error
+		writer, err = NewCompressingResponseWriter(httpWriter, encoding)
+		if err != nil {
+			log.Print("unable to install compressor: ", err)
+			httpWriter.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 	}
 
