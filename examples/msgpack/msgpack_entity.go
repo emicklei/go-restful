@@ -1,7 +1,7 @@
 package restPack
 
 import (
-	restful "github.com/emicklei/go-restful"
+	restful "github.com/emicklei/go-restful/v3"
 	"gopkg.in/vmihailenco/msgpack.v2"
 )
 
