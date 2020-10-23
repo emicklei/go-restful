@@ -1,5 +1,11 @@
 # Change history of go-restful
 
+
+## [v3.3.1] - 2020-08-31
+
+- Fixed duplicate compression in dispatch. #449
+
+
 ## [v3.3.1] - 2020-08-31
 
 - Added check on writer to prevent compression of response twice. #447
