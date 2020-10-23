@@ -2,6 +2,7 @@ package restful
 
 import (
 	"context"
+	"encoding/hex"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -93,5 +94,68 @@ func TestContainerAddAndRemove(t *testing.T) {
 	}
 	if wc.isRegisteredOnRoot {
 		t.Errorf("expected not on root registered")
+	}
+}
+
+func TestContainerCompressResponse(t *testing.T) {
+	wc := NewContainer()
+	ws := new(WebService).Path("/")
+	ws.Route(ws.GET("/").To(dummy))
+	wc.Add(ws)
+
+	// no accept header, encoding disabled
+	{
+		recorder := httptest.NewRecorder()
+		request, _ := http.NewRequest("GET", "/", nil)
+		wc.ServeHTTP(recorder, request)
+		if recorder.Code != http.StatusOK {
+			t.Errorf("unexpected code %d", recorder.Code)
+		}
+		if recorder.Body.String() != "dummy" {
+			t.Errorf("unexpected body %s", recorder.Body.String())
+		}
+	}
+
+	// with gzip accept header, encoding disabled
+	{
+		recorder := httptest.NewRecorder()
+		request, _ := http.NewRequest("GET", "/", nil)
+		request.Header.Set("accept-encoding", "gzip")
+		wc.ServeHTTP(recorder, request)
+		if recorder.Code != http.StatusOK {
+			t.Errorf("unexpected code %d", recorder.Code)
+		}
+		if recorder.Body.String() != "dummy" {
+			t.Errorf("unexpected body %s", recorder.Body.String())
+		}
+	}
+
+	// no accept header, encoding enabled
+	{
+		wc.EnableContentEncoding(true)
+		recorder := httptest.NewRecorder()
+		request, _ := http.NewRequest("GET", "/", nil)
+		wc.ServeHTTP(recorder, request)
+		if recorder.Code != http.StatusOK {
+			t.Errorf("unexpected code %d", recorder.Code)
+		}
+		if recorder.Body.String() != "dummy" {
+			t.Errorf("unexpected body %s", recorder.Body.String())
+		}
+	}
+
+	// with accept gzip header, encoding enabled
+	{
+		wc.EnableContentEncoding(true)
+		recorder := httptest.NewRecorder()
+		request, _ := http.NewRequest("GET", "/", nil)
+		request.Header.Set("accept-encoding", "gzip")
+		wc.ServeHTTP(recorder, request)
+		if recorder.Code != http.StatusOK {
+			t.Errorf("unexpected code %d", recorder.Code)
+		}
+		if hex.EncodeToString(recorder.Body.Bytes()) == hex.EncodeToString(gzippedDummy()) {
+			t.Errorf("unexpected body %v", recorder.Body.Bytes())
+		}
 	}
 }
