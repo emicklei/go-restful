@@ -1,7 +1,7 @@
 # Change history of go-restful
 
 
-## [v3.3.1] - 2020-08-31
+## [v3.3.2] - 2020-01-23
 
 - Fixed duplicate compression in dispatch. #449
 
