@@ -1,6 +1,8 @@
 package restful
 
 import (
+	"bytes"
+	"compress/gzip"
 	"io"
 	"net/http"
 	"reflect"
@@ -330,3 +332,12 @@ func TestParameterInWebService(t *testing.T) {
 }
 
 func dummy(req *Request, resp *Response) { io.WriteString(resp.ResponseWriter, "dummy") }
+
+func gzippedDummy() []byte {
+	var buf bytes.Buffer
+	zw := gzip.NewWriter(&buf)
+	zw.Write([]byte("dummy"))
+	zw.Flush()
+	zw.Close()
+	return buf.Bytes()
+}
