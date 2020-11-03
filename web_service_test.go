@@ -299,6 +299,20 @@ func TestParameterDataTypeCustomization(t *testing.T) {
 	}
 }
 
+func TestOptionsShortcut(t *testing.T) {
+	tearDown()
+	ws := new(WebService).Path("")
+	ws.Route(ws.OPTIONS("/options").To(return200))
+	Add(ws)
+
+	httpRequest, _ := http.NewRequest("OPTIONS", "http://here.com/options", nil)
+	httpWriter := httptest.NewRecorder()
+	DefaultContainer.dispatch(httpWriter, httpRequest)
+	if got, want := httpWriter.Code, 200; got != want {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
 func newPanicingService() *WebService {
 	ws := new(WebService).Path("")
 	ws.Route(ws.GET("/fire").To(doPanic))
@@ -384,4 +398,8 @@ func doNothing(req *Request, resp *Response) {
 
 func return204(req *Request, resp *Response) {
 	resp.WriteHeader(204)
+}
+
+func return200(req *Request, resp *Response) {
+	resp.WriteHeader(200)
 }
