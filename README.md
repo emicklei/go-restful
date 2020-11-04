@@ -61,9 +61,9 @@ func (u UserResource) findUser(request *restful.Request, response *restful.Respo
 	...
 }
 ```
-	
-[Full API of a UserResource](https://github.com/emicklei/go-restful/tree/master/examples/restful-user-resource.go) 
-		
+
+[Full API of a UserResource](https://github.com/emicklei/go-restful/tree/master/examples/user-resource/restful-user-resource.go)
+
 ### Features
 
 - Routes for request &#8594; function mapping with path parameter (e.g. {id} but also prefix_{var} and {var}_suffix) support
