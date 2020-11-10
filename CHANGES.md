@@ -1,5 +1,8 @@
 # Change history of go-restful (v2 only)
 
+## v2.15.0 - 2020-11-10
+
+- Add OPTIONS in Webservice
 
 ## v2.14.3 - 2020-08-31
 - Fixed duplicate compression in dispatch. #449
