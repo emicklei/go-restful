@@ -1,5 +1,8 @@
 # Change history of go-restful
 
+## [v3.4.0] - 2020-11-10
+
+- Added OPTIONS to WebService
 
 ## [v3.3.2] - 2020-01-23
 
