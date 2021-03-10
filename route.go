@@ -69,7 +69,7 @@ func (r *Route) postBuild() {
 func (r *Route) wrapRequestResponse(httpWriter http.ResponseWriter, httpRequest *http.Request, pathParams map[string]string) (*Request, *Response) {
 	wrappedRequest := NewRequest(httpRequest)
 	wrappedRequest.pathParameters = pathParams
-	wrappedRequest.selectedRoute = *r
+	wrappedRequest.selectedRoute = r
 	wrappedResponse := NewResponse(httpWriter)
 	wrappedResponse.requestAccept = httpRequest.Header.Get(HEADER_Accept)
 	wrappedResponse.routeProduces = r.Produces
