@@ -7,7 +7,7 @@ package for building REST-style Web Services using Google Go
 [![GoDoc](https://godoc.org/github.com/emicklei/go-restful?status.svg)](https://pkg.go.dev/github.com/emicklei/go-restful)
 [![codecov](https://codecov.io/gh/emicklei/go-restful/branch/master/graph/badge.svg)](https://codecov.io/gh/emicklei/go-restful)
 
-- [Code examples](https://github.com/emicklei/go-restful/tree/master/examples)
+- [Code examples use v3](https://github.com/emicklei/go-restful/tree/v3/examples)
 
 REST asks developers to use HTTP methods explicitly and in a way that's consistent with the protocol definition. This basic REST design principle establishes a one-to-one mapping between create, read, update, and delete (CRUD) operations and HTTP methods. According to this mapping:
 
@@ -108,4 +108,4 @@ TODO: write examples of these.
 
 Type ```git shortlog -s``` for a full list of contributors.
 
-© 2012 - 2020, http://ernestmicklei.com. MIT License. Contributions are welcome.
+© 2012 - 2021, http://ernestmicklei.com. MIT License. Contributions are welcome.
