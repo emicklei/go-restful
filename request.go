@@ -118,7 +118,7 @@ func (r Request) SelectedRoutePath() string {
 	return r.selectedRoute.Path
 }
 
-// SelectedRoute return the Route that selected by the container
+// SelectedRoute returns a reader to access the selected Route by the container
 func (r Request) SelectedRoute() RouteReader {
 	return routeAccessor{route: r.selectedRoute}
 }
