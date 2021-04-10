@@ -5,4 +5,4 @@ test:
 	go test -cover -v .
 
 ex:
-	cd examples && ls *.go | xargs go build -o /tmp/ignore
+	find ./examples -type f -name "*.go" | xargs -I {} go build -o /tmp/ignore {}

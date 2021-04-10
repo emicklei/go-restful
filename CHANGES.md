@@ -1,5 +1,10 @@
 # Change history of go-restful
 
+## [v3.5.0] - 2021-04-10
+
+- add check for wildcard (#463) in CORS
+- add access to Route from Request, issue #459 (#462)
+
 ## [v3.4.0] - 2020-11-10
 
 - Added OPTIONS to WebService
