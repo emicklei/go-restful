@@ -383,6 +383,10 @@ func newSelectedRouteTestingService() *WebService {
 }
 
 func selectedRouteChecker(req *Request, resp *Response) {
+	if req.SelectedRoute() == nil {
+		resp.InternalServerError()
+		return
+	}
 	if req.SelectedRoutePath() != pathGetFriends {
 		resp.InternalServerError()
 	}
