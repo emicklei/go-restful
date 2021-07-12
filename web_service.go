@@ -181,12 +181,12 @@ func (w *WebService) RemoveRoute(path, method string) error {
     }
     w.routesLock.Lock()
     defer w.routesLock.Unlock()
-    newRoutes := make([]Route, 0)
-    for ix := range w.routes {
-        if w.routes[ix].Method == method && w.routes[ix].Path == path {
+    newRoutes := []Route{}
+    for _, route := range w.routes {
+        if route.Method == method && route.Path == path {
             continue
         }
-        newRoutes = append(newRoutes, w.routes[ix])
+        newRoutes = append(newRoutes, route)
     }
     w.routes = newRoutes
     return nil
