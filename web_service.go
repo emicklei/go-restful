@@ -176,22 +176,20 @@ func (w *WebService) Route(builder *RouteBuilder) *WebService {
 
 // RemoveRoute removes the specified route, looks for something that matches 'path' and 'method'
 func (w *WebService) RemoveRoute(path, method string) error {
-	if !w.dynamicRoutes {
-		return errors.New("dynamic routes are not enabled.")
-	}
-	w.routesLock.Lock()
-	defer w.routesLock.Unlock()
-	newRoutes := make([]Route, (len(w.routes) - 1))
-	current := 0
-	for ix := range w.routes {
-		if w.routes[ix].Method == method && w.routes[ix].Path == path {
-			continue
-		}
-		newRoutes[current] = w.routes[ix]
-		current++
-	}
-	w.routes = newRoutes
-	return nil
+    if !w.dynamicRoutes {
+        return errors.New("dynamic routes are not enabled.")
+    }
+    w.routesLock.Lock()
+    defer w.routesLock.Unlock()
+    newRoutes := []Route{}
+    for _, route := range w.routes {
+        if route.Method == method && route.Path == path {
+            continue
+        }
+        newRoutes = append(newRoutes, route)
+    }
+    w.routes = newRoutes
+    return nil
 }
 
 // Method creates a new RouteBuilder and initialize its http method
