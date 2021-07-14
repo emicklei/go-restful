@@ -1,5 +1,14 @@
 # Change history of go-restful
 
+## [v3.5.2] - 2021-07-14
+
+- fix removing absent route from webservice (#472)
+
+## [v3.5.1] - 2021-04-12
+
+- fix handling no match access selected path
+- remove obsolete field
+
 ## [v3.5.0] - 2021-04-10
 
 - add check for wildcard (#463) in CORS
