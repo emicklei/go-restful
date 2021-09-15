@@ -231,7 +231,7 @@ func (b *RouteBuilder) AllowedMethodsWithoutContentType(methods []string) *Route
 
 // ResponseError represents a response; not necessarily an error.
 type ResponseError struct {
-	ExtensionProps
+	ExtensionProperties
 	Code      int
 	Message   string
 	Model     interface{}

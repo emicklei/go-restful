@@ -52,7 +52,7 @@ type Parameter struct {
 // ParameterData represents the state of a Parameter.
 // It is made public to make it accessible to e.g. the Swagger package.
 type ParameterData struct {
-	ExtensionProps
+	ExtensionProperties
 	Name, Description, DataType, DataFormat string
 	Kind                                    int
 	Required                                bool
