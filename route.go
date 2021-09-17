@@ -19,6 +19,7 @@ type RouteSelectionConditionFunction func(httpRequest *http.Request) bool
 
 // Route binds a HTTP Method,Path,Consumes combination to a RouteFunction.
 type Route struct {
+	ExtensionProperties
 	Method   string
 	Produces []string
 	Consumes []string

@@ -38,6 +38,7 @@ type RouteBuilder struct {
 	errorMap                map[int]ResponseError
 	defaultResponse         *ResponseError
 	metadata                map[string]interface{}
+	extensions              map[string]interface{}
 	deprecated              bool
 	contentEncodingEnabled  *bool
 }
@@ -204,13 +205,22 @@ func (b *RouteBuilder) Metadata(key string, value interface{}) *RouteBuilder {
 	return b
 }
 
+// AddExtension adds or updates a key=value pair to the extensions map.
+func (b *RouteBuilder) AddExtension(key string, value interface{}) *RouteBuilder {
+	if b.extensions == nil {
+		b.extensions = map[string]interface{}{}
+	}
+	b.extensions[key] = value
+	return b
+}
+
 // Deprecate sets the value of deprecated to true.  Deprecated routes have a special UI treatment to warn against use
 func (b *RouteBuilder) Deprecate() *RouteBuilder {
 	b.deprecated = true
 	return b
 }
 
-// AllowedMethodsWithoutContentType overides the default list GET,HEAD,OPTIONS,DELETE,TRACE
+// AllowedMethodsWithoutContentType overrides the default list GET,HEAD,OPTIONS,DELETE,TRACE
 // If a request does not include a content-type header then
 // depending on the method, it may return a 415 Unsupported Media.
 // Must have uppercase HTTP Method names such as GET,HEAD,OPTIONS,...
@@ -221,6 +231,7 @@ func (b *RouteBuilder) AllowedMethodsWithoutContentType(methods []string) *Route
 
 // ResponseError represents a response; not necessarily an error.
 type ResponseError struct {
+	ExtensionProperties
 	Code      int
 	Message   string
 	Model     interface{}
@@ -335,6 +346,7 @@ func (b *RouteBuilder) Build() Route {
 		contentEncodingEnabled:           b.contentEncodingEnabled,
 		allowedMethodsWithoutContentType: b.allowedMethodsWithoutContentType,
 	}
+	route.Extensions = b.extensions
 	route.postBuild()
 	return route
 }

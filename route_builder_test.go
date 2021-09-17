@@ -42,7 +42,13 @@ func TestRouteBuilder(t *testing.T) {
 	json := "application/json"
 	b := new(RouteBuilder)
 	b.To(dummy)
-	b.Path("/routes").Method("HEAD").Consumes(json).Produces(json).Metadata("test", "test-value").DefaultReturns("default", time.Now())
+	b.Path("/routes").
+		Method("HEAD").
+		Consumes(json).
+		Produces(json).
+		Metadata("test", "test-value").
+		AddExtension("x-restful-test", "test-value").
+		DefaultReturns("default", time.Now())
 	r := b.Build()
 	if r.Path != "/routes" {
 		t.Error("path invalid")
@@ -58,6 +64,9 @@ func TestRouteBuilder(t *testing.T) {
 	}
 	if r.Metadata["test"] != "test-value" {
 		t.Errorf("Metadata not set")
+	}
+	if r.Extensions["x-restful-test"] != "test-value" {
+		t.Errorf("Extensions not set")
 	}
 	if r.DefaultResponse == nil {
 		t.Fatal("expected default response")
@@ -91,13 +100,13 @@ func TestContentEncodingEnabled(t *testing.T) {
 	r := b.Build()
 
 	got := r.contentEncodingEnabled
-	var want *bool //nil
+	var want *bool // nil
 
 	if got != want {
 		t.Errorf("got %v want %v (default nil)", got, want)
 	}
 
-	//true
+	// true
 	b = new(RouteBuilder)
 	b.function = dummy
 	b.ContentEncodingEnabled(true)
@@ -108,7 +117,7 @@ func TestContentEncodingEnabled(t *testing.T) {
 		t.Errorf("got %v want %v (explicit true)", *got, true)
 	}
 
-	//true
+	// true
 	b = new(RouteBuilder)
 	b.function = dummy
 	b.ContentEncodingEnabled(false)
