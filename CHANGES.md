@@ -1,5 +1,9 @@
 # Change history of go-restful
 
+## [v3.6.0] - 2021-09-18
+
+- add support for vendor extensions (#477 thx erraggy)
+
 ## [v3.5.2] - 2021-07-14
 
 - fix removing absent route from webservice (#472)
