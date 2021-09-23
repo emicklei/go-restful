@@ -287,7 +287,15 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 		allFilters = append(allFilters, c.containerFilters...)
 		allFilters = append(allFilters, webService.filters...)
 		allFilters = append(allFilters, route.Filters...)
-		chain := FilterChain{Filters: allFilters, Target: route.Function}
+		chain := FilterChain{
+			Filters: allFilters,
+			Target: func(req *Request, resp *Response) {
+				// handle request by route after passing all filters
+				route.Function(wrappedRequest, wrappedResponse)
+			},
+			ParameterDocs: route.ParameterDocs,
+			Operation:     route.Operation,
+		}
 		chain.ProcessFilter(wrappedRequest, wrappedResponse)
 	} else {
 		// no filters, handle request by route
