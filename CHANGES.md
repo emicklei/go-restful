@@ -1,5 +1,9 @@
 # Change history of go-restful
 
+## [v3.7.0] - 2021-09-24
+
+- feat(parameter): adds additional openapi mappings (#478)
+
 ## [v3.6.0] - 2021-09-18
 
 - add support for vendor extensions (#477 thx erraggy)
