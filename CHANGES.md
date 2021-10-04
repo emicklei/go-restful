@@ -1,5 +1,9 @@
 # Change history of go-restful
 
+## [v3.7.1] - 2021-10-04
+
+- fix problem with contentEncodingEnabled setting (#479)
+
 ## [v3.7.0] - 2021-09-24
 
 - feat(parameter): adds additional openapi mappings (#478)
