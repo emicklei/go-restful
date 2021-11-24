@@ -158,4 +158,16 @@ func TestContainerCompressResponse(t *testing.T) {
 			t.Errorf("unexpected body %v", recorder.Body.Bytes())
 		}
 	}
+	// response says it is already compressed
+	{
+		wc.EnableContentEncoding(true)
+		recorder := httptest.NewRecorder()
+		request, _ := http.NewRequest("GET", "/", nil)
+		request.Header.Set("accept-encoding", "gzip")
+		recorder.HeaderMap.Set("content-encoding", "gzip")
+		wc.ServeHTTP(recorder, request)
+		if recorder.Body.String() != "dummy" {
+			t.Errorf("unexpected body %s", recorder.Body.String())
+		}
+	}
 }
