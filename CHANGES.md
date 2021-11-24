@@ -1,5 +1,10 @@
 # Change history of go-restful
 
+## [v3.7.2] - 2021-11-24
+
+- restored FilterChain (#482 by SVilgelm)
+
+
 ## [v3.7.1] - 2021-10-04
 
 - fix problem with contentEncodingEnabled setting (#479)
