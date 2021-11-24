@@ -289,10 +289,7 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 		allFilters = append(allFilters, route.Filters...)
 		chain := FilterChain{
 			Filters: allFilters,
-			Target: func(req *Request, resp *Response) {
-				// handle request by route after passing all filters
-				route.Function(wrappedRequest, wrappedResponse)
-			},
+			Target: route.Function,
 			ParameterDocs: route.ParameterDocs,
 			Operation:     route.Operation,
 		}
