@@ -10,8 +10,8 @@ func TestRouteBuilder_PathParameter(t *testing.T) {
 	p.AllowMultiple(true)
 	p.DataType("int")
 	p.Required(true)
-	values := map[string]string{"a": "b"}
-	p.AllowableValues(values)
+	values := []string{"a"}
+	p.PossibleValues(values)
 	p.bePath()
 
 	b := new(RouteBuilder)
@@ -30,8 +30,8 @@ func TestRouteBuilder_PathParameter(t *testing.T) {
 	if r.ParameterDocs[0].Data().Kind != PathParameterKind {
 		t.Error("kind invalid")
 	}
-	if r.ParameterDocs[0].Data().AllowableValues["a"] != "b" {
-		t.Error("allowableValues invalid")
+	if r.ParameterDocs[0].Data().PossibleValues[0] != "a" {
+		t.Error("PossibleValues invalid")
 	}
 	if b.ParameterNamed("name") == nil {
 		t.Error("access to parameter failed")

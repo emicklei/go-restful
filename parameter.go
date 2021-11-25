@@ -56,19 +56,21 @@ type ParameterData struct {
 	Name, Description, DataType, DataFormat string
 	Kind                                    int
 	Required                                bool
-	AllowableValues                         map[string]string
-	AllowMultiple                           bool
-	AllowEmptyValue                         bool
-	DefaultValue                            string
-	CollectionFormat                        string
-	Pattern                                 string
-	Minimum                                 *float64
-	Maximum                                 *float64
-	MinLength                               *int64
-	MaxLength                               *int64
-	MinItems                                *int64
-	MaxItems                                *int64
-	UniqueItems                             bool
+	// AllowableValues is deprecated. Use PossibleValues instead
+	AllowableValues  map[string]string
+	PossibleValues   []string
+	AllowMultiple    bool
+	AllowEmptyValue  bool
+	DefaultValue     string
+	CollectionFormat string
+	Pattern          string
+	Minimum          *float64
+	Maximum          *float64
+	MinLength        *int64
+	MaxLength        *int64
+	MinItems         *int64
+	MaxItems         *int64
+	UniqueItems      bool
 }
 
 // Data returns the state of the Parameter
@@ -128,9 +130,15 @@ func (p *Parameter) AllowEmptyValue(multiple bool) *Parameter {
 	return p
 }
 
-// AllowableValues sets the allowableValues field and returns the receiver
+// AllowableValues is deprecated. Use PossibleValues instead.
 func (p *Parameter) AllowableValues(values map[string]string) *Parameter {
 	p.data.AllowableValues = values
+	return p
+}
+
+// PossibleValues sets the possible values field and returns the receiver
+func (p *Parameter) PossibleValues(values []string) *Parameter {
+	p.data.PossibleValues = values
 	return p
 }
 
