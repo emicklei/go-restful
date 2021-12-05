@@ -1,5 +1,7 @@
 package restful
 
+import "sort"
+
 // Copyright 2013 Ernest Micklei. All rights reserved.
 // Use of this source code is governed by a license
 // that can be found in the LICENSE file.
@@ -130,9 +132,20 @@ func (p *Parameter) AllowEmptyValue(multiple bool) *Parameter {
 	return p
 }
 
-// AllowableValues is deprecated. Use PossibleValues instead.
+// AllowableValues is deprecated. Use PossibleValues instead. Both will be set.
 func (p *Parameter) AllowableValues(values map[string]string) *Parameter {
 	p.data.AllowableValues = values
+
+	allowableSortedKeys := make([]string, 0, len(values))
+	for k := range values {
+		allowableSortedKeys = append(allowableSortedKeys, k)
+	}
+	sort.Strings(allowableSortedKeys)
+
+	p.data.PossibleValues = make([]string, 0, len(values))
+	for _, k := range allowableSortedKeys {
+		p.data.PossibleValues = append(p.data.PossibleValues, values[k])
+	}
 	return p
 }
 
