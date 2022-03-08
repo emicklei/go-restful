@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
 	restful "github.com/emicklei/go-restful/v3"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // This example shows how to create a (Route) Filter that performs a JWT HS512 authentication.
