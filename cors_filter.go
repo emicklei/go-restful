@@ -5,6 +5,7 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -191,11 +192,15 @@ func (c CrossOriginResourceSharing) isValidAccessControlRequestHeader(header str
 	return false
 }
 
-// Take a list of strings and compile them into a list of regular expressions.
-func compileRegexps(regexpStrings []string) ([]*regexp.Regexp, error) {
+// Take a list of allowed domains as strings and compile them into a list of regular expressions.
+func compileRegexps(allowedDomains []string) ([]*regexp.Regexp, error) {
 	regexps := []*regexp.Regexp{}
-	for _, regexpStr := range regexpStrings {
-		r, err := regexp.Compile(regexpStr)
+	for _, each := range allowedDomains {
+		// make sure the expression represents an exact match
+		if !strings.HasPrefix(each, "^") {
+			each = fmt.Sprintf("^%s$", each)
+		}
+		r, err := regexp.Compile(each)
 		if err != nil {
 			return regexps, err
 		}
