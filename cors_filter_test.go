@@ -98,6 +98,8 @@ var allowedDomainInput = []struct {
 	{[]string{"example.com"}, "not-allowed", false},
 	{[]string{"not-matching.com", "example.com"}, "example.com", true},
 	{[]string{".*"}, "example.com", true},
+	{[]string{"^some.example.com$"}, "some.example.com", true},
+	{[]string{"^some\\.example\\.com"}, "some.example.com.org", false},
 }
 
 // go test -v -test.run TestCORSFilter_AllowedDomains ...restful

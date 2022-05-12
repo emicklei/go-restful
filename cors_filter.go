@@ -21,7 +21,11 @@ import (
 type CrossOriginResourceSharing struct {
 	ExposeHeaders  []string // list of Header names
 	AllowedHeaders []string // list of Header names
-	AllowedDomains []string // list of allowed values for Http Origin. An allowed value can be a regular expression to support subdomain matching. If empty all are allowed.
+	// AllowedDomains list of allowed values for Http Origin.
+	// An allowed value can be a regular expression to support subdomain matching.
+	// Non-regular expression values will be changed into an exact match: ^yourdomain.com$
+	// If empty all are allowed.
+	AllowedDomains []string
 	AllowedMethods []string
 	MaxAge         int // number of seconds before requiring new Options request
 	CookiesAllowed bool
@@ -199,6 +203,10 @@ func compileRegexps(allowedDomains []string) ([]*regexp.Regexp, error) {
 		// make sure the expression represents an exact match
 		if !strings.HasPrefix(each, "^") {
 			each = fmt.Sprintf("^%s$", each)
+		} else {
+			if !strings.HasSuffix(each, "$") {
+				each = fmt.Sprintf("%s$", each)
+			}
 		}
 		r, err := regexp.Compile(each)
 		if err != nil {
