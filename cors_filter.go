@@ -20,12 +20,15 @@ import (
 // http://www.html5rocks.com/en/tutorials/cors/#toc-handling-a-not-so-simple-request
 type CrossOriginResourceSharing struct {
 	ExposeHeaders  []string // list of Header names
-	AllowedHeaders []string // list of Header names
+	AllowedHeaders []string // list of Header names. Checking is case-insensitive.
 	// AllowedDomains list of allowed values for Http Origin.
-	// An allowed value can be a regular expression to support subdomain matching.
-	// Non-regular expression values will be changed into an exact match: ^yourdomain.com$
+	// The list may contain the special wildcard string ".*" ; all is allowed
 	// If empty all are allowed.
 	AllowedDomains []string
+	// AllowedDomainFunc is optional and is a function that will do the check
+	// whether the origin is not part of the AllowedDomains.
+	AllowedDomainFunc func(origin string) bool
+	// AllowedMethods is either empty or has a list of http methods names. Checking is case-insensitive.
 	AllowedMethods []string
 	MaxAge         int // number of seconds before requiring new Options request
 	CookiesAllowed bool
@@ -125,35 +128,22 @@ func (c CrossOriginResourceSharing) isOriginAllowed(origin string) bool {
 		return false
 	}
 	if len(c.AllowedDomains) == 0 {
+		if c.AllowedDomainFunc != nil {
+			return c.AllowedDomainFunc(origin)
+		}
 		return true
 	}
 
-	allowed := false
+	// exact match on each allowed domain
 	for _, domain := range c.AllowedDomains {
-		if domain == origin {
-			allowed = true
-			break
+		if domain == ".*" || domain == origin {
+			return true
 		}
 	}
-
-	if !allowed {
-		if len(c.allowedOriginPatterns) == 0 {
-			// compile allowed domains to allowed origin patterns
-			allowedOriginRegexps, err := compileRegexps(c.AllowedDomains)
-			if err != nil {
-				return false
-			}
-			c.allowedOriginPatterns = allowedOriginRegexps
-		}
-
-		for _, pattern := range c.allowedOriginPatterns {
-			if allowed = pattern.MatchString(origin); allowed {
-				break
-			}
-		}
+	if c.AllowedDomainFunc != nil {
+		return c.AllowedDomainFunc(origin)
 	}
-
-	return allowed
+	return false
 }
 
 func (c CrossOriginResourceSharing) setAllowOriginHeader(req *Request, resp *Response) {
