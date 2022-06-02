@@ -151,7 +151,7 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 		for _, candidate := range previous {
 			available = append(available, candidate.Produces...)
 		}
-		// if POST,PUT,PATCH,DELETE without body
+		// if POST,PUT,PATCH without body
 		method, length := httpRequest.Method, httpRequest.Header.Get("Content-Length")
 		if (method == http.MethodPost ||
 			method == http.MethodPut ||
