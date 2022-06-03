@@ -147,4 +147,16 @@ func TestCORSFilter_AllowedDomainFunc(t *testing.T) {
 	if got, want := cors.isOriginAllowed("nowhere"), false; got != want {
 		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
 	}
+	// just func
+	cors.AllowedDomains = []string{}
+	if got, want := cors.isOriginAllowed("here"), false; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	if got, want := cors.isOriginAllowed("where"), true; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	// empty domain
+	if got, want := cors.isOriginAllowed(""), false; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
 }

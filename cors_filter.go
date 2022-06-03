@@ -5,7 +5,6 @@ package restful
 // that can be found in the LICENSE file.
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,15 +18,21 @@ import (
 // http://enable-cors.org/server.html
 // http://www.html5rocks.com/en/tutorials/cors/#toc-handling-a-not-so-simple-request
 type CrossOriginResourceSharing struct {
-	ExposeHeaders  []string // list of Header names
-	AllowedHeaders []string // list of Header names. Checking is case-insensitive.
-	// AllowedDomains list of allowed values for Http Origin.
+	ExposeHeaders []string // list of Header names
+
+	// AllowedHeaders is alist of Header names. Checking is case-insensitive.
+	// The list may contain the special wildcard string ".*" ; all is allowed
+	AllowedHeaders []string
+
+	// AllowedDomains is a list of allowed values for Http Origin.
 	// The list may contain the special wildcard string ".*" ; all is allowed
 	// If empty all are allowed.
 	AllowedDomains []string
+
 	// AllowedDomainFunc is optional and is a function that will do the check
-	// whether the origin is not part of the AllowedDomains.
+	// when the origin is not part of the AllowedDomains and it does not contain the wildcard ".*".
 	AllowedDomainFunc func(origin string) bool
+
 	// AllowedMethods is either empty or has a list of http methods names. Checking is case-insensitive.
 	AllowedMethods []string
 	MaxAge         int // number of seconds before requiring new Options request
@@ -184,25 +189,4 @@ func (c CrossOriginResourceSharing) isValidAccessControlRequestHeader(header str
 		}
 	}
 	return false
-}
-
-// Take a list of allowed domains as strings and compile them into a list of regular expressions.
-func compileRegexps(allowedDomains []string) ([]*regexp.Regexp, error) {
-	regexps := []*regexp.Regexp{}
-	for _, each := range allowedDomains {
-		// make sure the expression represents an exact match
-		if !strings.HasPrefix(each, "^") {
-			each = fmt.Sprintf("^%s$", each)
-		} else {
-			if !strings.HasSuffix(each, "$") {
-				each = fmt.Sprintf("%s$", each)
-			}
-		}
-		r, err := regexp.Compile(each)
-		if err != nil {
-			return regexps, err
-		}
-		regexps = append(regexps, r)
-	}
-	return regexps, nil
 }
