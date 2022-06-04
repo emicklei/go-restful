@@ -132,16 +132,17 @@ func (c CrossOriginResourceSharing) isOriginAllowed(origin string) bool {
 	if len(origin) == 0 {
 		return false
 	}
+	lowerOrigin := strings.ToLower(origin)
 	if len(c.AllowedDomains) == 0 {
 		if c.AllowedDomainFunc != nil {
-			return c.AllowedDomainFunc(origin)
+			return c.AllowedDomainFunc(lowerOrigin)
 		}
 		return true
 	}
 
 	// exact match on each allowed domain
 	for _, domain := range c.AllowedDomains {
-		if domain == ".*" || domain == origin {
+		if domain == ".*" || strings.ToLower(domain) == lowerOrigin {
 			return true
 		}
 	}
