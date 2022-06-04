@@ -124,6 +124,20 @@ Available representations: text/plain, application/json`
 	}
 }
 
+func TestUnsupportedMedia_Issue492(t *testing.T) {
+	tearDown()
+	Add(newPostTestService())
+	for _, method := range []string{"POST", "PUT", "PATCH"} {
+		httpRequest, _ := http.NewRequest(method, "http://here.com/test", nil)
+		httpRequest.Header.Set("Accept", "application/json")
+		httpWriter := httptest.NewRecorder()
+		DefaultContainer.dispatch(httpWriter, httpRequest)
+		if 415 != httpWriter.Code {
+			t.Errorf("[%s] 415 expected got %d", method, httpWriter.Code)
+		}
+	}
+}
+
 func TestSelectedRoutePath_Issue100(t *testing.T) {
 	tearDown()
 	Add(newSelectedRouteTestingService())
@@ -373,6 +387,16 @@ func newGetConsumingOctetStreamService() *WebService {
 func newPostNoConsumesService() *WebService {
 	ws := new(WebService).Path("")
 	ws.Route(ws.POST("/post").To(return204))
+	return ws
+}
+
+func newPostTestService() *WebService {
+	ws := new(WebService).Path("")
+	ws.Consumes("application/json")
+	ws.Produces("application/json")
+	ws.Route(ws.POST("/test").To(doNothing))
+	ws.Route(ws.PUT("/test").To(doNothing))
+	ws.Route(ws.PATCH("/test").To(doNothing))
 	return ws
 }
 
