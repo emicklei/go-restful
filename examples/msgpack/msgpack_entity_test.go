@@ -12,7 +12,8 @@ import (
 
 	"io/ioutil"
 
-	restful "github.com/emicklei/go-restful"
+	restful "github.com/emicklei/go-restful/v3"
+	"gopkg.in/vmihailenco/msgpack.v2"
 )
 
 func TestMsgPack(t *testing.T) {
