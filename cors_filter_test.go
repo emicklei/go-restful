@@ -120,10 +120,46 @@ func TestCORSFilter_AllowedDomains(t *testing.T) {
 		DefaultContainer.Dispatch(httpWriter, httpRequest)
 		actual := httpWriter.Header().Get(HEADER_AccessControlAllowOrigin)
 		if actual != each.origin && each.allowed {
-			t.Fatal("expected to be accepted")
+			t.Error("expected to be accepted", each)
 		}
 		if actual == each.origin && !each.allowed {
-			t.Fatal("did not expect to be accepted")
+			t.Error("did not expect to be accepted")
 		}
+	}
+}
+
+func TestCORSFilter_AllowedDomainFunc(t *testing.T) {
+	cors := CrossOriginResourceSharing{
+		AllowedDomains: []string{"here", "there"},
+		AllowedDomainFunc: func(origin string) bool {
+			return "where" == origin
+		},
+	}
+	if got, want := cors.isOriginAllowed("here"), true; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	if got, want := cors.isOriginAllowed("HERE"), true; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	if got, want := cors.isOriginAllowed("there"), true; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	if got, want := cors.isOriginAllowed("where"), true; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	if got, want := cors.isOriginAllowed("nowhere"), false; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	// just func
+	cors.AllowedDomains = []string{}
+	if got, want := cors.isOriginAllowed("here"), false; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	if got, want := cors.isOriginAllowed("where"), true; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	// empty domain
+	if got, want := cors.isOriginAllowed(""), false; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
 	}
 }
