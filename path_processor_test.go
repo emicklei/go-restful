@@ -33,7 +33,7 @@ func TestMatchesPath_TwoVars(t *testing.T) {
 }
 
 func TestMatchesPath_VarOnFront(t *testing.T) {
-	params := doExtractParams("{what}/from/{source}/", 3, "who/from/SOS/", t)
+	params := doExtractParams("{what}/from/{source}/", 4, "who/from/SOS/", t) // slash is not removed
 	if params["source"] != "SOS" {
 		t.Errorf("parameter mismatch SOS")
 	}
@@ -103,7 +103,10 @@ func doExtractParams(routePath string, size int, urlPath string, t *testing.T) m
 	r := Route{Path: routePath}
 	r.postBuild()
 	if len(r.pathParts) != size {
-		t.Fatalf("len not %v %v, but %v", size, r.pathParts, len(r.pathParts))
+		for i, each := range r.pathParts {
+			t.Logf("%d:%q", i, each)
+		}
+		t.Fatalf("len not %v, but %v", size, len(r.pathParts))
 	}
 	pathProcessor := defaultPathProcessor{}
 	return pathProcessor.ExtractParameters(&r, nil, urlPath)
