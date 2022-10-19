@@ -5,6 +5,35 @@ import (
 	"time"
 )
 
+func TestRouteBuilderWrites(t *testing.T) {
+	b := new(RouteBuilder)
+	b.To(dummy)
+	type StructA struct{}
+	type StructB struct{}
+	b.Writes(StructA{})
+	if got, want := len(b.writeSamples), 1; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	{
+		r := b.Build()
+		var null interface{}
+		if r.WriteSample == null {
+			t.Fail()
+		}
+	}
+	b.Writes(StructA{}, StructB{})
+	if got, want := len(b.writeSamples), 2; got != want {
+		t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+	}
+	{
+		r := b.Build()
+		var null interface{}
+		if got, want := r.WriteSample, null; got != want {
+			t.Errorf("got [%v:%T] want [%v:%T]", got, got, want, want)
+		}
+	}
+}
+
 func TestRouteBuilder_PathParameter(t *testing.T) {
 	p := &Parameter{&ParameterData{Name: "name", Description: "desc"}}
 	p.AllowMultiple(true)
