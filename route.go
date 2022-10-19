@@ -40,7 +40,8 @@ type Route struct {
 	ParameterDocs           []*Parameter
 	ResponseErrors          map[int]ResponseError
 	DefaultResponse         *ResponseError
-	ReadSample, WriteSample interface{} // structs that model an example request or response payload
+	ReadSample, WriteSample interface{}   // structs that model an example request or response payload
+	WriteSamples            []interface{} // if more than one return types is possible (oneof) then this will contain multiple values
 
 	// Extra information used to store custom information about the route.
 	Metadata map[string]interface{}
