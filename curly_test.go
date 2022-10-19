@@ -95,18 +95,18 @@ func Test_detectWebService(t *testing.T) {
 }
 
 var routeMatchers = []struct {
-	route       string
-	path        string
-	matches     bool
-	paramCount  int
-	staticCount int
+	route         string
+	path          string
+	matches       bool
+	paramCount    int
+	staticCount   int
 	hasCustomVerb bool
 }{
 	// route, request-path
 	{"/a", "/a", true, 0, 1, false},
 	{"/a", "/b", false, 0, 0, false},
 	{"/a", "/b", false, 0, 0, false},
-	{"/a/{b}/c/", "/a/2/c", true, 1, 2, false},
+	{"/a/{b}/c/", "/a/2/c", false, 0, 0, false},
 	{"/{a}/{b}/{c}/", "/a/b", false, 0, 0, false},
 	{"/{x:*}", "/", false, 0, 0, false},
 	{"/{x:*}", "/a", true, 1, 0, false},
@@ -119,7 +119,6 @@ var routeMatchers = []struct {
 	{"/resources:run", "/resources", false, 0, 0, true},
 	{"/users/{userId:^prefix-}:start", "/users/prefix-}:startUserId", false, 0, 0, true},
 	{"/users/{userId:^prefix-}:start", "/users/prefix-userId:start", true, 1, 2, true},
-
 }
 
 // clear && go test -v -test.run Test_matchesRouteByPathTokens ...restful
