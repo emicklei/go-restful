@@ -9,6 +9,10 @@ import (
 type StdLogger interface {
 	Print(v ...interface{})
 	Printf(format string, v ...interface{})
+	Println(v ...interface{})
+	Fatal(v ...interface{})
+	Fatalf(format string, v ...interface{})
+	Fatalln(v ...interface{})
 }
 
 var Logger StdLogger
@@ -31,4 +35,24 @@ func Print(v ...interface{}) {
 // Printf delegates to the Logger
 func Printf(format string, v ...interface{}) {
 	Logger.Printf(format, v...)
+}
+
+//Println delegates to the Logger
+func Println(v ...interface{}) {
+	Logger.Println(v...)
+}
+
+//Fatal delegates to the Logger when fatal
+func Fatal(v ...interface{}) {
+	Logger.Fatal(v...)
+}
+
+//Fatal delegates to the Logger when fatal
+func Fatalf(format string, v ...interface{}) {
+	Logger.Fatalf(format, v...)
+}
+
+//Fatal delegates to the Logger when fatal
+func Fatalln(v ...interface{}) {
+	Logger.Fatalln(v...)
 }
