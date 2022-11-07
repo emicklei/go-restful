@@ -266,7 +266,7 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 				var err error
 				writer, err = NewCompressingResponseWriter(httpWriter, encoding)
 				if err != nil {
-					log.Print("unable to install compressor: ", err)
+					log.Fatal("unable to install compressor: ", err)
 					httpWriter.WriteHeader(http.StatusInternalServerError)
 					return
 				}
@@ -337,7 +337,7 @@ func (c *Container) ServeHTTP(httpWriter http.ResponseWriter, httpRequest *http.
 		var err error
 		writer, err = NewCompressingResponseWriter(httpWriter, encoding)
 		if err != nil {
-			log.Print("unable to install compressor: ", err)
+			log.Fatal("unable to install compressor: ", err)
 			httpWriter.WriteHeader(http.StatusInternalServerError)
 			return
 		}

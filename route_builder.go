@@ -157,7 +157,7 @@ func (b *RouteBuilder) Operation(name string) *RouteBuilder {
 
 // ReturnsError is deprecated, use Returns instead.
 func (b *RouteBuilder) ReturnsError(code int, message string, model interface{}) *RouteBuilder {
-	log.Print("ReturnsError is deprecated, use Returns instead.")
+	log.Fatal("ReturnsError is deprecated, use Returns instead.")
 	return b.Returns(code, message, model)
 }
 
