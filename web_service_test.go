@@ -333,17 +333,26 @@ func TestClientWithAndWithoutTrailingSlash(t *testing.T) {
 	ws.Route(ws.PUT("/").To(return200))
 	Add(ws)
 
-	for _, path := range []string{"http://here.com/test", "http://here.com/test/"} {
-		t.Run(path, func(t *testing.T) {
-			httpRequest, _ := http.NewRequest("PUT", path, nil)
+	for _, tt := range []struct {
+		url      string
+		wantCode int
+	}{
+		// behavior before #520
+		// {url: "http://here.com/test", wantCode: 404},
+		// {url: "http://here.com/test/", wantCode: 200},
+		// current behavior
+		{url: "http://here.com/test", wantCode: 200},
+		{url: "http://here.com/test/", wantCode: 404},
+	} {
+		t.Run(tt.url, func(t *testing.T) {
+			httpRequest, _ := http.NewRequest("PUT", tt.url, nil)
 			httpRequest.Header.Set("Accept", "*/*")
 			httpWriter := httptest.NewRecorder()
 			// override the default here
 			DefaultContainer.DoNotRecover(false)
 			DefaultContainer.dispatch(httpWriter, httpRequest)
-			if 200 != httpWriter.Code {
-				body, _ := ioutil.ReadAll(httpWriter.Body)
-				t.Errorf("200 expected on test, got body: %s", string(body))
+			if tt.wantCode != httpWriter.Code {
+				t.Errorf("Expected %d, got %d", tt.wantCode, httpWriter.Code)
 			}
 		})
 	}
