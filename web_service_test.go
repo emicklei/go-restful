@@ -338,11 +338,11 @@ func TestClientWithAndWithoutTrailingSlash(t *testing.T) {
 		wantCode int
 	}{
 		// behavior before #520
-		{url: "http://here.com/test", wantCode: 404},
-		{url: "http://here.com/test/", wantCode: 200},
-		// behavior #520
-		// {url: "http://here.com/test", wantCode: 200},
-		// {url: "http://here.com/test/", wantCode: 404},
+		// {url: "http://here.com/test", wantCode: 404},
+		// {url: "http://here.com/test/", wantCode: 200},
+		// current behavior
+		{url: "http://here.com/test", wantCode: 200},
+		{url: "http://here.com/test/", wantCode: 404},
 	} {
 		t.Run(tt.url, func(t *testing.T) {
 			httpRequest, _ := http.NewRequest("PUT", tt.url, nil)
