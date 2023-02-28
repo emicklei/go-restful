@@ -353,8 +353,25 @@ func (b *RouteBuilder) Build() Route {
 	return route
 }
 
+type MergePathStrategyFunc func(path1, path2 string) string
+
+var (
+	// behavior 3.10.*
+	PathJoinStrategy = path.Join
+
+	// behavior <= 3.9
+	TrimSlashStrategy = func(path1, path2 string) string {
+		return strings.TrimRight(path1, "/") + "/" + strings.TrimLeft(path2, "/")
+	}
+
+	// MergePathStrategy is the active strategy for merging a Route path when building the routing of all WebServices.
+	// The value is set to TrimSlashStrategy
+	// PathJoinStrategy is an alternative strategy that is more strict [Security - PRISMA-2022-0227]
+	MergePathStrategy = TrimSlashStrategy
+)
+
 func concatPath(path1, path2 string) string {
-	return path.Join(path1, path2)
+	return MergePathStrategy(path1, path2)
 }
 
 var anonymousFuncCount int32
