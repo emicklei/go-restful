@@ -327,6 +327,38 @@ func TestOptionsShortcut(t *testing.T) {
 	}
 }
 
+func TestClientWithAndWithoutTrailingSlashOld(t *testing.T) {
+	tearDown()
+	MergePathStrategy = TrimSlashStrategy
+	ws := new(WebService).Path("/test")
+	ws.Route(ws.PUT("/").To(return200))
+	Add(ws)
+
+	for _, tt := range []struct {
+		url      string
+		wantCode int
+	}{
+		// TrimSlashStrategy
+		{url: "http://here.com/test", wantCode: 404},
+		{url: "http://here.com/test/", wantCode: 200},
+		// PathJoinStrategy
+		//{url: "http://here.com/test", wantCode: 200},
+		//{url: "http://here.com/test/", wantCode: 404},
+	} {
+		t.Run(tt.url, func(t *testing.T) {
+			httpRequest, _ := http.NewRequest("PUT", tt.url, nil)
+			httpRequest.Header.Set("Accept", "*/*")
+			httpWriter := httptest.NewRecorder()
+			// override the default here
+			DefaultContainer.DoNotRecover(false)
+			DefaultContainer.dispatch(httpWriter, httpRequest)
+			if tt.wantCode != httpWriter.Code {
+				t.Errorf("Expected %d, got %d", tt.wantCode, httpWriter.Code)
+			}
+		})
+	}
+}
+
 func TestClientWithAndWithoutTrailingSlash(t *testing.T) {
 	tearDown()
 	ws := new(WebService).Path("/test")
@@ -337,10 +369,10 @@ func TestClientWithAndWithoutTrailingSlash(t *testing.T) {
 		url      string
 		wantCode int
 	}{
-		// behavior before #520
-		// {url: "http://here.com/test", wantCode: 404},
-		// {url: "http://here.com/test/", wantCode: 200},
-		// current behavior
+		// TrimSlashStrategy
+		//{url: "http://here.com/test", wantCode: 404},
+		//{url: "http://here.com/test/", wantCode: 200},
+		// PathJoinStrategy
 		{url: "http://here.com/test", wantCode: 200},
 		{url: "http://here.com/test/", wantCode: 404},
 	} {

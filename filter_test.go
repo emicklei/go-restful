@@ -18,6 +18,7 @@ func tearDown() {
 	DefaultContainer.webServices = []*WebService{}
 	DefaultContainer.isRegisteredOnRoot = true // this allows for setupServices multiple times
 	DefaultContainer.containerFilters = []FilterFunction{}
+	MergePathStrategy = PathJoinStrategy
 }
 
 func newTestService(addServiceFilter bool, addRouteFilter bool) *WebService {
