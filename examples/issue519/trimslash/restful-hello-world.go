@@ -12,12 +12,18 @@ import (
 //
 // curl http://localhost:8080/hello -> world
 // curl http://localhost:8080/hello/ -> to you
+// curl http://localhost:8080/hi -> world
+// curl http://localhost:8080/hi/ -> 404
+// curl http://localhost:8080/hey -> to you
+// curl http://localhost:8080/hey/ -> 404
 
 func main() {
 	restful.MergePathStrategy = restful.TrimSlashStrategy
 	ws := new(restful.WebService)
 	ws.Route(ws.GET("/hello").To(hello1))
 	ws.Route(ws.GET("/hello/").To(hello2))
+	ws.Route(ws.GET("/hi").To(hello1))
+	ws.Route(ws.GET("/hey").To(hello2))
 	restful.Add(ws)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
