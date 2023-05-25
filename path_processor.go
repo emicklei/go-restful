@@ -34,7 +34,7 @@ func (d defaultPathProcessor) ExtractParameters(r *Route, _ *WebService, urlPath
 			value = removeCustomVerb(value)
 		}
 
-		if strings.Index(key, "{") > -1 { // path-parameter
+		if  strings.Contains(key, "{") { // path-parameter
 			if colon := strings.Index(key, ":"); colon != -1 {
 				// extract by regex
 				regPart := key[colon+1 : len(key)-1]

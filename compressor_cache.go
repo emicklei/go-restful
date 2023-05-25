@@ -43,7 +43,7 @@ func NewBoundedCachedCompressors(writersCapacity, readersCapacity int) *BoundedC
 func (b *BoundedCachedCompressors) AcquireGzipWriter() *gzip.Writer {
 	var writer *gzip.Writer
 	select {
-	case writer, _ = <-b.gzipWriters:
+	case writer = <-b.gzipWriters:
 	default:
 		// return a new unmanaged one
 		writer = newGzipWriter()
@@ -64,7 +64,7 @@ func (b *BoundedCachedCompressors) ReleaseGzipWriter(w *gzip.Writer) {
 func (b *BoundedCachedCompressors) AcquireGzipReader() *gzip.Reader {
 	var reader *gzip.Reader
 	select {
-	case reader, _ = <-b.gzipReaders:
+	case reader = <-b.gzipReaders:
 	default:
 		// return a new unmanaged one
 		reader = newGzipReader()
@@ -85,7 +85,7 @@ func (b *BoundedCachedCompressors) ReleaseGzipReader(r *gzip.Reader) {
 func (b *BoundedCachedCompressors) AcquireZlibWriter() *zlib.Writer {
 	var writer *zlib.Writer
 	select {
-	case writer, _ = <-b.zlibWriters:
+	case writer = <-b.zlibWriters:
 	default:
 		// return a new unmanaged one
 		writer = newZlibWriter()

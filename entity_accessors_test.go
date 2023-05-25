@@ -51,7 +51,7 @@ func TestKeyValueEncoding(t *testing.T) {
 	//								Accept									Produces
 	resp := Response{ResponseWriter: httpWriter, requestAccept: "application/kv,*/*;q=0.8", routeProduces: []string{"application/kv"}, prettyPrint: true}
 	resp.WriteEntity(b)
-	t.Log(string(httpWriter.Body.Bytes()))
+	t.Log(httpWriter.Body.String())
 	if !kv.writeCalled {
 		t.Error("Write never called")
 	}

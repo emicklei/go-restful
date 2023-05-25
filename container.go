@@ -241,9 +241,8 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 		// a non-200 response (may be compressed) has already been written
 		// run container filters anyway ; they should not touch the response...
 		chain := FilterChain{Filters: c.containerFilters, Target: func(req *Request, resp *Response) {
-			switch err.(type) {
+			switch ser := err.(type) {
 			case ServiceError:
-				ser := err.(ServiceError)
 				c.serviceErrorHandleFunc(ser, req, resp)
 			}
 			// TODO
@@ -411,9 +410,7 @@ func (c *Container) RegisteredWebServices() []*WebService {
 	c.webServicesLock.RLock()
 	defer c.webServicesLock.RUnlock()
 	result := make([]*WebService, len(c.webServices))
-	for ix := range c.webServices {
-		result[ix] = c.webServices[ix]
-	}
+	copy(result, c.webServices)
 	return result
 }
 
