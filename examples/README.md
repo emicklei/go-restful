@@ -1,1 +1,1 @@
-## examples use v3 of the package
+## examples use v4 of the package

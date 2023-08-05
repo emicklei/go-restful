@@ -1,5 +1,9 @@
 # Change history of go-restful
 
+## [v4.0.0] - 2023-08-05
+
+- changes tokenizer of v3.9.0 to match Go standard route match behavior
+
 ## [v3.10.2] - 2023-03-09
 
 - introduced MergePathStrategy to be able to revert behaviour of path concatenation to 3.9.0

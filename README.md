@@ -33,11 +33,11 @@ import (
 
 #### Using Go Modules
 
-As of version `v3.0.0` (on the v3 branch), this package supports Go modules.
+As of version `v3.0.0` (so both the v3 and v4 branch), this package supports Go modules.
 
 ```
 import (
-	restful "github.com/emicklei/go-restful/v3"
+	restful "github.com/emicklei/go-restful/v4"
 )
 ```
 
