@@ -7,7 +7,6 @@ package restful
 import (
 	"fmt"
 	"os"
-	"path"
 	"reflect"
 	"runtime"
 	"strings"
@@ -360,7 +359,9 @@ func (b *RouteBuilder) Build() Route {
 
 // merge two paths using the current (package global) merge path strategy.
 func concatPath(rootPath, routePath string) string {
-	return path.Join(rootPath, routePath)
+	j := rootPath + routePath
+	j = strings.ReplaceAll(j, "//", "/")
+	return j
 }
 
 var anonymousFuncCount int32

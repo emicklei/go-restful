@@ -158,3 +158,25 @@ func TestContentEncodingEnabled(t *testing.T) {
 	}
 
 }
+
+func TestConcatPath(t *testing.T) {
+	for _, each := range []struct {
+		// WebService Path value (if empty then "/")
+		root string
+		// Route Path value (if empty then "")
+		route string
+		// What is used for matching
+		joined string
+	}{
+		{"/", "/", "/"},
+		{"/a", "/b", "/a/b"},
+		{"/a", "/b/", "/a/b/"},
+		{"/a/", "/b", "/a/b"},
+		{"/a/", "/b/", "/a/b/"},
+		{"/a/", "", "/a/"},
+	} {
+		if got, want := concatPath(each.root, each.route), each.joined; got != want {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	}
+}

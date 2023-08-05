@@ -327,18 +327,54 @@ func TestOptionsShortcut(t *testing.T) {
 	}
 }
 
-func TestClientWithAndWithoutTrailingSlash(t *testing.T) {
+func TestSlashesWithEmptyRootPath(t *testing.T) {
+	tearDown()
+	ws := new(WebService)
+	ws.Route(ws.PUT("/").To(returnCode(100)))
+	ws.Route(ws.PUT("/me").To(returnCode(200)))
+	ws.Route(ws.PUT("/me/").To(returnCode(300)))
+	Add(ws)
+
+	for i, tt := range []struct {
+		url      string
+		wantCode int
+	}{
+		{url: "http://here.com", wantCode: 100},
+		{url: "http://here.com/", wantCode: 100},
+		{url: "http://here.com/me", wantCode: 200},
+		{url: "http://here.com/me/", wantCode: 300},
+	} {
+		t.Run(tt.url, func(t *testing.T) {
+			httpRequest, _ := http.NewRequest("PUT", tt.url, nil)
+			httpRequest.Header.Set("Accept", "*/*")
+			httpWriter := httptest.NewRecorder()
+			// override the default here
+			DefaultContainer.DoNotRecover(false)
+			DefaultContainer.dispatch(httpWriter, httpRequest)
+			if tt.wantCode != httpWriter.Code {
+				t.Errorf("[%d] Expected %d, got %d", i, tt.wantCode, httpWriter.Code)
+			}
+		})
+	}
+}
+
+func TestSlashesWithNonEmptyRootPath(t *testing.T) {
 	tearDown()
 	ws := new(WebService).Path("/test")
-	ws.Route(ws.PUT("/").To(return200))
+	ws.Route(ws.PUT("").To(returnCode(100)))
+	ws.Route(ws.PUT("/").To(returnCode(200)))
+	ws.Route(ws.PUT("/me").To(returnCode(300)))
+	ws.Route(ws.PUT("/me/").To(returnCode(400)))
 	Add(ws)
 
 	for _, tt := range []struct {
 		url      string
 		wantCode int
 	}{
-		{url: "http://here.com/test", wantCode: 200},
-		{url: "http://here.com/test/", wantCode: 404},
+		{url: "http://here.com/test", wantCode: 100},
+		{url: "http://here.com/test/", wantCode: 200},
+		{url: "http://here.com/test/me", wantCode: 300},
+		{url: "http://here.com/test/me/", wantCode: 400},
 	} {
 		t.Run(tt.url, func(t *testing.T) {
 			httpRequest, _ := http.NewRequest("PUT", tt.url, nil)
@@ -457,4 +493,13 @@ func return204(req *Request, resp *Response) {
 
 func return200(req *Request, resp *Response) {
 	resp.WriteHeader(200)
+}
+
+func return503(req *Request, resp *Response) {
+	resp.WriteHeader(503)
+}
+func returnCode(code int) func(req *Request, resp *Response) {
+	return func(req *Request, resp *Response) {
+		resp.WriteHeader(code)
+	}
 }

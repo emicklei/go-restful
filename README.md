@@ -62,8 +62,20 @@ func (u UserResource) findUser(request *restful.Request, response *restful.Respo
 }
 ```
 	
-[Full API of a UserResource](https://github.com/emicklei/go-restful/blob/v3/examples/user-resource/restful-user-resource.go) 
-		
+[Full API of a UserResource](https://github.com/emicklei/go-restful/blob/v4/examples/user-resource/restful-user-resource.go) 
+
+### Routing
+
+|Root Path|Route Path|Request Path|Matches|
+|---------|----------|------------|-------|
+|""       |""        |""          |true
+|"/"       |""       |""          |true
+|"/"       |"/"      |""          |true
+|"/"       |"/"      |"/"         |true
+|"/a"      |"/b"     |"/a/b"      |true
+|"/a"      |"/b/"    |"/a/b"      |false
+|"/a"      |"/b/"    |"/a/b/      |true
+
 ### Features
 
 - Routes for request &#8594; function mapping with path parameter (e.g. {id} but also prefix_{var} and {var}_suffix) support
@@ -96,10 +108,6 @@ There are several hooks to customize the behavior of the go-restful package.
 - Compression
 - Encoders for other serializers
 - Use [jsoniter](https://github.com/json-iterator/go) by building this package using a build tag, e.g. `go build -tags=jsoniter .` 
-- Use the variable `MergePathStrategy` to change the behaviour of composing the Route path given a root path and a local route path	
-	- versions >= 3.10.1 has set the value to `PathJoinStrategy` that fixes a reported [security issue](https://github.com/advisories/GHSA-r48q-9g5r-8q2h) but may cause your services not to work correctly anymore.
-	- versions <= 3.9 had the behaviour that can be restored in newer versions by setting the value to `TrimSlashStrategy`.
-	- you can set value to a custom implementation (must implement MergePathStrategyFunc)
 
 ## Resources
 
@@ -107,9 +115,8 @@ There are several hooks to customize the behavior of the go-restful package.
 - [Example posted on blog](http://ernestmicklei.com/2012/11/go-restful-first-working-example/)
 - [Design explained on blog](http://ernestmicklei.com/2012/11/go-restful-api-design/)
 - [sourcegraph](https://sourcegraph.com/github.com/emicklei/go-restful)
-- [showcase: Zazkia - tcp proxy for testing resiliency](https://github.com/emicklei/zazkia)
-- [showcase: Mora - MongoDB REST Api server](https://github.com/emicklei/mora)
+- [showcase: Zazkia - tcp proxy for testing resiliency](https://github.com/emicklei/zazkia) 
 
 Type ```git shortlog -s``` for a full list of contributors.
 
-© 2012 - 2022, http://ernestmicklei.com. MIT License. Contributions are welcome.
+© 2012 - 2023, http://ernestmicklei.com. MIT License. Contributions are welcome.

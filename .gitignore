@@ -69,3 +69,5 @@ examples/restful-html-template
 s.html
 restful-path-tail
 .idea
+
+__debug_bin
