@@ -398,6 +398,44 @@ func TestSlashesWithNonEmptyRootPath(t *testing.T) {
 	}
 }
 
+func TestRoutingSpec(t *testing.T) {
+	tearDown()
+	ws1 := new(WebService).Path("") //  same as "/"
+	ws1.Route(ws1.PUT("").To(returnCode(100)))
+	Add(ws1)
+
+	ws2 := new(WebService).Path("/a")
+	ws2.Route(ws2.PUT("").To(returnCode(200)))
+	ws2.Route(ws2.PUT("/").To(returnCode(300)))
+	ws2.Route(ws2.PUT("/b").To(returnCode(400)))
+	ws2.Route(ws2.PUT("/b/").To(returnCode(500)))
+	Add(ws2)
+
+	for _, tt := range []struct {
+		url      string
+		wantCode int
+	}{
+		{url: "http://spec.com", wantCode: 100},
+		{url: "http://spec.com/", wantCode: 100},
+		{url: "http://spec.com/a", wantCode: 200},
+		{url: "http://spec.com/a/", wantCode: 300},
+		{url: "http://spec.com/a/b", wantCode: 400},
+		{url: "http://spec.com/a/b/", wantCode: 500},
+	} {
+		t.Run(tt.url, func(t *testing.T) {
+			httpRequest, _ := http.NewRequest("PUT", tt.url, nil)
+			httpRequest.Header.Set("Accept", "*/*")
+			httpWriter := httptest.NewRecorder()
+			// override the default here
+			DefaultContainer.DoNotRecover(false)
+			DefaultContainer.dispatch(httpWriter, httpRequest)
+			if tt.wantCode != httpWriter.Code {
+				t.Errorf("Expected %d, got %d", tt.wantCode, httpWriter.Code)
+			}
+		})
+	}
+}
+
 func newPanicingService() *WebService {
 	ws := new(WebService).Path("")
 	ws.Route(ws.GET("/fire").To(doPanic))
