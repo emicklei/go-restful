@@ -335,6 +335,10 @@ func TestSlashesWithEmptyRootPath(t *testing.T) {
 	ws.Route(ws.PUT("/me/").To(returnCode(300)))
 	Add(ws)
 
+	for _, each := range ws.routes {
+		t.Logf("route: %v", each.String())
+	}
+
 	for i, tt := range []struct {
 		url      string
 		wantCode int
@@ -366,6 +370,10 @@ func TestSlashesWithNonEmptyRootPath(t *testing.T) {
 	ws.Route(ws.PUT("/me").To(returnCode(300)))
 	ws.Route(ws.PUT("/me/").To(returnCode(400)))
 	Add(ws)
+
+	for _, each := range ws.routes {
+		t.Logf("route: %v", each.String())
+	}
 
 	for _, tt := range []struct {
 		url      string

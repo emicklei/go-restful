@@ -74,7 +74,7 @@ func (u UserResource) findUser(request *restful.Request, response *restful.Respo
 |"/"       |"/"      |"/"         |true
 |"/a"      |"/b"     |"/a/b"      |true
 |"/a"      |"/b/"    |"/a/b"      |false
-|"/a"      |"/b/"    |"/a/b/      |true
+|"/a"      |"/b/"    |"/a/b/"     |true
 
 ### Features
 

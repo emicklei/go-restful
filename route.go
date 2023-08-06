@@ -162,7 +162,7 @@ func (r Route) matchesContentType(mimeTypes string) bool {
 
 // Tokenize an URL path using the slash separator ; the result does not have empty tokens
 func tokenizePath(path string) []string {
-	if "/" == path {
+	if "/" == path || "" == path {
 		return nil
 	}
 	return strings.Split(strings.TrimLeft(path, "/"), "/")
