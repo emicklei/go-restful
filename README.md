@@ -66,14 +66,17 @@ func (u UserResource) findUser(request *restful.Request, response *restful.Respo
 
 ### Routing
 
+Note: this section is work in progress until v4.0.0
+
 |Root Path|Route Path|Expanded Route|Request Path|Matches|
 |---------|----------|--------------|------------|-------|
 |""       |""        |"/"           |""          |true
 |"/"       |""       |"/"           |""          |true
 |"/"       |"/"      |"/"           |""          |true
 |"/"       |"/"      |"/"           |"/"         |true
-|"/a"      |"/"      |"/a"          |"/a"        |true
-|"/a"      |"/"      |"/a"          |"/a/"       |false
+|"/a"      |""       |"/a"          |"/a"        |true
+|"/a"      |"/"      |"/a/"         |"/a"        |false
+|"/a"      |"/"      |"/a/"         |"/a/"       |true
 |"/a"      |"/b"     |"/a/b"        |"/a/b"      |true
 |"/a"      |"/b"     |"/a/b"        |"/a/b/"     |false
 |"/a"      |"/b/"    |"/a/b/"       |"/a/b"      |false
