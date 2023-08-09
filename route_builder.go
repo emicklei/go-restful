@@ -359,6 +359,9 @@ func (b *RouteBuilder) Build() Route {
 
 // merge two paths using the current (package global) merge path strategy.
 func concatPath(rootPath, routePath string) string {
+	if routePath == "/" {
+		routePath = ""
+	}
 	j := rootPath + routePath
 	j = strings.ReplaceAll(j, "//", "/")
 	return j

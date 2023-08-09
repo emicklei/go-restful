@@ -380,7 +380,7 @@ func TestSlashesWithNonEmptyRootPath(t *testing.T) {
 		wantCode int
 	}{
 		{url: "http://here.com/test", wantCode: 100},
-		{url: "http://here.com/test/", wantCode: 200},
+		{url: "http://here.com/test/", wantCode: 404},
 		{url: "http://here.com/test/me", wantCode: 300},
 		{url: "http://here.com/test/me/", wantCode: 400},
 	} {
@@ -418,7 +418,7 @@ func TestRoutingSpec(t *testing.T) {
 		{url: "http://spec.com", wantCode: 100},
 		{url: "http://spec.com/", wantCode: 100},
 		{url: "http://spec.com/a", wantCode: 200},
-		{url: "http://spec.com/a/", wantCode: 300},
+		{url: "http://spec.com/a/", wantCode: 404},
 		{url: "http://spec.com/a/b", wantCode: 400},
 		{url: "http://spec.com/a/b/", wantCode: 500},
 	} {

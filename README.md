@@ -76,7 +76,7 @@ Note: this section is work in progress until v4.0.0
 |"/"       |"/"      |"/"           |"/"         |true
 |"/a"      |""       |"/a"          |"/a"        |true
 |"/a"      |"/"      |"/a"          |"/a"        |true
-|"/a"      |"/"      |"/a"          |"/a/"       |true
+|"/a"      |"/"      |"/a"          |"/a/"       |false
 |"/a"      |"/b"     |"/a/b"        |"/a/b"      |true
 |"/a"      |"/b"     |"/a/b"        |"/a/b/"     |false
 |"/a"      |"/b/"    |"/a/b/"       |"/a/b"      |false
