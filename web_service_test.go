@@ -404,12 +404,20 @@ func TestRoutingSpec(t *testing.T) {
 	ws1.Route(ws1.PUT("").To(returnCode(100)))
 	Add(ws1)
 
+	for _, each := range ws1.routes {
+		t.Logf("ws1:%q", each.Path)
+	}
+
 	ws2 := new(WebService).Path("/a")
 	ws2.Route(ws2.PUT("").To(returnCode(200)))
 	ws2.Route(ws2.PUT("/").To(returnCode(300)))
 	ws2.Route(ws2.PUT("/b").To(returnCode(400)))
 	ws2.Route(ws2.PUT("/b/").To(returnCode(500)))
 	Add(ws2)
+
+	for _, each := range ws2.routes {
+		t.Logf("ws2:%q", each.Path)
+	}
 
 	for _, tt := range []struct {
 		url      string
