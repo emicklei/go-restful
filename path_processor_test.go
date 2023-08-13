@@ -33,7 +33,15 @@ func TestMatchesPath_TwoVars(t *testing.T) {
 }
 
 func TestMatchesPath_VarOnFront(t *testing.T) {
-	params := doExtractParams("{what}/from/{source}/", 4, "who/from/SOS/", t) // slash is not removed
+	params := doExtractParams("{what}/from/{source}/", 3, "who/from/SOS/", t)
+	if params["source"] != "SOS" {
+		t.Errorf("parameter mismatch SOS")
+	}
+}
+
+func TestMatchesPath_VarOnFront_KeepSlash(t *testing.T) {
+	TrimRightSlashEnabled = false
+	params := doExtractParams("{what}/from/{source}/", 4, "who/from/SOS/", t)
 	if params["source"] != "SOS" {
 		t.Errorf("parameter mismatch SOS")
 	}

@@ -106,7 +106,7 @@ var routeMatchers = []struct {
 	{"/a", "/a", true, 0, 1, false},
 	{"/a", "/b", false, 0, 0, false},
 	{"/a", "/b", false, 0, 0, false},
-	{"/a/{b}/c/", "/a/2/c", false, 0, 0, false},
+	{"/a/{b}/c/", "/a/2/c", true, 1, 2, false},
 	{"/{a}/{b}/{c}/", "/a/b", false, 0, 0, false},
 	{"/{x:*}", "/", false, 0, 0, false},
 	{"/{x:*}", "/a", true, 1, 0, false},
