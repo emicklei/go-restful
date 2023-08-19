@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	restful "github.com/emicklei/go-restful/v3"
@@ -41,14 +43,14 @@ func (u UserResource) WebService() *restful.WebService {
 		Returns(200, "OK", User{}).
 		Returns(404, "Not Found", nil))
 
-	ws.Route(ws.PUT("/{user-id}").To(u.updateUser).
+	ws.Route(ws.PUT("/{user-id}").To(u.upsertUser).
 		// docs
 		Doc("update a user").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Reads(User{})) // from the request
 
-	ws.Route(ws.PUT("").To(u.createUser).
+	ws.Route(ws.POST("").To(u.createUser).
 		// docs
 		Doc("create a user").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
@@ -64,8 +66,8 @@ func (u UserResource) WebService() *restful.WebService {
 }
 
 // GET http://localhost:8080/users
-//
 func (u UserResource) findAllUsers(request *restful.Request, response *restful.Response) {
+	log.Println("findAllUsers")
 	list := []User{}
 	for _, each := range u.users {
 		list = append(list, each)
@@ -74,8 +76,8 @@ func (u UserResource) findAllUsers(request *restful.Request, response *restful.R
 }
 
 // GET http://localhost:8080/users/1
-//
 func (u UserResource) findUser(request *restful.Request, response *restful.Response) {
+	log.Println("findUser")
 	id := request.PathParameter("user-id")
 	usr := u.users[id]
 	if len(usr.ID) == 0 {
@@ -87,23 +89,23 @@ func (u UserResource) findUser(request *restful.Request, response *restful.Respo
 
 // PUT http://localhost:8080/users/1
 // <User><Id>1</Id><Name>Melissa Raspberry</Name></User>
-//
-func (u *UserResource) updateUser(request *restful.Request, response *restful.Response) {
-	usr := new(User)
+func (u *UserResource) upsertUser(request *restful.Request, response *restful.Response) {
+	log.Println("upsertUser")
+	usr := User{ID: request.PathParameter("user-id")}
 	err := request.ReadEntity(&usr)
 	if err == nil {
-		u.users[usr.ID] = *usr
+		u.users[usr.ID] = usr
 		response.WriteEntity(usr)
 	} else {
 		response.WriteError(http.StatusInternalServerError, err)
 	}
 }
 
-// PUT http://localhost:8080/users/1
+// POST http://localhost:8080/users
 // <User><Id>1</Id><Name>Melissa</Name></User>
-//
 func (u *UserResource) createUser(request *restful.Request, response *restful.Response) {
-	usr := User{ID: request.PathParameter("user-id")}
+	log.Println("createUser")
+	usr := User{ID: fmt.Sprintf("%d", time.Now().Unix())}
 	err := request.ReadEntity(&usr)
 	if err == nil {
 		u.users[usr.ID] = usr
@@ -114,8 +116,8 @@ func (u *UserResource) createUser(request *restful.Request, response *restful.Re
 }
 
 // DELETE http://localhost:8080/users/1
-//
 func (u *UserResource) removeUser(request *restful.Request, response *restful.Response) {
+	log.Println("removeUser")
 	id := request.PathParameter("user-id")
 	delete(u.users, id)
 }
@@ -167,7 +169,7 @@ func enrichSwaggerObject(swo *spec.Swagger) {
 
 // User is just a sample type
 type User struct {
-	ID   string `json:"id" description:"identifier of the user"`
-	Name string `json:"name" description:"name of the user" default:"john"`
-	Age  int    `json:"age" description:"age of the user" default:"21"`
+	ID   string `xml:"id" json:"id" description:"identifier of the user"`
+	Name string `xml:"name" json:"name" description:"name of the user" default:"john"`
+	Age  int    `xml:"age" json:"age" description:"age of the user" default:"21"`
 }
