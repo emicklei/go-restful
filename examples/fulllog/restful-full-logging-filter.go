@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -37,7 +38,7 @@ func newUserService() *restful.WebService {
 // Route Filter (defines FilterFunction)
 func bodyLogFilter(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
 
-	inBody, err := ioutil.ReadAll(req.Request.Body)
+	inBody, err := io.ReadAll(req.Request.Body)
 	if err != nil {
 		resp.WriteError(400, err)
 		return
@@ -54,7 +55,6 @@ func bodyLogFilter(req *restful.Request, resp *restful.Response, chain *restful.
 }
 
 // curl -H "content-type:application/json" http://localhost:8080/users -d '{"Id":42, "Name":"Captain Marvel"}'
-//
 func createUser(request *restful.Request, response *restful.Response) {
 	u := new(User)
 	err := request.ReadEntity(u)

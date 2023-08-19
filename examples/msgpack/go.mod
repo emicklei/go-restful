@@ -3,7 +3,7 @@ module github.com/emicklei/go-restful/examples/msgpack
 go 1.18
 
 require (
-	github.com/emicklei/go-restful/v3 v3.8.0
+	github.com/emicklei/go-restful/v3 v3.11.0
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.2
 )
 

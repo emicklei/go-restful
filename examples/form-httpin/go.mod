@@ -3,7 +3,7 @@ module github.com/emicklei/go-restful/examples/form-httpin
 go 1.19
 
 require (
-	github.com/emicklei/go-restful/v3 v3.9.0
+	github.com/emicklei/go-restful/v3 v3.11.0
 	github.com/ggicci/httpin v0.10.1
 )
 
