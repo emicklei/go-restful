@@ -1,0 +1,1 @@
+curl -X POST -d "name=test" -H "content-type:application/x-www-form-urlencoded" http://localhost:8080/profiles
