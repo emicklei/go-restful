@@ -11,6 +11,12 @@ import (
 	"sync"
 )
 
+var (
+	MarshalIndent = json.MarshalIndent
+	NewDecoder    = json.NewDecoder
+	NewEncoder    = json.NewEncoder
+)
+
 // EntityReaderWriter can read and write values using an encoding such as JSON,XML.
 type EntityReaderWriter interface {
 	// Read a serialized version of the value from the request.
@@ -128,7 +134,7 @@ type entityJSONAccess struct {
 
 // Read unmarshalls the value from JSON
 func (e entityJSONAccess) Read(req *Request, v interface{}) error {
-	decoder := json.NewDecoder(req.Request.Body)
+	decoder := NewDecoder(req.Request.Body)
 	decoder.UseNumber()
 	return decoder.Decode(v)
 }
@@ -147,7 +153,7 @@ func writeJSON(resp *Response, status int, contentType string, v interface{}) er
 	}
 	if resp.prettyPrint {
 		// pretty output must be created and written explicitly
-		output, err := json.MarshalIndent(v, "", " ")
+		output, err := MarshalIndent(v, "", " ")
 		if err != nil {
 			return err
 		}
@@ -159,5 +165,5 @@ func writeJSON(resp *Response, status int, contentType string, v interface{}) er
 	// not-so-pretty
 	resp.Header().Set(HEADER_ContentType, contentType)
 	resp.WriteHeader(status)
-	return json.NewEncoder(resp).Encode(v)
+	return NewEncoder(resp).Encode(v)
 }
