@@ -53,7 +53,7 @@ func (c *CompressingResponseWriter) CloseNotify() <-chan bool {
 func (c *CompressingResponseWriter) Flush() {
 	flusher, ok := c.writer.(http.Flusher)
 	if !ok {
-		// ResponseWriter doesn't support Hijacker interface
+		// writer doesn't support http.Flusher interface
 		return
 	}
 	flusher.Flush()
