@@ -16,7 +16,10 @@ func main() {
 	ws := new(restful.WebService)
 	ws.Route(ws.GET("/hello").To(hello))
 	restful.Add(ws)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+
+	// DO NOT wrap http.ListenAndServe with log.Fatal in production
+	// or you won't be able to drain in-flight request gracefully, even you handle sigterm
+	log.Fatal(http.ListenAndServe(":8080", nil)) 
 }
 
 func hello(req *restful.Request, resp *restful.Response) {
