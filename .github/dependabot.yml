@@ -6,16 +6,13 @@
 version: 2
 updates:
   - package-ecosystem: gomod # See documentation for possible values
+    target-branch: v3
     directory: / # Location of package manifests
     schedule:
       interval: weekly
 
   - package-ecosystem: github-actions
+    target-branch: v3
     directory: /
-    schedule:
-      interval: weekly
-
-  - package-ecosystem: gomod
-    directory: /graph
     schedule:
       interval: weekly
