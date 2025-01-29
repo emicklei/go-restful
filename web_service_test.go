@@ -132,7 +132,7 @@ func TestUnsupportedMedia_Issue492(t *testing.T) {
 		httpRequest.Header.Set("Accept", "application/json")
 		httpWriter := httptest.NewRecorder()
 		DefaultContainer.dispatch(httpWriter, httpRequest)
-		if 415 != httpWriter.Code {
+		if http.StatusOK != httpWriter.Code {
 			t.Errorf("[%s] 415 expected got %d", method, httpWriter.Code)
 		}
 	}

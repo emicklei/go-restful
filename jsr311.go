@@ -129,6 +129,8 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 		if httpRequest.ContentLength > 0 {
 			return nil, NewError(http.StatusUnsupportedMediaType, "415: Unsupported Media Type")
 		}
+		// continue with old selection
+		candidates = previous
 	}
 
 	// accept
@@ -150,16 +152,6 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 		available := []string{}
 		for _, candidate := range previous {
 			available = append(available, candidate.Produces...)
-		}
-		// if POST,PUT,PATCH without body
-		method, length := httpRequest.Method, httpRequest.Header.Get("Content-Length")
-		if (method == http.MethodPost ||
-			method == http.MethodPut ||
-			method == http.MethodPatch) && (length == "" || length == "0") {
-			return nil, NewError(
-				http.StatusUnsupportedMediaType,
-				fmt.Sprintf("415: Unsupported Media Type\n\nAvailable representations: %s", strings.Join(available, ", ")),
-			)
 		}
 		return nil, NewError(
 			http.StatusNotAcceptable,
