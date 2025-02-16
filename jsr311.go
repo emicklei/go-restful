@@ -145,15 +145,20 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 		if trace {
 			traceLogger.Printf("no Route found (from %d) that matches HTTP Accept: %s\n", len(previous), accept)
 		}
-		// for error reporting
 		available := []string{}
 		for _, candidate := range previous {
 			available = append(available, candidate.Produces...)
 		}
+		method := httpRequest.Method
+		if httpRequest.ContentLength > 0 || method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch {
+			return nil, NewError(
+				http.StatusUnsupportedMediaType,
+				fmt.Sprintf("415: Unsupported Media Type\n\nAvailable representations: %s", strings.Join(available, ", ")),
+			)
+		}
 		return nil, NewError(
 			http.StatusNotAcceptable,
-			fmt.Sprintf("406: Not Acceptable\n\nAvailable representations: %s", strings.Join(available, ", ")),
-		)
+			fmt.Sprintf("406: Not Acceptable\n\nAvailable representations: %s", strings.Join(available, ", ")))
 	}
 	// return r.bestMatchByMedia(outputMediaOk, contentType, accept), nil
 	return candidates[0], nil

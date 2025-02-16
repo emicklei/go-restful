@@ -165,6 +165,18 @@ func TestUnsupportedMedia_ContentTypeOnly(t *testing.T) { // If Accept is not se
 	}
 }
 
+func TestGetWithNonMatchingContentType(t *testing.T) { // If Accept is not set then */* is used.
+	tearDown()
+	Add(newGetOnlyJsonOnlyService())
+	httpRequest, _ := http.NewRequest("GET", "http://here.com/get", nil) // no content
+	httpRequest.Header.Set("Content-type", "application/yaml")
+	httpWriter := httptest.NewRecorder()
+	DefaultContainer.dispatch(httpWriter, httpRequest)
+	if httpWriter.Code != http.StatusUnsupportedMediaType {
+		t.Errorf("[%s] 415 expected got %d", "GET", httpWriter.Code)
+	}
+}
+
 func TestSelectedRoutePath_Issue100(t *testing.T) {
 	tearDown()
 	Add(newSelectedRouteTestingService())
