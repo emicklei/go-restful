@@ -124,16 +124,43 @@ Available representations: text/plain, application/json`
 	}
 }
 
-func TestUnsupportedMedia_Issue492(t *testing.T) {
+func TestUnsupportedMedia_AcceptOnly(t *testing.T) {
+	tearDown()
+	Add(newPostTestService())
+	for _, method := range []string{"POST", "PUT", "PATCH"} {
+		httpRequest, _ := http.NewRequest(method, "http://here.com/test", nil) // no content
+		httpRequest.Header.Set("Accept", "application/json")
+		httpWriter := httptest.NewRecorder()
+		DefaultContainer.dispatch(httpWriter, httpRequest)
+		if http.StatusUnsupportedMediaType != httpWriter.Code {
+			t.Errorf("[%s] 415 expected got %d", method, httpWriter.Code)
+		}
+	}
+}
+func TestUnsupportedMedia_AcceptOnlyWithZeroContentLength(t *testing.T) {
 	tearDown()
 	Add(newPostTestService())
 	for _, method := range []string{"POST", "PUT", "PATCH"} {
 		httpRequest, _ := http.NewRequest(method, "http://here.com/test", nil)
 		httpRequest.Header.Set("Accept", "application/json")
+		httpRequest.Header.Set("Content-length", "0")
+		httpWriter := httptest.NewRecorder()
+		DefaultContainer.dispatch(httpWriter, httpRequest)
+		if http.StatusUnsupportedMediaType != httpWriter.Code {
+			t.Errorf("[%s] 415 expected got %d", method, httpWriter.Code)
+		}
+	}
+}
+func TestUnsupportedMedia_ContentTypeOnly(t *testing.T) { // If Accept is not set then */* is used.
+	tearDown()
+	Add(newPostTestService())
+	for _, method := range []string{"POST", "PUT", "PATCH"} {
+		httpRequest, _ := http.NewRequest(method, "http://here.com/test", nil) // no content
+		httpRequest.Header.Set("Content-type", "application/json")
 		httpWriter := httptest.NewRecorder()
 		DefaultContainer.dispatch(httpWriter, httpRequest)
 		if http.StatusOK != httpWriter.Code {
-			t.Errorf("[%s] 415 expected got %d", method, httpWriter.Code)
+			t.Errorf("[%s] 200 expected got %d", method, httpWriter.Code)
 		}
 	}
 }
@@ -390,6 +417,7 @@ func newPostNoConsumesService() *WebService {
 	return ws
 }
 
+// consumes and produces JSON on POST,PUT and PATCH
 func newPostTestService() *WebService {
 	ws := new(WebService).Path("")
 	ws.Consumes("application/json")

@@ -65,7 +65,7 @@ func (RouterJSR311) extractParams(pathExpr *pathExpression, matches []string) ma
 	return params
 }
 
-// http://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-360003.7.2
+// https://download.oracle.com/otndocs/jcp/jaxrs-1.1-mrel-eval-oth-JSpec/
 func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*Route, error) {
 	candidates := make([]*Route, 0, 8)
 	for i, each := range routes {
@@ -126,11 +126,7 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 		if trace {
 			traceLogger.Printf("no Route found (from %d) that matches HTTP Content-Type: %s\n", len(previous), contentType)
 		}
-		if httpRequest.ContentLength > 0 {
-			return nil, NewError(http.StatusUnsupportedMediaType, "415: Unsupported Media Type")
-		}
-		// continue with old selection
-		candidates = previous
+		return nil, NewError(http.StatusUnsupportedMediaType, "415: Unsupported Media Type")
 	}
 
 	// accept
@@ -149,6 +145,7 @@ func (r RouterJSR311) detectRoute(routes []Route, httpRequest *http.Request) (*R
 		if trace {
 			traceLogger.Printf("no Route found (from %d) that matches HTTP Accept: %s\n", len(previous), accept)
 		}
+		// for error reporting
 		available := []string{}
 		for _, candidate := range previous {
 			available = append(available, candidate.Produces...)
