@@ -177,6 +177,61 @@ func TestGetWithNonMatchingContentType(t *testing.T) { // If Accept is not set t
 	}
 }
 
+func TestPostWithNonMatchingContentType(t *testing.T) { // If Accept is not set then */* is used.
+	tearDown()
+	Add(newPostNoConsumesService())
+	httpRequest, _ := http.NewRequest("POST", "http://here.com/post", nil) // no content
+	httpRequest.Header.Set("Content-type", "application/yaml")
+	httpWriter := httptest.NewRecorder()
+	DefaultContainer.dispatch(httpWriter, httpRequest)
+	if httpWriter.Code != http.StatusNoContent {
+		t.Errorf("[%s] 204 expected got %d", "POST", httpWriter.Code)
+	}
+}
+
+func TestPostWithNonMatchingAccept(t *testing.T) {
+	tearDown()
+	// consumes and produces JSON on POST,PUT and PATCH
+	Add(newPostTestService())
+	httpRequest, _ := http.NewRequest("POST", "http://here.com/test", nil) // no content
+	httpRequest.Header.Set("Content-type", "application/json")
+	httpRequest.Header.Set("Accept", "application/yaml")
+	httpWriter := httptest.NewRecorder()
+	DefaultContainer.dispatch(httpWriter, httpRequest)
+	if httpWriter.Code != http.StatusUnsupportedMediaType {
+		t.Errorf("[%s] 415 expected got %d", "POST", httpWriter.Code)
+	}
+}
+
+func TestPostEmptyBody(t *testing.T) {
+	tearDown()
+	// consumes and produces JSON on POST,PUT and PATCH
+	Add(newPostTestService())
+	httpRequest, _ := http.NewRequest("POST", "http://here.com/test", nil) // no content
+	httpRequest.Header.Set("Content-type", "application/json")
+	httpRequest.Header.Set("Accept", "application/json")
+	httpWriter := httptest.NewRecorder()
+	DefaultContainer.dispatch(httpWriter, httpRequest)
+	if httpWriter.Code != http.StatusOK {
+		t.Errorf("[%s] 200 expected got %d", "POST", httpWriter.Code)
+	}
+}
+
+func TestPostEmptyBodyZeroContentLength(t *testing.T) {
+	tearDown()
+	// consumes and produces JSON on POST,PUT and PATCH
+	Add(newPostTestService())
+	httpRequest, _ := http.NewRequest("POST", "http://here.com/test", nil) // no content
+	httpRequest.Header.Set("Content-type", "application/json")
+	httpRequest.Header.Set("Content-length", "0")
+	httpRequest.Header.Set("Accept", "application/json")
+	httpWriter := httptest.NewRecorder()
+	DefaultContainer.dispatch(httpWriter, httpRequest)
+	if httpWriter.Code != http.StatusOK {
+		t.Errorf("[%s] 200 expected got %d", "POST", httpWriter.Code)
+	}
+}
+
 func TestSelectedRoutePath_Issue100(t *testing.T) {
 	tearDown()
 	Add(newSelectedRouteTestingService())
