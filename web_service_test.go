@@ -198,8 +198,8 @@ func TestPostWithNonMatchingAccept(t *testing.T) {
 	httpRequest.Header.Set("Accept", "application/yaml")
 	httpWriter := httptest.NewRecorder()
 	DefaultContainer.dispatch(httpWriter, httpRequest)
-	if httpWriter.Code != http.StatusUnsupportedMediaType {
-		t.Errorf("[%s] 415 expected got %d", "POST", httpWriter.Code)
+	if httpWriter.Code != http.StatusNotAcceptable {
+		t.Errorf("[%s] 406 expected got %d", "POST", httpWriter.Code)
 	}
 }
 
