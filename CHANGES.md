@@ -1,5 +1,8 @@
 # Change history of go-restful
 
+## [v3.12.2] - 2025-02-21
+
+- allow empty payloads in post,put,patch, issue #580 ( thanks @liggitt, Jordan Liggitt)
 
 ## [v3.12.1] - 2024-05-28
 
