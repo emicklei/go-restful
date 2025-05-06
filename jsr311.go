@@ -186,7 +186,7 @@ func (r RouterJSR311) selectRoutes(dispatcher *WebService, pathRemainder string)
 	}
 	sort.Sort(sort.Reverse(filtered))
 
-	// select other routes from candidates whoes expression matches rmatch
+	// select other routes from candidates whose expression matches rmatch
 	matchingRoutes := []Route{filtered.candidates[0].route}
 	for c := 1; c < len(filtered.candidates); c++ {
 		each := filtered.candidates[c]
@@ -254,7 +254,7 @@ func (rcs *sortableRouteCandidates) Less(i, j int) bool {
 	if ci.literalCount > cj.literalCount {
 		return false
 	}
-	// secundary key
+	// secondary key
 	if ci.matchesCount < cj.matchesCount {
 		return true
 	}
@@ -301,7 +301,7 @@ func (dc *sortableDispatcherCandidates) Less(i, j int) bool {
 	if ci.matchesCount > cj.matchesCount {
 		return false
 	}
-	// secundary key
+	// secondary key
 	if ci.literalCount < cj.literalCount {
 		return true
 	}

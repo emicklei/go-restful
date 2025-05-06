@@ -43,7 +43,7 @@ func (s sortableCurlyRoutes) Less(i, j int) bool {
 	if a.staticCount > b.staticCount {
 		return false
 	}
-	// secundary key
+	// secondary key
 	if a.paramCount < b.paramCount {
 		return true
 	}
