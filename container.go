@@ -216,7 +216,7 @@ func (c *Container) dispatch(httpWriter http.ResponseWriter, httpRequest *http.R
 		}
 	}()
 
-	// Instal panic recovery unless told otherwise
+	// Install panic recovery unless told otherwise
 	if !c.doNotRecover { // catch all for 500 response
 		defer func() {
 			if r := recover(); r != nil {

@@ -8,7 +8,7 @@ import (
 	restful "github.com/emicklei/go-restful/v3"
 )
 
-// This example shows how to use a WebService filter that passed the Http headers to disable browser cacheing.
+// This example shows how to use a WebService filter that passed the Http headers to disable browser caching.
 //
 // GET http://localhost:8080/hello
 

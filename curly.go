@@ -119,7 +119,7 @@ func (c CurlyRouter) regularMatchesPathToken(routeToken string, colon int, reque
 
 var jsr311Router = RouterJSR311{}
 
-// detectRoute selectes from a list of Route the first match by inspecting both the Accept and Content-Type
+// detectRoute selects from a list of Route the first match by inspecting both the Accept and Content-Type
 // headers of the Request. See also RouterJSR311 in jsr311.go
 func (c CurlyRouter) detectRoute(candidateRoutes sortableCurlyRoutes, httpRequest *http.Request) (*Route, error) {
 	// tracing is done inside detectRoute

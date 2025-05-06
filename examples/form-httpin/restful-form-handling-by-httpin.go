@@ -19,7 +19,7 @@ import (
 	// - JSON/XML request body
 	// - URL path variables
 	// - file uploads
-	// by defining an input struct and composing fileds struct tags
+	// by defining an input struct and composing fields struct tags
 	"github.com/ggicci/httpin"
 )
 
