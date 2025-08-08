@@ -3,10 +3,12 @@ package restful
 import (
 	"fmt"
 	"regexp"
+	"sync"
 )
 
 var (
-	customVerbReg = regexp.MustCompile(":([A-Za-z]+)$")
+	customVerbReg   = regexp.MustCompile(":([A-Za-z]+)$")
+	customVerbCache sync.Map // Cache for compiled custom verb regexes
 )
 
 func hasCustomVerb(routeToken string) bool {
@@ -20,7 +22,17 @@ func isMatchCustomVerb(routeToken string, pathToken string) bool {
 	}
 
 	customVerb := rs[1]
-	specificVerbReg := regexp.MustCompile(fmt.Sprintf(":%s$", customVerb))
+	regexPattern := fmt.Sprintf(":%s$", customVerb)
+
+	// Check cache first
+	if cached, found := customVerbCache.Load(regexPattern); found {
+		specificVerbReg := cached.(*regexp.Regexp)
+		return specificVerbReg.MatchString(pathToken)
+	}
+
+	// Compile and cache the regex
+	specificVerbReg := regexp.MustCompile(regexPattern)
+	customVerbCache.Store(regexPattern, specificVerbReg)
 	return specificVerbReg.MatchString(pathToken)
 }
 

@@ -9,10 +9,15 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 )
 
 // CurlyRouter expects Routes with paths that contain zero or more parameters in curly brackets.
 type CurlyRouter struct{}
+
+var (
+	regexCache sync.Map // Cache for compiled regex patterns
+)
 
 // SelectRoute is part of the Router interface and returns the best match
 // for the WebService and its Route for the given Request.
@@ -113,8 +118,22 @@ func (c CurlyRouter) regularMatchesPathToken(routeToken string, colon int, reque
 		}
 		return true, true
 	}
-	matched, err := regexp.MatchString(regPart, requestToken)
-	return (matched && err == nil), false
+	
+	// Check cache first
+	if cached, found := regexCache.Load(regPart); found {
+		regex := cached.(*regexp.Regexp)
+		matched := regex.MatchString(requestToken)
+		return matched, false
+	}
+	
+	// Compile and cache the regex
+	regex, err := regexp.Compile(regPart)
+	if err != nil {
+		return false, false
+	}
+	regexCache.Store(regPart, regex)
+	matched := regex.MatchString(requestToken)
+	return matched, false
 }
 
 var jsr311Router = RouterJSR311{}

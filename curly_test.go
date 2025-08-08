@@ -3,6 +3,7 @@ package restful
 import (
 	"io"
 	"net/http"
+	"sync"
 	"testing"
 )
 
@@ -262,3 +263,49 @@ func TestCurly_ISSUE_137_2(t *testing.T) {
 }
 
 func curlyDummy(req *Request, resp *Response) { io.WriteString(resp.ResponseWriter, "curlyDummy") }
+
+func TestRegexCaching(t *testing.T) {
+	// Clear cache before test
+	regexCache = sync.Map{}
+	
+	router := CurlyRouter{}
+	
+	// Test with regex pattern
+	routeToken := "{id:[0-9]+}"
+	requestToken := "123"
+	
+	// First call should cache the regex
+	matches1, _ := router.regularMatchesPathToken(routeToken, 3, requestToken)
+	if !matches1 {
+		t.Error("Expected first call to match")
+	}
+	
+	// Verify cache contains the pattern
+	pattern := "[0-9]+"
+	_, found := regexCache.Load(pattern)
+	if !found {
+		t.Error("Expected pattern to be cached")
+	}
+	
+	// Second call should use cached regex
+	matches2, _ := router.regularMatchesPathToken(routeToken, 3, requestToken)
+	if !matches2 {
+		t.Error("Expected second call to match using cache")
+	}
+	
+	// Test with different pattern to ensure separate caching
+	routeToken2 := "{name:[a-z]+}"
+	requestToken2 := "john"
+	
+	matches3, _ := router.regularMatchesPathToken(routeToken2, 5, requestToken2)
+	if !matches3 {
+		t.Error("Expected name pattern to match")
+	}
+	
+	// Verify both patterns are cached
+	pattern2 := "[a-z]+"
+	_, found2 := regexCache.Load(pattern2)
+	if !found2 {
+		t.Error("Expected name pattern to be cached")
+	}
+}
