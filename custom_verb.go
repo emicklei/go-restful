@@ -34,10 +34,8 @@ func isMatchCustomVerb(routeToken string, pathToken string) bool {
 
 	// Check cache first (if enabled)
 	if customVerbCacheEnabled {
-		if cached, found := customVerbCache.Load(regexPattern); found {
-			if specificVerbReg, ok := cached.(*regexp.Regexp); ok {
-				return specificVerbReg.MatchString(pathToken)
-			}
+		if specificVerbReg, found := getCachedRegexp(&customVerbCache, regexPattern); found {
+			return specificVerbReg.MatchString(pathToken)
 		}
 	}
 

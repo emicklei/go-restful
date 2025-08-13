@@ -390,7 +390,9 @@ func TestRegexCachePanicSafety(t *testing.T) {
 	
 	// After the call, the invalid entry should be overwritten with valid regex
 	if cached, found := regexCache.Load(pattern); found {
-		if _, ok := cached.(*regexp.Regexp); !ok {
+		if _, ok := cached.(*regexp.Regexp); ok {
+			// Success: cache entry is now a valid regex
+		} else {
 			t.Error("Expected invalid cache entry to be overwritten with valid regex")
 		}
 	} else {

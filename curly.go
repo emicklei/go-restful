@@ -27,6 +27,17 @@ func SetPathTokenCacheEnabled(enabled bool) {
 	pathTokenCacheEnabled = enabled
 }
 
+// getCachedRegexp retrieves a compiled regex from the cache if found and valid.
+// Returns the regex and true if found and valid, nil and false otherwise.
+func getCachedRegexp(cache *sync.Map, pattern string) (*regexp.Regexp, bool) {
+	if cached, found := cache.Load(pattern); found {
+		if regex, ok := cached.(*regexp.Regexp); ok {
+			return regex, true
+		}
+	}
+	return nil, false
+}
+
 // SelectRoute is part of the Router interface and returns the best match
 // for the WebService and its Route for the given Request.
 func (c CurlyRouter) SelectRoute(
@@ -129,11 +140,9 @@ func (c CurlyRouter) regularMatchesPathToken(routeToken string, colon int, reque
 
 	// Check cache first (if enabled)
 	if pathTokenCacheEnabled {
-		if cached, found := regexCache.Load(regPart); found {
-			if regex, ok := cached.(*regexp.Regexp); ok {
-				matched := regex.MatchString(requestToken)
-				return matched, false
-			}
+		if regex, found := getCachedRegexp(&regexCache, regPart); found {
+			matched := regex.MatchString(requestToken)
+			return matched, false
 		}
 	}
 
