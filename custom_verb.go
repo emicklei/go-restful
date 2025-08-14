@@ -1,5 +1,9 @@
 package restful
 
+// Copyright 2025 Ernest Micklei. All rights reserved.
+// Use of this source code is governed by a license
+// that can be found in the LICENSE file.
+
 import (
 	"fmt"
 	"regexp"
@@ -7,9 +11,9 @@ import (
 )
 
 var (
-	customVerbReg     = regexp.MustCompile(":([A-Za-z]+)$")
-	customVerbCache   sync.Map // Cache for compiled custom verb regexes
-	customVerbCacheEnabled = true // Enable/disable custom verb regex caching
+	customVerbReg          = regexp.MustCompile(":([A-Za-z]+)$")
+	customVerbCache        sync.Map // Cache for compiled custom verb regexes
+	customVerbCacheEnabled = true   // Enable/disable custom verb regex caching
 )
 
 // SetCustomVerbCacheEnabled enables or disables custom verb regex caching.
@@ -41,12 +45,12 @@ func isMatchCustomVerb(routeToken string, pathToken string) bool {
 
 	// Compile the regex
 	specificVerbReg := regexp.MustCompile(regexPattern)
-	
+
 	// Cache the regex (if enabled)
 	if customVerbCacheEnabled {
 		customVerbCache.Store(regexPattern, specificVerbReg)
 	}
-	
+
 	return specificVerbReg.MatchString(pathToken)
 }
 
