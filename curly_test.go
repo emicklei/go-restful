@@ -3,6 +3,8 @@ package restful
 import (
 	"io"
 	"net/http"
+	"regexp"
+	"sync"
 	"testing"
 )
 
@@ -262,3 +264,138 @@ func TestCurly_ISSUE_137_2(t *testing.T) {
 }
 
 func curlyDummy(req *Request, resp *Response) { io.WriteString(resp.ResponseWriter, "curlyDummy") }
+
+func TestRegexCaching(t *testing.T) {
+	// Store original state and enable caching for this test
+	originalEnabled := pathTokenCacheEnabled
+	defer func() {
+		SetPathTokenCacheEnabled(originalEnabled)
+	}()
+	SetPathTokenCacheEnabled(true)
+	
+	// Clear cache before test
+	regexCache = sync.Map{}
+	
+	router := CurlyRouter{}
+	
+	// Test with regex pattern
+	routeToken := "{id:[0-9]+}"
+	requestToken := "123"
+	
+	// First call should cache the regex
+	matches1, _ := router.regularMatchesPathToken(routeToken, 3, requestToken)
+	if !matches1 {
+		t.Error("Expected first call to match")
+	}
+	
+	// Verify cache contains the pattern
+	pattern := "[0-9]+"
+	_, found := regexCache.Load(pattern)
+	if !found {
+		t.Error("Expected pattern to be cached")
+	}
+	
+	// Second call should use cached regex
+	matches2, _ := router.regularMatchesPathToken(routeToken, 3, requestToken)
+	if !matches2 {
+		t.Error("Expected second call to match using cache")
+	}
+	
+	// Test with different pattern to ensure separate caching
+	routeToken2 := "{name:[a-z]+}"
+	requestToken2 := "john"
+	
+	matches3, _ := router.regularMatchesPathToken(routeToken2, 5, requestToken2)
+	if !matches3 {
+		t.Error("Expected name pattern to match")
+	}
+	
+	// Verify both patterns are cached
+	pattern2 := "[a-z]+"
+	_, found2 := regexCache.Load(pattern2)
+	if !found2 {
+		t.Error("Expected name pattern to be cached")
+	}
+}
+
+func TestRegexCacheDisabled(t *testing.T) {
+	// Store original state
+	originalEnabled := pathTokenCacheEnabled
+	defer func() {
+		SetPathTokenCacheEnabled(originalEnabled)
+	}()
+	
+	// Clear cache before test
+	regexCache = sync.Map{}
+	
+	// Disable caching
+	SetPathTokenCacheEnabled(false)
+	
+	router := CurlyRouter{}
+	routeToken := "{id:[0-9]+}"
+	requestToken := "123"
+	
+	// Call should work but not cache
+	matches, _ := router.regularMatchesPathToken(routeToken, 3, requestToken)
+	if !matches {
+		t.Error("Expected call to match")
+	}
+	
+	// Verify pattern is not cached
+	pattern := "[0-9]+"
+	_, found := regexCache.Load(pattern)
+	if found {
+		t.Error("Expected pattern to not be cached when caching is disabled")
+	}
+	
+	// Re-enable caching
+	SetPathTokenCacheEnabled(true)
+	
+	// Now it should cache
+	matches2, _ := router.regularMatchesPathToken(routeToken, 3, requestToken)
+	if !matches2 {
+		t.Error("Expected call to match")
+	}
+	
+	// Verify pattern is now cached
+	_, found2 := regexCache.Load(pattern)
+	if !found2 {
+		t.Error("Expected pattern to be cached when caching is re-enabled")
+	}
+}
+
+func TestRegexCachePanicSafety(t *testing.T) {
+	// Store original state
+	originalEnabled := pathTokenCacheEnabled
+	defer func() {
+		SetPathTokenCacheEnabled(originalEnabled)
+		regexCache = sync.Map{} // Clean up
+	}()
+	
+	SetPathTokenCacheEnabled(true)
+	
+	// Poison cache with wrong type
+	pattern := "[0-9]+"
+	regexCache.Store(pattern, "not a regex")
+	
+	router := CurlyRouter{}
+	routeToken := "{id:[0-9]+}"
+	requestToken := "123"
+	
+	// Should not panic, should handle invalid cache entry gracefully
+	matches, _ := router.regularMatchesPathToken(routeToken, 3, requestToken)
+	if !matches {
+		t.Error("Expected call to match even with corrupted cache")
+	}
+	
+	// After the call, the invalid entry should be overwritten with valid regex
+	if cached, found := regexCache.Load(pattern); found {
+		if _, ok := cached.(*regexp.Regexp); ok {
+			// Success: cache entry is now a valid regex
+		} else {
+			t.Error("Expected invalid cache entry to be overwritten with valid regex")
+		}
+	} else {
+		t.Error("Expected valid regex to be cached")
+	}
+}

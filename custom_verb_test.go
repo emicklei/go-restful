@@ -1,6 +1,9 @@
 package restful
 
-import "testing"
+import (
+	"sync"
+	"testing"
+)
 
 func TestHasCustomVerb(t *testing.T) {
 	testCase := []struct {
@@ -40,6 +43,7 @@ func TestRemoveCustomVerb(t *testing.T) {
 		}
 	}
 }
+
 func TestMatchCustomVerb(t *testing.T) {
 	testCase := []struct {
 		routeToken string
@@ -58,5 +62,97 @@ func TestMatchCustomVerb(t *testing.T) {
 		if rs != v.expected {
 			t.Errorf("expected value: %v, actual: %v, index: [%v]", v.expected, rs, idx)
 		}
+	}
+}
+
+func TestCustomVerbCaching(t *testing.T) {
+	// Store original state and enable caching for this test
+	originalEnabled := customVerbCacheEnabled
+	defer func() {
+		SetCustomVerbCacheEnabled(originalEnabled)
+	}()
+	SetCustomVerbCacheEnabled(true)
+	
+	// Clear cache before test
+	customVerbCache = sync.Map{}
+	
+	routeToken := "{userId:regex}:POST"
+	pathToken := "user123:POST"
+	
+	// First call should cache the regex
+	result1 := isMatchCustomVerb(routeToken, pathToken)
+	if !result1 {
+		t.Error("Expected first call to match")
+	}
+	
+	// Verify cache contains the pattern
+	pattern := ":POST$"
+	_, found := customVerbCache.Load(pattern)
+	if !found {
+		t.Error("Expected pattern to be cached")
+	}
+	
+	// Second call should use cached regex
+	result2 := isMatchCustomVerb(routeToken, pathToken)
+	if !result2 {
+		t.Error("Expected second call to match using cache")
+	}
+	
+	// Test with different verb to ensure separate caching
+	routeToken2 := "{userId:regex}:GET"
+	pathToken2 := "user123:GET"
+	
+	result3 := isMatchCustomVerb(routeToken2, pathToken2)
+	if !result3 {
+		t.Error("Expected GET verb to match")
+	}
+	
+	// Verify both patterns are cached
+	pattern2 := ":GET$"
+	_, found2 := customVerbCache.Load(pattern2)
+	if !found2 {
+		t.Error("Expected GET pattern to be cached")
+	}
+}
+
+func TestCustomVerbCacheDisabled(t *testing.T) {
+	// Store original state
+	originalEnabled := customVerbCacheEnabled
+	defer func() {
+		SetCustomVerbCacheEnabled(originalEnabled)
+	}()
+	
+	// Disable caching
+	SetCustomVerbCacheEnabled(false)
+	
+	routeToken := "{userId:regex}:DELETE"
+	pathToken := "user123:DELETE"
+	
+	// Call should work but not cache
+	result := isMatchCustomVerb(routeToken, pathToken)
+	if !result {
+		t.Error("Expected call to match")
+	}
+	
+	// Verify pattern is not cached
+	pattern := ":DELETE$"
+	_, found := customVerbCache.Load(pattern)
+	if found {
+		t.Error("Expected pattern to not be cached when caching is disabled")
+	}
+	
+	// Re-enable caching
+	SetCustomVerbCacheEnabled(true)
+	
+	// Now it should cache
+	result2 := isMatchCustomVerb(routeToken, pathToken)
+	if !result2 {
+		t.Error("Expected call to match")
+	}
+	
+	// Verify pattern is now cached
+	_, found2 := customVerbCache.Load(pattern)
+	if !found2 {
+		t.Error("Expected pattern to be cached when caching is re-enabled")
 	}
 }
