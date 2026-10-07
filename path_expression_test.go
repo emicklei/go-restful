@@ -2,6 +2,7 @@ package restful
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 )
 
@@ -41,5 +42,57 @@ func TestTemplateToRegularExpression(t *testing.T) {
 	}
 	if !ok {
 		t.Fatal("one or more expression did not match")
+	}
+}
+
+func TestNewPathExpression_CachesCompiledRegexp(t *testing.T) {
+	const (
+		tmpl1 = "/namespaces/{namespace}/{resource}/{name}"
+		tmpl2 = "/namespaces/{ns}/{res}/{id}"
+	)
+	pe1, err := newPathExpression(tmpl1)
+	if err != nil {
+		t.Fatalf("newPathExpression(%q) returned unexpected error: %v", tmpl1, err)
+	}
+	pe2, err := newPathExpression(tmpl2)
+	if err != nil {
+		t.Fatalf("newPathExpression(%q) returned unexpected error: %v", tmpl2, err)
+	}
+	if pe1.Matcher != pe2.Matcher {
+		t.Errorf("newPathExpression(%q) and newPathExpression(%q) Matcher = %p, %p; want identical *regexp.Regexp pointer for expression %q", tmpl1, tmpl2, pe1.Matcher, pe2.Matcher, pe1.Source)
+	}
+	if want := []string{"namespace", "resource", "name"}; !reflect.DeepEqual(pe1.VarNames, want) {
+		t.Errorf("newPathExpression(%q).VarNames = %v, want %v", tmpl1, pe1.VarNames, want)
+	}
+	if want := []string{"ns", "res", "id"}; !reflect.DeepEqual(pe2.VarNames, want) {
+		t.Errorf("newPathExpression(%q).VarNames = %v, want %v", tmpl2, pe2.VarNames, want)
+	}
+}
+
+var benchmarkKubernetesPathTemplates = []string{
+	"/{resource}",
+	"/{resource}/{name}",
+	"/{resource}/{name}/status",
+	"/{resource}/{name}/scale",
+	"/namespaces/{namespace}/{resource}",
+	"/namespaces/{namespace}/{resource}/{name}",
+	"/namespaces/{namespace}/{resource}/{name}/status",
+	"/namespaces/{namespace}/{resource}/{name}/scale",
+	"/watch/{resource}",
+	"/watch/namespaces/{namespace}/{resource}",
+	"/watch/namespaces/{namespace}/{resource}/{name}",
+}
+
+func BenchmarkNewPathExpression_KubernetesRoutes(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		regexpCache = sync.Map{}
+		for gv := 0; gv < 60; gv++ {
+			for _, tmpl := range benchmarkKubernetesPathTemplates {
+				if _, err := newPathExpression(tmpl); err != nil {
+					b.Fatal(err)
+				}
+			}
+		}
 	}
 }
