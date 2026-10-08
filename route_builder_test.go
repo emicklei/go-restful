@@ -35,7 +35,7 @@ func TestRouteBuilderWrites(t *testing.T) {
 }
 
 func TestRouteBuilder_PathParameter(t *testing.T) {
-	p := &Parameter{&ParameterData{Name: "name", Description: "desc"}}
+	p := &Parameter{data: ParameterData{Name: "name", Description: "desc"}}
 	p.AllowMultiple(true)
 	p.DataType("int")
 	p.Required(true)
