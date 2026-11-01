@@ -204,14 +204,17 @@ func (c CurlyRouter) computeWebserviceScore(requestTokens []string, routeTokens 
 			if len(eachRequestToken) == 0 {
 				return false, score
 			}
-			score++
-
 			if colon := strings.Index(eachRouteToken, ":"); colon != -1 {
-				// match by regex
+				// match by regex; a token that carries a regex only scores when
+				// its regex actually matches (issue #560), so a WebService with a
+				// plain or empty path is not shadowed by a regex WebService whose
+				// regex does not match at all.
 				matchesToken, _ := c.regularMatchesPathToken(eachRouteToken, colon, eachRequestToken)
 				if matchesToken {
-					score++ // extra score for regex match
+					score += 2 // base score for a parameter plus the regex match
 				}
+			} else {
+				score++
 			}
 		} else {
 			// not a parameter
