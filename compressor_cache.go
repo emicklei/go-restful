@@ -55,8 +55,9 @@ func (b *BoundedCachedCompressors) AcquireGzipWriter() *gzip.Writer {
 // only when the cache has room for it. It will ignore it otherwise.
 func (b *BoundedCachedCompressors) ReleaseGzipWriter(w *gzip.Writer) {
 	// forget the unmanaged ones
-	if len(b.gzipWriters) < b.writersCapacity {
-		b.gzipWriters <- w
+	select {
+	case b.gzipWriters <- w:
+	default:
 	}
 }
 
@@ -76,8 +77,9 @@ func (b *BoundedCachedCompressors) AcquireGzipReader() *gzip.Reader {
 // only when the cache has room for it. It will ignore it otherwise.
 func (b *BoundedCachedCompressors) ReleaseGzipReader(r *gzip.Reader) {
 	// forget the unmanaged ones
-	if len(b.gzipReaders) < b.readersCapacity {
-		b.gzipReaders <- r
+	select {
+	case b.gzipReaders <- r:
+	default:
 	}
 }
 
@@ -97,7 +99,8 @@ func (b *BoundedCachedCompressors) AcquireZlibWriter() *zlib.Writer {
 // only when the cache has room for it. It will ignore it otherwise.
 func (b *BoundedCachedCompressors) ReleaseZlibWriter(w *zlib.Writer) {
 	// forget the unmanaged ones
-	if len(b.zlibWriters) < b.writersCapacity {
-		b.zlibWriters <- w
+	select {
+	case b.zlibWriters <- w:
+	default:
 	}
 }
