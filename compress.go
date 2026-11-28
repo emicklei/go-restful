@@ -56,6 +56,10 @@ func (c *CompressingResponseWriter) Flush() {
 		// writer doesn't support http.Flusher interface
 		return
 	}
+	// Flush compressed data before flushing the underlying response.
+	if compressor, ok := c.compressor.(interface{ Flush() error }); ok {
+		compressor.Flush()
+	}
 	flusher.Flush()
 }
 
